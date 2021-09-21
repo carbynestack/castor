@@ -1,0 +1,17 @@
+spring:
+  profiles: markerstorage-postgres-k8s
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/castor
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      connection:
+        autocommit: true
+      ddl-auto: update
+      hbm2ddl:
+        auto: update

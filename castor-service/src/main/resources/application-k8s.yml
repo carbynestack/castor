@@ -1,0 +1,13 @@
+# Configuration for profile docker.
+spring:
+  profiles: k8s
+  profiles.include:
+    - tuplestore-minio
+    - cache-redis
+    - markerstorage-postgres-k8s
+
+logging:
+  level:
+    ROOT: INFO
+    io.carbynestack: ${LOG_LEVEL:INFO}
+    org.springframework: INFO

@@ -1,0 +1,10 @@
+spring:
+  profiles: tuplestore-minio
+
+carbynestack:
+  castor:
+    minio:
+      endpoint: ${MINIO_ENDPOINT}
+      bucket: minio-castor-bucket
+      access-key: dummy-key
+      secret-key: dummy-secret

@@ -1,0 +1,27 @@
+# Configuration of Acutator info endpoint
+info:
+  name: "@project.name@"
+  description: "@project.description@"
+  groupId: "@project.groupId@"
+  artifactId: "@project.artifactId@"
+  version: "@project.version@"
+  apiVersion: "@project.version@"
+
+server:
+  port: ${CASTOR_SERVICE_PORT:10100}
+  servlet:
+    context-path: /
+
+carbynestack:
+  castor:
+    serverHeartbeat: 0
+    clientHeartbeat: 10000
+    messageBuffer: 10485760 # buffer size in Bytes 10 * 1024 * 1024 == 10 MB
+    master: ${IS_MASTER:true}
+    noSslValidation: ${NO_SSL_VALIDATION:false}
+    trustedCertificates: ${TRUSTED_CERTIFICATES:} # list of trusted certificates comma separated (absolute path)
+    slaveUris:
+      - ${SLAVE_URI} #can be an empty string, if this is the slave
+    slave:
+      waitForReservationTimeout: ${RESERVATION_TIMEOUT:5000} #milliseconds
+      retryDelay: ${RESERVATION_RETRY_DELAY:50}
