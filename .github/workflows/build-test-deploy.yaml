@@ -1,0 +1,41 @@
+#
+# Copyright (c) 2021 - for information on the respective copyright owner
+# see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+name: Build and test artifacts
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+          cache: 'maven'
+      - name: Setting up Github Package Repository as Maven Repository
+        uses: s4u/maven-settings-action@v2
+        with:
+          githubServer: false
+          servers: |
+            [{
+              "id": "github",
+              "username": "${{ secrets.GHPR_USERNAME }}",
+              "password": "${{ secrets.GHPR_TOKEN }}"
+            }]
+      - name: Build with Maven
+        run: mvn install -Dskip.tests --batch-mode --update-snapshots --no-transfer-progress
+      - name: Run Tests
+        run: mvn verify --activate-profiles coverage --batch-mode --no-transfer-progress
+      - name: Collect Jacoco reports
+        run: echo ::set-output name=reports::$(find . -regex '.*/target/site/jacoco/jacoco.xml' | tr '\n' ',' | sed 's/.$//')
+        id: jacoco
+      - uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.jacoco.outputs.reports }}
+          name: codecov

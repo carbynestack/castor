@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "castor.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "castor.name" . }}
+    helm.sh/chart: {{ include "castor.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "castor.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "castor.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      {{- if .Values.castor.image.pullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.castor.image.pullSecrets }}
+          - name: {{ . }}
+        {{- end}}
+      {{- end}}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.castor.image.registry }}/{{ .Values.castor.image.repository }}:{{ .Values.castor.image.tag }}"
+          imagePullPolicy: {{ .Values.castor.image.pullPolicy }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.castor.springActiveProfiles }}
+            - name: IS_MASTER
+              value: "{{ .Values.castor.isMaster }}"
+            - name: SLAVE_URI
+              value: "{{ .Values.castor.slaveUri }}"
+            - name: NO_SSL_VALIDATION
+              value: "{{ .Values.castor.noSslValidation }}"
+            - name: REDIS_HOST
+              value: {{ .Values.castor.redis.host }}
+            - name: REDIS_PORT
+              value:  "{{ .Values.castor.redis.port }}"
+            - name: MINIO_ENDPOINT
+              value: {{ .Values.castor.minio.endpoint }}
+            - name: DB_HOST
+              value: {{ .Values.castor.db.host }}
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.castor.db.userSecretName }}
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.castor.db.passwordSecretName }}
+                  key: password
+            - name: DB_PORT
+              value: "{{ .Values.castor.db.port }}"
+            - name: LOG_LEVEL
+              value: "{{ .Values.castor.logLevel }}"
+          ports:
+            - name: mgmt
+              containerPort: 10100
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 10100
+            periodSeconds: {{ .Values.castor.probes.liveness.period }}
+            initialDelaySeconds: {{ .Values.castor.probes.liveness.initialDelay }}
+            failureThreshold: {{ .Values.castor.probes.liveness.failureThreshold }}
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 10100
+            periodSeconds: {{ .Values.castor.probes.readiness.period }}
+            initialDelaySeconds: {{ .Values.castor.probes.readiness.initialDelay }}
+            failureThreshold: {{ .Values.castor.probes.readiness.failureThreshold }}

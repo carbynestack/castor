@@ -1,0 +1,49 @@
+spring:
+  profiles: test
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${POSTGRESQL_URL}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      connection:
+        autocommit: true
+      ddl-auto: update
+      hbm2ddl:
+        auto: update
+
+carbynestack:
+  castor:
+    serverHeartbeat: 0
+    clientHeartbeat: 10000
+    messageBuffer: 10485760
+    master: true
+    noSslValidation: false
+    trustedCertificates:
+    slaveUris:
+      - "https://castor.carbynestack.io:8080"
+    slave:
+      waitForReservationTimeout: 5000
+      retryDelay: 50
+    minio:
+      endpoint: ${MINIO_ENDPOINT}
+      bucket: minio-castor-test-bucket
+      access-key: ${MINIO_ACCESS_KEY}
+      secret-key: ${MINIO_SECRET_KEY}
+    cache:
+      reservation-store: "castor-reservation-store"
+      consumption-store-prefix: "castor-consumption-"
+      telemetry-interval: 5184000
+      telemetry-ttl: 15552000
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+
+logging:
+  level:
+    ROOT: ERROR
+    io.carbynestack: DEBUG
+    org.springframework: ERROR

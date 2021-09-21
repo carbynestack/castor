@@ -1,0 +1,3 @@
+# necessary for docker-maven-plugin
+
+target/docker/**
