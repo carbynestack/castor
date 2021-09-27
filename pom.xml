@@ -62,7 +62,7 @@
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
-        <maven-attribution-plugin.version>0.9.8</maven-attribution-plugin.version>
+        <maven-license-plugin.version>2.0.0</maven-license-plugin.version>
 
         <!-- internal dependency versions -->
         <cs-spdz-integration.version>0.1-SNAPSHOT-1257545971-1-d751c28</cs-spdz-integration.version>
@@ -132,27 +132,27 @@
                     <failIfNoTests>false</failIfNoTests>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>${maven-license-plugin.version}</version>
+                <configuration>
+                    <outputDirectory>${project.basedir}/3RD-PARTY-LICENSES</outputDirectory>
+                    <thirdPartyFilename>sbom.xml</thirdPartyFilename>
+                    <fileTemplate>${project.basedir}/.github/templates/sbom.ftl</fileTemplate>
+                    <excludedScopes>test</excludedScopes>
+                    <sortArtifactByName>true</sortArtifactByName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>add-third-party</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>com.github.jinnovations</groupId>
-                    <artifactId>attribution-maven-plugin</artifactId>
-                    <version>${maven-attribution-plugin.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>generate-attribution-file</goal>
-                            </goals>
-                            <phase>generate-resources</phase>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <outputFile>3RD-PARTY-LICENSES/sbom.xml</outputFile>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
     <dependencyManagement>
         <dependencies>
