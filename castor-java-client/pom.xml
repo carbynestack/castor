@@ -94,8 +94,11 @@
         </resources>
         <plugins>
             <plugin>
-                <groupId>com.github.jinnovations</groupId>
-                <artifactId>attribution-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <configuration>
+                    <fileTemplate>${project.parent.basedir}/.github/templates/sbom.ftl</fileTemplate>
+                </configuration>
             </plugin>
         </plugins>
     </build>
