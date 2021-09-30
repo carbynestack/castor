@@ -3,30 +3,34 @@ kind: Deployment
 metadata:
   name: {{ include "castor.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "castor.name" . }}
-    helm.sh/chart: {{ include "castor.chart" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    {{- include "castor.labels" . | nindent 4 }}
 spec:
+  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "castor.name" . }}
-      app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- include "castor.selectorLabels" . | nindent 6 }}
   template:
     metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "castor.name" . }}
-        app.kubernetes.io/instance: {{ .Release.Name }}
+        {{- include "castor.selectorLabels" . | nindent 8 }}
     spec:
-      {{- if .Values.castor.image.pullSecrets }}
+      {{- with .Values.castor.image.pullSecrets }}
       imagePullSecrets:
-        {{- range .Values.castor.image.pullSecrets }}
-          - name: {{ . }}
-        {{- end}}
-      {{- end}}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "castor.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.castor.image.registry }}/{{ .Values.castor.image.repository }}:{{ .Values.castor.image.tag }}"
           imagePullPolicy: {{ .Values.castor.image.pullPolicy }}
           env:
@@ -78,3 +82,17 @@ spec:
             periodSeconds: {{ .Values.castor.probes.readiness.period }}
             initialDelaySeconds: {{ .Values.castor.probes.readiness.initialDelay }}
             failureThreshold: {{ .Values.castor.probes.readiness.failureThreshold }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
