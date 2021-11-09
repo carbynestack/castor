@@ -13,19 +13,19 @@ import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import java.util.*;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ReservationTest {
   private final String testReservationId =
       "80fbba1b-3da8-4b1e-8a2c-cebd65229fad_MULTIPLICATION_TRIPLE_GFP";
@@ -65,9 +65,9 @@ public class ReservationTest {
     assertEquals(ONE_RESERVATION_ELEMENT_REQUIRED_EXCEPTION_MSG, iae.getMessage());
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject() {
+  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject()
+      throws JsonProcessingException {
     ActivationStatus expectedStatus = ActivationStatus.UNLOCKED;
     String jsonString =
         new ReservationJsonStringBuilder()
@@ -84,7 +84,8 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutReservationId_whenDeserialize_thenThrowJsonParseException() {
+  public void givenJsonStringWithoutReservationId_whenDeserialize_thenThrowJsonParseException()
+      throws JsonProcessingException {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withTupleType(TupleType.MULTIPLICATION_TRIPLE_GFP)
@@ -118,7 +119,8 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutTupleType_whenDeserialize_thenThrowJsonParseException() {
+  public void givenJsonStringWithoutTupleType_whenDeserialize_thenThrowJsonParseException()
+      throws JsonProcessingException {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withReservationId(UUID.randomUUID().toString())
@@ -135,7 +137,8 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutStatus_whenDeserialize_thenThrowJsonParseException() {
+  public void givenJsonStringWithoutStatus_whenDeserialize_thenThrowJsonParseException()
+      throws JsonProcessingException {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withReservationId(UUID.randomUUID().toString())
@@ -173,8 +176,8 @@ public class ReservationTest {
       return this;
     }
 
-    @SneakyThrows
-    public ReservationJsonStringBuilder withReservations(List<ReservationElement> reservations) {
+    public ReservationJsonStringBuilder withReservations(List<ReservationElement> reservations)
+        throws JsonProcessingException {
       this.reservations =
           String.format("\"reservations\":%s", objectMapper.writeValueAsString(reservations));
       return this;

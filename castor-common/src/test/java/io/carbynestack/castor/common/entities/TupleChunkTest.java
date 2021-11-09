@@ -10,12 +10,12 @@ package io.carbynestack.castor.common.entities;
 import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.common.entities.TupleChunk.INVALID_DATA_LENGTH_EXCEPTION_MSG;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class TupleChunkTest {
 

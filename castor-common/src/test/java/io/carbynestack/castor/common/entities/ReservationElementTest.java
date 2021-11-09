@@ -10,17 +10,17 @@ package io.carbynestack.castor.common.entities;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ReservationElementTest {
   private final UUID testChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229");
@@ -107,9 +107,9 @@ public class ReservationElementTest {
         actualJpeMie.getMessage(), startsWith("Missing required creator property 'startIndex'"));
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject() {
+  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject()
+      throws JsonProcessingException {
     String data =
         new ReservationElementJsonStringBuilder()
             .withTupleChunkId(testChunkId)

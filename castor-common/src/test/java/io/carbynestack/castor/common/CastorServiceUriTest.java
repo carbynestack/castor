@@ -13,14 +13,14 @@ import static io.carbynestack.castor.common.rest.CastorRestApiEndpoints.*;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.carbynestack.castor.common.entities.TupleType;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
-import lombok.SneakyThrows;
 import org.hamcrest.junit.MatcherAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class CastorServiceUriTest {
 
@@ -135,9 +135,9 @@ public class CastorServiceUriTest {
         allOf(containsString(TELEMETRY_INTERVAL + "=" + interval)));
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidPathSegments_whenBuildingResourceUri_thenReturnExpectedUri() {
+  public void givenValidPathSegments_whenBuildingResourceUri_thenReturnExpectedUri()
+      throws URISyntaxException {
     String baseUri = "https://castor.carbynestack.io/Castor";
     String pathVariable = "1234";
     CastorServiceUri CastorServiceUri = new CastorServiceUri(baseUri);

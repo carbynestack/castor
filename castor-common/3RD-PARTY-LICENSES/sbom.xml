@@ -133,7 +133,7 @@
          <name>Project Lombok</name>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.18.18</version>
+         <version>1.18.20</version>
          <projectUrl>https://projectlombok.org</projectUrl>
          <licenses>
             <license>

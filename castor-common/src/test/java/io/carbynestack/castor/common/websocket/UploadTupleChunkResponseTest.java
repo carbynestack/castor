@@ -7,12 +7,13 @@
 package io.carbynestack.castor.common.websocket;
 
 import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import java.util.UUID;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class UploadTupleChunkResponseTest {
 

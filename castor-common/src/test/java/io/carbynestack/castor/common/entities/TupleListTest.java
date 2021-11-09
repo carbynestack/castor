@@ -8,7 +8,9 @@
 package io.carbynestack.castor.common.entities;
 
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockConstruction;
@@ -22,20 +24,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.stream.IntStream;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
 public class TupleListTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
-  @SneakyThrows
   @Test
-  public void givenValidInputStream_whenCreateFromStream_thenReturnExpectedTupleList() {
+  public void givenValidInputStream_whenCreateFromStream_thenReturnExpectedTupleList()
+      throws IOException {
     byte[][] tupleValueData =
         new byte[][] {
           RandomUtils.nextBytes(Field.GFP.getElementSize()),
@@ -76,9 +77,9 @@ public class TupleListTest {
         jme.getMessage(), startsWith("Missing required creator property 'mac'"));
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidTupleList_whenJsonSerializationRoundTrip_thenRecoverInitialObject() {
+  public void givenValidTupleList_whenJsonSerializationRoundTrip_thenRecoverInitialObject()
+      throws IOException {
     for (TupleType type : TupleType.values()) {
       byte[] tupleData =
           IntStream.range(0, type.getArity() * 2)
@@ -97,9 +98,9 @@ public class TupleListTest {
     }
   }
 
-  @SneakyThrows
   @Test
-  public void givenEmptyTupleList_whenSerializationRoundTrip_thenRecoverExpectedList() {
+  public void givenEmptyTupleList_whenSerializationRoundTrip_thenRecoverExpectedList()
+      throws IOException {
     for (TupleType type : TupleType.values()) {
       TupleList expectedTupleList =
           TupleList.fromStream(
@@ -110,9 +111,9 @@ public class TupleListTest {
     }
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidTupleList_whenExportAsChunk_thenReturnExpectedTupleChunk() {
+  public void givenValidTupleList_whenExportAsChunk_thenReturnExpectedTupleChunk()
+      throws IOException {
     UUID expectedUUID = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     byte[] tupleValueData = RandomUtils.nextBytes(Field.GFP.getElementSize());
     byte[] tupleMacData = RandomUtils.nextBytes(Field.GFP.getElementSize());

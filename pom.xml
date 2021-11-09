@@ -53,7 +53,7 @@
     <properties>
         <skip.tests>false</skip.tests>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
 
         <!-- Plugin versions -->
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
@@ -71,10 +71,10 @@
         <!-- external dependency versions -->
         <commons-io.version>2.9.0</commons-io.version>
         <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
-        <junit.version>4.13</junit.version>
+        <junit.version>5.8.1</junit.version>
         <log4j.version>2.14.1</log4j.version>
-        <lombok.version>1.18.18</lombok.version>
-        <mockito.version>3.11.2</mockito.version>
+        <lombok.version>1.18.20</lombok.version>
+        <mockito.version>3.12.4</mockito.version>
         <slf4j.version>1.7.30</slf4j.version>
         <spring-boot.version>2.2.4.RELEASE</spring-boot.version>
         <vavr.version>0.10.3</vavr.version>
@@ -207,13 +207,13 @@
             <!-- Test dependencies -->
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
+                <artifactId>mockito-inline</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
+                <artifactId>mockito-junit-jupiter</artifactId>
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
@@ -224,8 +224,14 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
                 <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
