@@ -6,23 +6,21 @@
  */
 package io.carbynestack.castor.client.upload.websocket;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.client.upload.websocket.ReconnectScheduler.ReconnectTask;
 import java.util.Timer;
-import lombok.SneakyThrows;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ReconnectSchedulerTest {
+@ExtendWith(MockitoExtension.class)
+class ReconnectSchedulerTest {
 
-  @SneakyThrows
   @Test
-  public void givenDisconnectionClient_whenCreate_thenInitializeTimerAndRetryConnection() {
+  void givenDisconnectionClient_whenCreate_thenInitializeTimerAndRetryConnection() {
     long expectedDelay = 0L;
     long expectedRate = 1L;
     WebSocketClient webSocketClientMock = mock(WebSocketClient.class);
@@ -42,9 +40,8 @@ public class ReconnectSchedulerTest {
     }
   }
 
-  @SneakyThrows
   @Test
-  public void givenDisconnectionClient_whenRunReconnectTask_thenCallConnect() {
+  void givenDisconnectionClient_whenRunReconnectTask_thenCallConnect() {
     WebSocketClient webSocketClientMock = mock(WebSocketClient.class);
     when(webSocketClientMock.isConnected()).thenReturn(false);
     ReconnectTask reconnectTask = new ReconnectTask(webSocketClientMock);
@@ -53,9 +50,8 @@ public class ReconnectSchedulerTest {
     verify(webSocketClientMock).connect();
   }
 
-  @SneakyThrows
   @Test
-  public void givenConnectedClient_whenRunReconnectTask_thenDoNothing() {
+  void givenConnectedClient_whenRunReconnectTask_thenDoNothing() {
     WebSocketClient webSocketClientMock = mock(WebSocketClient.class);
     when(webSocketClientMock.isConnected()).thenReturn(true);
     ReconnectTask reconnectTask = new ReconnectTask(webSocketClientMock);

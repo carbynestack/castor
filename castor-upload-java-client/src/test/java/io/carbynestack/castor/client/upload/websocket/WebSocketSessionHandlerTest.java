@@ -8,13 +8,12 @@
 package io.carbynestack.castor.client.upload.websocket;
 
 import static io.carbynestack.castor.common.websocket.CastorWebSocketApiEndpoints.RESPONSE_QUEUE_ENDPOINT;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
-import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.springframework.messaging.simp.stomp.StompSession;
 
@@ -22,16 +21,16 @@ public class WebSocketSessionHandlerTest {
   private WebSocketClient webSocketClientMock;
   private WebSocketSessionHandler webSocketSessionHandler;
 
-  @Before
+  @BeforeEach
   public void setup() {
     webSocketClientMock = mock(WebSocketClient.class);
     webSocketSessionHandler = new WebSocketSessionHandler(webSocketClientMock);
   }
 
-  @SneakyThrows
   @Test
-  public void
-      givenActiveConnectionScheduler_whenAfterConnect_thenSubscribeToResponseMessagesAndDestroyScheduler() {
+  void
+      givenActiveConnectionScheduler_whenAfterConnect_thenSubscribeToResponseMessagesAndDestroyScheduler()
+          throws NoSuchFieldException, IllegalAccessException {
     Field reconnectSchedulerField =
         WebSocketSessionHandler.class.getDeclaredField("reconnectScheduler");
     reconnectSchedulerField.setAccessible(true);
@@ -46,10 +45,9 @@ public class WebSocketSessionHandlerTest {
     verify(sessionMock, times(1)).subscribe(RESPONSE_QUEUE_ENDPOINT, webSocketClientMock);
   }
 
-  @SneakyThrows
   @Test
-  public void
-      givenSessionIsDisconnected_whenHandleTransportError_thenInitializeConnectionScheduler() {
+  void givenSessionIsDisconnected_whenHandleTransportError_thenInitializeConnectionScheduler()
+      throws IllegalAccessException, NoSuchFieldException {
     Field sessionField = WebSocketSessionHandler.class.getDeclaredField("session");
     sessionField.setAccessible(true);
     StompSession sessionMock = mock(StompSession.class);

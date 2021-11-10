@@ -69,6 +69,7 @@
         <cs-java-client.version>0.1-SNAPSHOT-1257534854-1-46815a7</cs-java-client.version>
 
         <!-- external dependency versions -->
+        <assertj.version>3.21.0</assertj.version>
         <commons-io.version>2.9.0</commons-io.version>
         <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
         <junit.version>5.8.1</junit.version>
@@ -76,7 +77,7 @@
         <lombok.version>1.18.20</lombok.version>
         <mockito.version>3.12.4</mockito.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <spring-boot.version>2.2.4.RELEASE</spring-boot.version>
+        <spring-boot.version>2.5.6</spring-boot.version>
         <vavr.version>0.10.3</vavr.version>
     </properties>
     <build>
@@ -206,6 +207,11 @@
 
             <!-- Test dependencies -->
             <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
                 <version>${mockito.version}</version>
@@ -224,16 +230,11 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
                 <version>${junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit.version}</version>
-                <scope>test</scope>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
