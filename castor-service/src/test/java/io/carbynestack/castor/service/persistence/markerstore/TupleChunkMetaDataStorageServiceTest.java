@@ -9,7 +9,7 @@ package io.carbynestack.castor.service.persistence.markerstore;
 
 import static io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService.CONFLICT_FOR_ID_EXCEPTION_MSG;
 import static io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService.NO_METADATA_FOR_OD_EXCEPTION_MSG;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -18,20 +18,20 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TupleChunkMetaDataStorageServiceTest {
+@ExtendWith(MockitoExtension.class)
+class TupleChunkMetaDataStorageServiceTest {
   @Mock private TupleChunkMetadataRepository tupleChunkMetadataRepositoryMock;
 
   @InjectMocks private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageService;
 
   @Test
-  public void
+  void
       givenAnEntityWithTheGivenIdIsAlreadyStoredInDatabase_whenKeepTupleChunkData_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 
@@ -48,7 +48,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenNoConflictForGivenId_whenKeepTupleChunkData_thenPersistExpectedContent() {
+  void givenNoConflictForGivenId_whenKeepTupleChunkData_thenPersistExpectedContent() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long numberOfTuples = 42;
@@ -67,7 +67,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenEntityForIdInDatabase_whenGetTupleChunkData_thenReturnExpectedContent() {
+  void givenEntityForIdInDatabase_whenGetTupleChunkData_thenReturnExpectedContent() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleChunkMetaDataEntity metaDataEntityMock = mock(TupleChunkMetaDataEntity.class);
 
@@ -78,7 +78,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenNoEntityForIdInDatabase_whenGetTupleChunkData_thenReturnNull() {
+  void givenNoEntityForIdInDatabase_whenGetTupleChunkData_thenReturnNull() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 
     when(tupleChunkMetadataRepositoryMock.findById(chunkId)).thenReturn(Optional.empty());
@@ -87,7 +87,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoEntityForIdInDatabase_updateReservationForTupleChunkData_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 
@@ -102,8 +102,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void
-      givenEntityForIdInDatabase_updateReservationForTupleChunkData_thenUpdateReservationMarker() {
+  void givenEntityForIdInDatabase_updateReservationForTupleChunkData_thenUpdateReservationMarker() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long additionalReservedTuples = 12;
     long currentReservedMarker = 30;
@@ -121,7 +120,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoEntityForIdInDatabase_updateConsumptionForTupleChunkData_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 
@@ -136,8 +135,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void
-      givenEntityForIdInDatabase_updateConsumptionForTupleChunkData_thenUpdateReservationMarker() {
+  void givenEntityForIdInDatabase_updateConsumptionForTupleChunkData_thenUpdateReservationMarker() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long additionalConsumedTuples = 12;
     long currentConsumedMarker = 30;
@@ -155,7 +153,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenNoEntityForIdInDatabase_activateTupleChunk_thenThrowCastorServiceException() {
+  void givenNoEntityForIdInDatabase_activateTupleChunk_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 
     when(tupleChunkMetadataRepositoryMock.findById(chunkId)).thenReturn(Optional.empty());
@@ -169,7 +167,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenEntityForIdInDatabase_activateTupleChunk_thenSetStatusUnlockedAndPersist() {
+  void givenEntityForIdInDatabase_activateTupleChunk_thenSetStatusUnlockedAndPersist() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleChunkMetaDataEntity metaDataEntityMock = mock(TupleChunkMetaDataEntity.class);
 
@@ -185,7 +183,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenForgetTupleChunkData_thenCallDeleteOnDatabase() {
+  void givenSuccessfulRequest_whenForgetTupleChunkData_thenCallDeleteOnDatabase() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 
     tupleChunkMetaDataStorageService.forgetTupleChunkData(chunkId);
@@ -194,8 +192,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void
-      givenTuplesForRequestedTypeAvailable_whenGetAvailableTuples_thenReturnExpectedContent() {
+  void givenTuplesForRequestedTypeAvailable_whenGetAvailableTuples_thenReturnExpectedContent() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long expectedCount = 42;
 
@@ -206,7 +203,7 @@ public class TupleChunkMetaDataStorageServiceTest {
   }
 
   @Test
-  public void givenRepositoryThrowsNullPointerException_whenGetAvailableTuples_thenReturnZero() {
+  void givenRepositoryThrowsNullPointerException_whenGetAvailableTuples_thenReturnZero() {
 
     when(tupleChunkMetadataRepositoryMock.getAvailableTuplesByTupleType(any()))
         .thenThrow(new NullPointerException("expected"));

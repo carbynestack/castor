@@ -9,28 +9,30 @@ package io.carbynestack.castor.service.persistence.tuplestore;
 
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.service.persistence.tuplestore.MinioTupleStore.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.*;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.config.MinioProperties;
 import io.minio.*;
+import io.minio.errors.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
-import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MinioTupleStoreTest {
+@ExtendWith(MockitoExtension.class)
+class MinioTupleStoreTest {
   @Mock private MinioClient minioClientMock;
   @Mock private MinioProperties minioPropertiesMock;
 
@@ -38,18 +40,22 @@ public class MinioTupleStoreTest {
 
   private MinioTupleStore minioTupleStore;
 
-  @SneakyThrows
-  @Before
-  public void setUp() {
+  @BeforeEach
+  public void setUp()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     when(minioPropertiesMock.getBucket()).thenReturn(testBucketName);
     when(minioClientMock.bucketExists(BucketExistsArgs.builder().bucket(testBucketName).build()))
         .thenReturn(true);
     minioTupleStore = new MinioTupleStore(minioClientMock, minioPropertiesMock);
   }
 
-  @SneakyThrows
   @Test
-  public void givenBucketDoesNotExist_whenConstruct_thenMakeBucket() {
+  void givenBucketDoesNotExist_whenConstruct_thenMakeBucket()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     when(minioClientMock.bucketExists(BucketExistsArgs.builder().bucket(testBucketName).build()))
         .thenReturn(false);
     new MinioTupleStore(minioClientMock, minioPropertiesMock);
@@ -57,9 +63,11 @@ public class MinioTupleStoreTest {
     verify(minioClientMock).makeBucket(MakeBucketArgs.builder().bucket(testBucketName).build());
   }
 
-  @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenSave_thenPutChunkDataInDatabase() {
+  void givenSuccessfulRequest_whenSave_thenPutChunkDataInDatabase()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     int count = 1;
     byte[] chunkData = RandomUtils.nextBytes(INPUT_MASK_GFP.getTupleSize() * count);
@@ -79,9 +87,11 @@ public class MinioTupleStoreTest {
     assertArrayEquals(chunkData, IOUtils.toByteArray(actualPoa.stream()));
   }
 
-  @SneakyThrows
   @Test
-  public void givenPutObjectThrowsException_whenSave_thenThrowCastorServiceException() {
+  void givenPutObjectThrowsException_whenSave_thenThrowCastorServiceException()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     IOException expectedException = new IOException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     int count = 1;
@@ -106,7 +116,7 @@ public class MinioTupleStoreTest {
   }
 
   @Test
-  public void
+  void
       givenIndexOfFirstTupleToReadIsNegative_whenDownloadTuples_thenThrowIllegalArgumentException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
@@ -124,7 +134,7 @@ public class MinioTupleStoreTest {
   }
 
   @Test
-  public void givenLengthToReadIsZero_whenDownloadTuples_thenThrowIllegalArgumentException() {
+  void givenLengthToReadIsZero_whenDownloadTuples_thenThrowIllegalArgumentException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     long startIndex = 0;
@@ -144,10 +154,11 @@ public class MinioTupleStoreTest {
     assertEquals(INVALID_LENGTH_EXCEPTION_MSG, actualIae.getMessage());
   }
 
-  @SneakyThrows
   @Test
-  public void
-      givenReadingFromDatabaseThrowsException_whenDownloadTuples_thenThrowCastorServiceException() {
+  void givenReadingFromDatabaseThrowsException_whenDownloadTuples_thenThrowCastorServiceException()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     IOException expectedException = new IOException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
@@ -174,9 +185,11 @@ public class MinioTupleStoreTest {
     assertEquals(expectedException, actualCse.getCause());
   }
 
-  @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenDownloadTuples_thenThrowCastorServiceException() {
+  void givenSuccessfulRequest_whenDownloadTuples_thenThrowCastorServiceException()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     long startIndex = 0;
@@ -209,9 +222,11 @@ public class MinioTupleStoreTest {
     assertArrayEquals(chunkData, actualTupleList.asChunk(chunkId).getTuples());
   }
 
-  @SneakyThrows
   @Test
-  public void givenNoChunkWithIdInDatabase_whenDeleteTupleChunk_thenDoNothing() {
+  void givenNoChunkWithIdInDatabase_whenDeleteTupleChunk_thenDoNothing()
+      throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+          NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+          XmlParserException, InternalException {
     IOException expectedException = new IOException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 

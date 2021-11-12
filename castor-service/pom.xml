@@ -26,15 +26,14 @@
 
         <!-- external lib versions -->
         <aspectj-weaver.version>1.9.7</aspectj-weaver.version>
-        <jedis.version>3.2.0</jedis.version>
+        <jedis.version>3.6.3</jedis.version>
         <minio-sdk.version>8.2.1</minio-sdk.version>
         <postgresql-java-client.version>42.2.1</postgresql-java-client.version>
-        <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
-        <spring-data-redis.version>2.2.4.RELEASE</spring-data-redis.version>
+        <spring-cloud.version>Hoxton.SR12</spring-cloud.version>
         <spring-framework-session.version>1.3.5.RELEASE</spring-framework-session.version>
 
         <!-- test dependencies -->
-        <testcontainer.postgresql.version>1.15.3</testcontainer.postgresql.version>
+        <testcontainer.postgresql.version>1.16.2</testcontainer.postgresql.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -120,7 +119,6 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
-            <version>${spring-data-redis.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -165,8 +163,18 @@
 
         <!--test dependencies-->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -175,18 +183,30 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-junit</artifactId>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
+            <version>${testcontainer.postgresql.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${testcontainer.postgresql.version}</version>
             <scope>test</scope>
         </dependency>

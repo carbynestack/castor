@@ -1,6 +1,7 @@
 spring:
-  profiles: tuplestore-minio
-
+  config:
+    activate:
+      on-profile: k8s
 carbynestack:
   castor:
     minio:

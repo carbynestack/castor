@@ -7,25 +7,28 @@
 
 package io.carbynestack.castor.service.testconfig;
 
+import org.junit.jupiter.api.extension.*;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-public class ReusablePostgreSQLContainer extends PostgreSQLContainer<ReusablePostgreSQLContainer> {
+public class ReusablePostgreSQLContainerExtension
+    extends PostgreSQLContainer<ReusablePostgreSQLContainerExtension>
+    implements AfterAllCallback, BeforeAllCallback {
   private static final String IMAGE_VERSION = "postgres:11.1";
-  private static ReusablePostgreSQLContainer container;
+  private static ReusablePostgreSQLContainerExtension container;
 
-  private ReusablePostgreSQLContainer() {
+  private ReusablePostgreSQLContainerExtension() {
     super(IMAGE_VERSION);
   }
 
-  public static ReusablePostgreSQLContainer getInstance() {
+  public static ReusablePostgreSQLContainerExtension getInstance() {
     if (container == null) {
-      container = new ReusablePostgreSQLContainer();
+      container = new ReusablePostgreSQLContainerExtension();
     }
     return container;
   }
 
   @Override
-  public void start() {
+  public void beforeAll(ExtensionContext extensionContext) {
     super.start();
     System.setProperty("POSTGRESQL_URL", container.getJdbcUrl());
     System.setProperty("POSTGRESQL_USERNAME", container.getUsername());
@@ -33,7 +36,7 @@ public class ReusablePostgreSQLContainer extends PostgreSQLContainer<ReusablePos
   }
 
   @Override
-  public void stop() {
+  public void afterAll(ExtensionContext extensionContext) {
     // container should stay alive until JVM shuts it down
   }
 }

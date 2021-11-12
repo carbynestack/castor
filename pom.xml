@@ -131,6 +131,9 @@
                     </includes>
                     <skipITs>${skip.tests}</skipITs>
                     <failIfNoTests>false</failIfNoTests>
+                    <additionalClasspathElements>
+                        <additionalClasspathElement>${basedir}/target/classes</additionalClasspathElement>
+                    </additionalClasspathElements>
                 </configuration>
             </plugin>
             <plugin>

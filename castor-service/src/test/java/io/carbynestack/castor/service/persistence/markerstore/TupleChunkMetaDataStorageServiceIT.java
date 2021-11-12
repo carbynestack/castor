@@ -9,44 +9,41 @@ package io.carbynestack.castor.service.persistence.markerstore;
 
 import static io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
-import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
-import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
+import io.carbynestack.castor.service.testconfig.ReusableMinioContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusableRedisContainerExtension;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
-public class TupleChunkMetaDataStorageServiceIT {
+class TupleChunkMetaDataStorageServiceIT {
 
-  @ClassRule
-  public static ReusableRedisContainer reusableRedisContainer =
-      ReusableRedisContainer.getInstance();
+  @RegisterExtension
+  public static ReusableRedisContainerExtension reusableRedisContainer =
+      ReusableRedisContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  @RegisterExtension
+  public static ReusableMinioContainerExtension reusableMinioContainer =
+      ReusableMinioContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
-      ReusablePostgreSQLContainer.getInstance();
+  @RegisterExtension
+  public static ReusablePostgreSQLContainerExtension reusablePostgreSQLContainer =
+      ReusablePostgreSQLContainerExtension.getInstance();
 
   @Autowired private PersistenceTestEnvironment testEnvironment;
 
@@ -65,20 +62,20 @@ public class TupleChunkMetaDataStorageServiceIT {
               UUID.fromString("95e9f39a-a863-4ad2-9b41-07a8b1bf4763"), testTupleType, 42)
           .setStatus(UNLOCKED);
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnvironment.clearAllData();
   }
 
   @Test
-  public void givenNoEntityWithIdInDatabase_whenGetTupleChunkData_thenReturnNull() {
+  void givenNoEntityWithIdInDatabase_whenGetTupleChunkData_thenReturnNull() {
     UUID chunkId = UUID.fromString("9463b2ac-e865-4934-8f0b-6cdf19dd86fd");
 
     assertNull(markerStore.getTupleChunkData(chunkId));
   }
 
   @Test
-  public void
+  void
       givenLockedAndUnlockedEntitiesInDatabase_whenGetTupleChunkData_thenReturnUnlockedContentOnly() {
     tupleChunkMetadataRepository.save(testLockedTupleChunkMetaDataEntity);
     tupleChunkMetadataRepository.save(testUnlockedTupleChunkMetaDataEntity);
@@ -88,8 +85,7 @@ public class TupleChunkMetaDataStorageServiceIT {
   }
 
   @Test
-  public void
-      givenTuplesForRequestedTypeAvailable_whenGetAvailableTuples_thenReturnExpectedContent() {
+  void givenTuplesForRequestedTypeAvailable_whenGetAvailableTuples_thenReturnExpectedContent() {
     tupleChunkMetadataRepository.save(testUnlockedTupleChunkMetaDataEntity);
 
     long actualAvailableTuples = markerStore.getAvailableTuples(testTupleType);
@@ -97,7 +93,7 @@ public class TupleChunkMetaDataStorageServiceIT {
   }
 
   @Test
-  public void givenOnlyLockedChunksAvailable_whenGetAvailableTuples_thenReturnZero() {
+  void givenOnlyLockedChunksAvailable_whenGetAvailableTuples_thenReturnZero() {
     tupleChunkMetadataRepository.save(testLockedTupleChunkMetaDataEntity);
 
     long actualAvailableTuples = markerStore.getAvailableTuples(testTupleType);

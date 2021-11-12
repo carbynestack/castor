@@ -10,8 +10,8 @@ import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.websocket.CastorWebSocketApiEndpoints.RESPONSE_QUEUE_ENDPOINT;
 import static io.carbynestack.castor.service.websocket.DefaultCastorWebSocketService.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.MultiplicationTriple;
@@ -25,19 +25,15 @@ import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultCastorWebSocketServiceTest {
-
-  private ArgumentCaptor<String> destinationCaptor = ArgumentCaptor.forClass(String.class);
-  private ArgumentCaptor<byte[]> responseCaptor = ArgumentCaptor.forClass(byte[].class);
+@ExtendWith(MockitoExtension.class)
+class DefaultCastorWebSocketServiceTest {
 
   @Mock private TupleStore tupleStoreMock;
 
@@ -48,7 +44,7 @@ public class DefaultCastorWebSocketServiceTest {
   @InjectMocks private DefaultCastorWebSocketService castorWebSocketService;
 
   @Test
-  public void givenInvalidPayload_whenUploadTupleChunk_thenThrowCastorClientException() {
+  void givenInvalidPayload_whenUploadTupleChunk_thenThrowCastorClientException() {
     byte[] invalidPayload = new byte[0];
 
     CastorClientException actualCce =
@@ -65,7 +61,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void givenChunkHasNoTuples_whenUploadTupleChunk_thenThrowCastorClientException() {
+  void givenChunkHasNoTuples_whenUploadTupleChunk_thenThrowCastorClientException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleChunk tupleChunk = TupleChunk.of(MultiplicationTriple.class, GFP, chunkId, new byte[0]);
     byte[] payload = SerializationUtils.serialize(tupleChunk);
@@ -84,8 +80,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void
-      givenWritingChunkToDatabaseFails_whenUploadTupleChunk_thenThrowCastorServiceException() {
+  void givenWritingChunkToDatabaseFails_whenUploadTupleChunk_thenThrowCastorServiceException() {
     CastorServiceException expectedException = new CastorServiceException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
@@ -112,7 +107,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenUploadChunk_thenSendSuccess() {
+  void givenSuccessfulRequest_whenUploadChunk_thenSendSuccess() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     byte[] tupleData = RandomUtils.nextBytes(tupleType.getTupleSize());

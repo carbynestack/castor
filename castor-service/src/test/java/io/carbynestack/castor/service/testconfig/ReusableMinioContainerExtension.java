@@ -8,10 +8,13 @@
 package io.carbynestack.castor.service.testconfig;
 
 import java.time.Duration;
+import org.junit.jupiter.api.extension.*;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.HttpWaitStrategy;
 
-public class ReusableMinioContainer extends GenericContainer<ReusableMinioContainer> {
+public class ReusableMinioContainerExtension
+    extends GenericContainer<ReusableMinioContainerExtension>
+    implements AfterAllCallback, BeforeAllCallback {
   private static final String IMAGE_VERSION = "minio/minio:edge";
   private static final int MINIO_PORT = 9000;
   private static final String ENV_KEY_MINIO_ACCESS_KEY = "MINIO_ACCESS_KEY";
@@ -23,9 +26,9 @@ public class ReusableMinioContainer extends GenericContainer<ReusableMinioContai
   private static final String HEALTH_ENDPOINT = "/minio/health/ready";
   private static final Duration STARTUP_TIMEOUT = Duration.ofMinutes(2);
 
-  private static ReusableMinioContainer container;
+  private static ReusableMinioContainerExtension container;
 
-  private ReusableMinioContainer() {
+  private ReusableMinioContainerExtension() {
     super(IMAGE_VERSION);
     this.withExposedPorts(MINIO_PORT);
     this.withEnv(ENV_KEY_MINIO_ACCESS_KEY, ACCESS_KEY);
@@ -38,15 +41,15 @@ public class ReusableMinioContainer extends GenericContainer<ReusableMinioContai
             .withStartupTimeout(STARTUP_TIMEOUT));
   }
 
-  public static ReusableMinioContainer getInstance() {
+  public static ReusableMinioContainerExtension getInstance() {
     if (container == null) {
-      container = new ReusableMinioContainer();
+      container = new ReusableMinioContainerExtension();
     }
     return container;
   }
 
   @Override
-  public void start() {
+  public void beforeAll(ExtensionContext extensionContext) {
     super.start();
     System.setProperty(
         "MINIO_ENDPOINT",
@@ -56,7 +59,7 @@ public class ReusableMinioContainer extends GenericContainer<ReusableMinioContai
   }
 
   @Override
-  public void stop() {
+  public void afterAll(ExtensionContext extensionContext) {
     // container should stay alive until JVM shuts it down
   }
 }

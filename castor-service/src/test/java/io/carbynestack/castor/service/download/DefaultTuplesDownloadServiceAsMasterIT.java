@@ -11,7 +11,7 @@ import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TR
 import static io.carbynestack.castor.service.download.CreateReservationSupplier.FAILED_RESERVE_AMOUNT_TUPLES_EXCEPTION_MSG;
 import static io.carbynestack.castor.service.download.CreateReservationSupplier.SHARING_RESERVATION_FAILED_EXCEPTION_MSG;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -20,7 +20,6 @@ import io.carbynestack.castor.common.entities.*;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
-import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.config.MinioProperties;
 import io.carbynestack.castor.service.persistence.cache.ConsumptionCachingService;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
@@ -29,63 +28,57 @@ import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaData
 import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetadataRepository;
 import io.carbynestack.castor.service.persistence.tuplestore.MinioTupleStore;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
-import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
-import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
+import io.carbynestack.castor.service.testconfig.ReusableMinioContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusableRedisContainerExtension;
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
-import io.minio.errors.ErrorResponseException;
+import io.minio.errors.*;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.util.IterableUtil;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@Slf4j
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
-public class DefaultTuplesDownloadServiceAsMasterIT {
-  @ClassRule
-  public static ReusableRedisContainer reusableRedisContainer =
-      ReusableRedisContainer.getInstance();
+class DefaultTuplesDownloadServiceAsMasterIT {
+  @RegisterExtension
+  public static ReusableRedisContainerExtension reusableRedisContainer =
+      ReusableRedisContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  @RegisterExtension
+  public static ReusableMinioContainerExtension reusableMinioContainer =
+      ReusableMinioContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
-      ReusablePostgreSQLContainer.getInstance();
+  @RegisterExtension
+  public static ReusablePostgreSQLContainerExtension reusablePostgreSQLContainer =
+      ReusablePostgreSQLContainerExtension.getInstance();
 
   @Autowired private PersistenceTestEnvironment testEnvironment;
 
   @Autowired private CastorCacheProperties cacheProperties;
 
   @Autowired private CacheManager cacheManager;
-
-  @Autowired private ApplicationContext applicationContext;
 
   @Autowired private ConsumptionCachingService consumptionCachingService;
 
@@ -95,22 +88,17 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
 
   @Autowired private MinioProperties minioProperties;
 
-  @Autowired private CastorSlaveServiceProperties slaveServiceProperties;
-
-  @Autowired private DedicatedTransactionService dedicatedTransactionService;
-
-  private MinioTupleStore tupleStoreSpy;
-  private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageServiceSpy;
-  private ReservationCachingService reservationCachingServiceSpy;
-  private DefaultTuplesDownloadService tuplesDownloadService;
-  private CastorInterVcpClient interVcpClientSpy;
+  @SpyBean private MinioTupleStore tupleStoreSpy;
+  @SpyBean private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageServiceSpy;
+  @SpyBean private ReservationCachingService reservationCachingServiceSpy;
+  @SpyBean private DefaultTuplesDownloadService tuplesDownloadService;
+  @SpyBean private CastorInterVcpClient interVcpClientSpy;
 
   private Cache reservationCache;
   private Cache multiplicationTripleTelemetryCache;
 
-  @Before
+  @BeforeEach
   public void setUp() {
-    initialize();
     if (reservationCache == null) {
       reservationCache =
           Objects.requireNonNull(cacheManager.getCache(cacheProperties.getReservationStore()));
@@ -124,33 +112,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
     testEnvironment.clearAllData();
   }
 
-  /**
-   * We were facing multiple issues where {@link SpyBean}s were not successfully registered as spies
-   * and caused issues when verifying access ({@link
-   * org.mockito.exceptions.misusing.NotAMockException}). To workaround these issues we're now
-   * explicitly spying the manually accessed beans and inject these in a dedicated test {@link
-   * DefaultTuplesDownloadService}.
-   */
-  private void initialize() {
-    System.out.println("Initialize");
-    tupleStoreSpy = spy(new MinioTupleStore(minioClient, minioProperties));
-    tupleChunkMetaDataStorageServiceSpy =
-        spy(new TupleChunkMetaDataStorageService(tupleChunkMetadataRepository));
-    reservationCachingServiceSpy = spy(applicationContext.getBean(ReservationCachingService.class));
-    interVcpClientSpy = spy(applicationContext.getBean(CastorInterVcpClient.class));
-
-    tuplesDownloadService =
-        new DefaultTuplesDownloadService(
-            tupleStoreSpy,
-            tupleChunkMetaDataStorageServiceSpy,
-            reservationCachingServiceSpy,
-            slaveServiceProperties,
-            Optional.of(interVcpClientSpy),
-            Optional.of(dedicatedTransactionService));
-  }
-
   @Test
-  public void givenPersistingReservationFails_whenGetTuples_thenRollbackReservedMarkers() {
+  void givenPersistingReservationFails_whenGetTuples_thenRollbackReservedMarkers() {
     RuntimeException expectedException = new RuntimeException("expected");
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
@@ -178,7 +141,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   }
 
   @Test
-  public void givenMultipleChunksButNotEnoughTuples_whenGetTuples_thenRollbackAllMarkers() {
+  void givenMultipleChunksButNotEnoughTuples_whenGetTuples_thenRollbackAllMarkers() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId1 = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     UUID chunkId2 = UUID.fromString("0cb02fab-b951-4947-bed5-89fbe2f9581e");
@@ -213,9 +176,9 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
     assertEquals(chunk2MetaData, tupleChunkMetadataRepository.findById(chunkId2).get());
   }
 
-  @Ignore("Transactions are currently disabled for cache operations")
+  @Disabled("Transactions are currently disabled for cache operations")
   @Test
-  public void
+  void
       givenSharingReservationFails_whenGetTuples_thenRollbackReservationAndReservedMarkerUpdates() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
@@ -244,7 +207,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   }
 
   @Test
-  public void
+  void
       givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarkerButRemainConsumptionMarkerUntouched() {
     RuntimeException expectedException = new RuntimeException("expected");
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
@@ -296,10 +259,12 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
     assertEquals(initialMetaData.getConsumedMarker(), actualMetadata.getConsumedMarker());
   }
 
-  @SneakyThrows
   @Test
-  public void
-      givenSuccessfulRequestAndLastTuplesConsumed_whenGetTuples_thenReturnTuplesAndCleanupAccordingly() {
+  void
+      givenSuccessfulRequestAndLastTuplesConsumed_whenGetTuples_thenReturnTuplesAndCleanupAccordingly()
+          throws ServerException, InsufficientDataException, ErrorResponseException, IOException,
+              NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException,
+              XmlParserException, InternalException {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
