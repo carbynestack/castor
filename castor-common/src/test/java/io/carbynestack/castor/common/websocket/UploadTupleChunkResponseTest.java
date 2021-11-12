@@ -6,8 +6,7 @@
  */
 package io.carbynestack.castor.common.websocket;
 
-import static org.junit.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import java.util.UUID;
@@ -15,10 +14,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.jupiter.api.Test;
 
-public class UploadTupleChunkResponseTest {
+class UploadTupleChunkResponseTest {
 
   @Test
-  public void givenResponseWithSuccess_whenSerializationRoundTrip_thenRecoverActualResponse() {
+  void givenResponseWithSuccess_whenSerializationRoundTrip_thenRecoverActualResponse() {
     UUID expectedChunkId = UUID.randomUUID();
     byte[] request =
         SerializationUtils.serialize(UploadTupleChunkResponse.success(expectedChunkId));
@@ -30,7 +29,7 @@ public class UploadTupleChunkResponseTest {
   }
 
   @Test
-  public void givenInvalidPayload_whenDeserialize_thenThrowCastorClientException() {
+  void givenInvalidPayload_whenDeserialize_thenThrowCastorClientException() {
     UUID chunkId = UUID.randomUUID();
     byte[] payload = SerializationUtils.serialize(UploadTupleChunkResponse.success(chunkId));
     byte[] invalidPayload = ArrayUtils.subarray(payload, 0, payload.length - 1);
@@ -42,7 +41,7 @@ public class UploadTupleChunkResponseTest {
   }
 
   @Test
-  public void givenResponseWithFailure_whenSerializationRoundTrip_thenRecoverActualResponse() {
+  void givenResponseWithFailure_whenSerializationRoundTrip_thenRecoverActualResponse() {
     UUID expectedChunkId = UUID.randomUUID();
     String expectedErrorMsg = "Expected message";
     byte[] request =

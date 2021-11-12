@@ -9,7 +9,7 @@ package io.carbynestack.castor.common.entities;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -17,9 +17,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import org.junit.jupiter.api.Test;
 
-public class FieldTest {
+class FieldTest {
   @Test
-  public void givenFieldJsonStringForTypeGfp_whenDeserializingData_thenRecreateOrigin()
+  void givenFieldJsonStringForTypeGfp_whenDeserializingData_thenRecreateOrigin()
       throws JsonProcessingException {
     Field expectedField = Field.GFP;
     String fieldJsonString =
@@ -32,7 +32,7 @@ public class FieldTest {
   }
 
   @Test
-  public void givenFieldJsonStringForTypeGf2n_whenDeserializingData_thenRecreateOrigin()
+  void givenFieldJsonStringForTypeGf2n_whenDeserializingData_thenRecreateOrigin()
       throws JsonProcessingException {
     Field expectedField = Field.GF2N;
     String invalidGfpFieldJsonString =
@@ -45,7 +45,7 @@ public class FieldTest {
   }
 
   @Test
-  public void givenGf2nFieldJsonStringWithMissingName_whenDeserializingData_thenThrowException() {
+  void givenGf2nFieldJsonStringWithMissingName_whenDeserializingData_thenThrowException() {
     String invalidGfpFieldJsonString = "{\"@type\":\"Gf2n\",\"elementSize\":16}";
     ObjectMapper om = new ObjectMapper();
     MismatchedInputException mie =
@@ -56,8 +56,7 @@ public class FieldTest {
   }
 
   @Test
-  public void
-      givenGfpFieldJsonStringWithMissingElementSize_whenDeserializingData_thenThrowException() {
+  void givenGfpFieldJsonStringWithMissingElementSize_whenDeserializingData_thenThrowException() {
     String invalidGfpFieldJsonString = "{\"@type\":\"Gfp\",\"name\":\"gf2n\"}";
     ObjectMapper om = new ObjectMapper();
     MismatchedInputException mie =

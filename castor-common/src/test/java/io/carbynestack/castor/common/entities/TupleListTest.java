@@ -8,9 +8,7 @@
 package io.carbynestack.castor.common.entities;
 
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mockConstruction;
@@ -31,12 +29,11 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
-public class TupleListTest {
+class TupleListTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  public void givenValidInputStream_whenCreateFromStream_thenReturnExpectedTupleList()
-      throws IOException {
+  void givenValidInputStream_whenCreateFromStream_thenReturnExpectedTupleList() throws IOException {
     byte[][] tupleValueData =
         new byte[][] {
           RandomUtils.nextBytes(Field.GFP.getElementSize()),
@@ -62,7 +59,7 @@ public class TupleListTest {
   }
 
   @Test
-  public void givenJsonDoesNotContainRequiredMacValue_whenDeserializeFromJson_thenThrowException() {
+  void givenJsonDoesNotContainRequiredMacValue_whenDeserializeFromJson_thenThrowException() {
     String missingMacData =
         "{\"tupleCls\":\"InputMask\",\"field\":{\"@type\":\"Gfp\",\"name\":\"gfp\",\"elementSize\":128},\"tuples\":"
             + "[{\"@type\":\"InputMask\",\"field\":{\"@type\":\"Gfp\",\"name\":\"gfp\",\"elementSize\":128},\"shares\":[{\"value\":\"DuLIdi2fllkbdinOZKz0z7ZUbqJ5cWM18lp/csHjggMCXleMA5W5GRnEJ8QFTrDO++nm0XPWWQIiZwtT6/keSqqYwPA1EysyZbv8dPNhLWO6VxItSfzJO0hmaIdRnQkcXHKr0Fey0fS/p+n7KCwSwmo7mqEGjwmvFosaRffS+ro=\",\"mac\":\"z7X3Po2vlaju3y9QUzmfdSXfGkuJFA0ghD9tItY/1IOfgONREWsx5Dmifd9XQSQyKKpmugfTMe5OSYEjW7Nx2Mw7RbuxNiOK7gBqccrZPg5XIZfKhwfuiHH+SvjlgRBOOyTc0050msre3tEgd/hMALZ3DTplbOFMsoly80qvV24=\"}]},"
@@ -78,7 +75,7 @@ public class TupleListTest {
   }
 
   @Test
-  public void givenValidTupleList_whenJsonSerializationRoundTrip_thenRecoverInitialObject()
+  void givenValidTupleList_whenJsonSerializationRoundTrip_thenRecoverInitialObject()
       throws IOException {
     for (TupleType type : TupleType.values()) {
       byte[] tupleData =
@@ -99,8 +96,7 @@ public class TupleListTest {
   }
 
   @Test
-  public void givenEmptyTupleList_whenSerializationRoundTrip_thenRecoverExpectedList()
-      throws IOException {
+  void givenEmptyTupleList_whenSerializationRoundTrip_thenRecoverExpectedList() throws IOException {
     for (TupleType type : TupleType.values()) {
       TupleList expectedTupleList =
           TupleList.fromStream(
@@ -112,8 +108,7 @@ public class TupleListTest {
   }
 
   @Test
-  public void givenValidTupleList_whenExportAsChunk_thenReturnExpectedTupleChunk()
-      throws IOException {
+  void givenValidTupleList_whenExportAsChunk_thenReturnExpectedTupleChunk() throws IOException {
     UUID expectedUUID = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     byte[] tupleValueData = RandomUtils.nextBytes(Field.GFP.getElementSize());
     byte[] tupleMacData = RandomUtils.nextBytes(Field.GFP.getElementSize());
@@ -129,7 +124,7 @@ public class TupleListTest {
   }
 
   @Test
-  public void givenWritingToStreamThrowsException_whenExportAsChunk_thenRethrowIOException() {
+  void givenWritingToStreamThrowsException_whenExportAsChunk_thenRethrowIOException() {
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     byte[] tupleValueData = RandomUtils.nextBytes(Field.GFP.getElementSize());
     byte[] tupleMacData = RandomUtils.nextBytes(Field.GFP.getElementSize());

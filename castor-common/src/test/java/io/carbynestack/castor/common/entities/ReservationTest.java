@@ -12,7 +12,7 @@ import static io.carbynestack.castor.common.entities.Reservation.ONE_RESERVATION
 import static java.util.Collections.emptyList;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class ReservationTest {
+class ReservationTest {
   private final String testReservationId =
       "80fbba1b-3da8-4b1e-8a2c-cebd65229fad_MULTIPLICATION_TRIPLE_GFP";
   private final TupleType testTupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
@@ -38,7 +38,7 @@ public class ReservationTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  public void givenIdIsNull_whenCreate_thenThrowNullPointerException() {
+  void givenIdIsNull_whenCreate_thenThrowNullPointerException() {
     NullPointerException actualNpe =
         assertThrows(
             NullPointerException.class,
@@ -47,7 +47,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenIdIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
+  void givenIdIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
     IllegalArgumentException iae =
         assertThrows(
             IllegalArgumentException.class,
@@ -56,7 +56,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenReservationElementsIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
+  void givenReservationElementsIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
     List<ReservationElement> emptyReservations = emptyList();
     IllegalArgumentException iae =
         assertThrows(
@@ -66,7 +66,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject()
+  void givenValidJsonString_whenDeserialize_thenReturnExpectedObject()
       throws JsonProcessingException {
     ActivationStatus expectedStatus = ActivationStatus.UNLOCKED;
     String jsonString =
@@ -84,7 +84,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutReservationId_whenDeserialize_thenThrowJsonParseException()
+  void givenJsonStringWithoutReservationId_whenDeserialize_thenThrowJsonParseException()
       throws JsonProcessingException {
     String incompleteData =
         new ReservationJsonStringBuilder()
@@ -102,7 +102,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutReservations_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutReservations_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withReservationId(UUID.randomUUID().toString())
@@ -119,7 +119,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutTupleType_whenDeserialize_thenThrowJsonParseException()
+  void givenJsonStringWithoutTupleType_whenDeserialize_thenThrowJsonParseException()
       throws JsonProcessingException {
     String incompleteData =
         new ReservationJsonStringBuilder()
@@ -137,7 +137,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutStatus_whenDeserialize_thenThrowJsonParseException()
+  void givenJsonStringWithoutStatus_whenDeserialize_thenThrowJsonParseException()
       throws JsonProcessingException {
     String incompleteData =
         new ReservationJsonStringBuilder()

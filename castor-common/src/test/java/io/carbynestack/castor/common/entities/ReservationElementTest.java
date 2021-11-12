@@ -9,7 +9,7 @@ package io.carbynestack.castor.common.entities;
 
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,10 +19,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-public class ReservationElementTest {
+class ReservationElementTest {
   private final UUID testChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229");
   private final long testNumberOfTuples = 1200;
   private final long testStartIndex = 42;
@@ -30,7 +29,7 @@ public class ReservationElementTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  public void givenChunkIdIsNull_whenCreate_thenThrowNullPointerException() {
+  void givenChunkIdIsNull_whenCreate_thenThrowNullPointerException() {
     NullPointerException actualNpe =
         assertThrows(
             NullPointerException.class,
@@ -39,26 +38,26 @@ public class ReservationElementTest {
   }
 
   @Test
-  public void givenNumberOfTuplesIsZero_whenCreate_thenThrowIllegalArgumentException() {
+  void givenNumberOfTuplesIsZero_whenCreate_thenThrowIllegalArgumentException() {
     IllegalArgumentException iae =
         assertThrows(
             IllegalArgumentException.class,
             () -> new ReservationElement(testChunkId, 0, testStartIndex));
-    Assert.assertEquals(ReservationElement.MUST_RESERVE_TUPLES_EXCEPTION_MSG, iae.getMessage());
+    assertEquals(ReservationElement.MUST_RESERVE_TUPLES_EXCEPTION_MSG, iae.getMessage());
   }
 
   @Test
-  public void givenStartIndexIsNegative_whenCreate_thenThrowIllegalArgumentException() {
+  void givenStartIndexIsNegative_whenCreate_thenThrowIllegalArgumentException() {
     IllegalArgumentException iae =
         assertThrows(
             IllegalArgumentException.class,
             () -> new ReservationElement(testChunkId, testNumberOfTuples, -1));
-    Assert.assertEquals(
+    assertEquals(
         ReservationElement.START_INDEX_MUST_NOT_BE_NEGATIVE_EXCEPTION_MSG, iae.getMessage());
   }
 
   @Test
-  public void givenJsonStringWithoutTupleChunkId_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutTupleChunkId_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationElementJsonStringBuilder()
             .withReservedTuples(testNumberOfTuples)
@@ -74,8 +73,7 @@ public class ReservationElementTest {
   }
 
   @Test
-  public void
-      givenJsonStringWithoutNumberOfTripleShares_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutNumberOfTripleShares_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationElementJsonStringBuilder()
             .withTupleChunkId(testChunkId)
@@ -92,7 +90,7 @@ public class ReservationElementTest {
   }
 
   @Test
-  public void givenJsonStringWithoutStartIndex_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutStartIndex_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationElementJsonStringBuilder()
             .withTupleChunkId(testChunkId)
@@ -108,7 +106,7 @@ public class ReservationElementTest {
   }
 
   @Test
-  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject()
+  void givenValidJsonString_whenDeserialize_thenReturnExpectedObject()
       throws JsonProcessingException {
     String data =
         new ReservationElementJsonStringBuilder()
