@@ -38,7 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @ExtendWith(MockitoExtension.class)
-public class DefaultCastorUploadClientTest {
+class DefaultCastorUploadClientTest {
 
   private WebSocketClient webSocketClientMock;
   private BearerTokenProvider bearerTokenProviderMock;

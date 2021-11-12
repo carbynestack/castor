@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.springframework.messaging.simp.stomp.StompSession;
 
-public class WebSocketSessionHandlerTest {
+class WebSocketSessionHandlerTest {
   private WebSocketClient webSocketClientMock;
   private WebSocketSessionHandler webSocketSessionHandler;
 
