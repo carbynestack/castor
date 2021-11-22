@@ -10,8 +10,7 @@ package io.carbynestack.castor.common.entities;
 import static io.carbynestack.castor.common.entities.Reservation.ID_MUST_NOT_BE_NULL_OR_EMPTY_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.entities.Reservation.ONE_RESERVATION_ELEMENT_REQUIRED_EXCEPTION_MSG;
 import static java.util.Collections.emptyList;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -97,8 +96,8 @@ class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'reservationId'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'reservationId'");
   }
 
   @Test
@@ -114,8 +113,8 @@ class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'reservations'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'reservations'");
   }
 
   @Test
@@ -132,8 +131,8 @@ class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'tupleType'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'tupleType'");
   }
 
   @Test
@@ -150,7 +149,7 @@ class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(actualJpeMie.getMessage(), startsWith("Missing required creator property 'status'"));
+    assertThat(actualJpeMie.getMessage()).startsWith("Missing required creator property 'status'");
   }
 
   private static class ReservationJsonStringBuilder {

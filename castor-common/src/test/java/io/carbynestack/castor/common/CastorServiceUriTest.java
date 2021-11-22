@@ -10,8 +10,7 @@ package io.carbynestack.castor.common;
 import static io.carbynestack.castor.common.CastorServiceUri.INVALID_SERVICE_ADDRESS_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.CastorServiceUri.MUST_NOT_BE_EMPTY_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.rest.CastorRestApiEndpoints.*;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -19,7 +18,6 @@ import io.carbynestack.castor.common.entities.TupleType;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
-import org.hamcrest.junit.MatcherAssert;
 import org.junit.jupiter.api.Test;
 
 class CastorServiceUriTest {
@@ -112,12 +110,11 @@ class CastorServiceUriTest {
     URI actualRequestTuplesUri =
         serviceUri.getIntraVcpRequestTuplesUri(requestId, tupleType, count);
     assertEquals(INTRA_VCP_OPERATIONS_SEGMENT + TUPLES_ENDPOINT, actualRequestTuplesUri.getPath());
-    MatcherAssert.assertThat(
-        actualRequestTuplesUri.getQuery(),
-        allOf(
-            containsString(DOWNLOAD_COUNT_PARAMETER + "=" + count),
-            containsString(DOWNLOAD_REQUEST_ID_PARAMETER + "=" + requestId),
-            containsString(DOWNLOAD_TUPLE_TYPE_PARAMETER + "=" + tupleType.name())));
+    assertThat(actualRequestTuplesUri.getQuery())
+        .contains(
+            DOWNLOAD_COUNT_PARAMETER + "=" + count,
+            DOWNLOAD_REQUEST_ID_PARAMETER + "=" + requestId,
+            DOWNLOAD_TUPLE_TYPE_PARAMETER + "=" + tupleType.name());
   }
 
   @Test
@@ -127,9 +124,7 @@ class CastorServiceUriTest {
     URI actualRequestTelemetryUri = serviceUri.getRequestTelemetryUri(interval);
     assertEquals(
         INTRA_VCP_OPERATIONS_SEGMENT + TELEMETRY_ENDPOINT, actualRequestTelemetryUri.getPath());
-    MatcherAssert.assertThat(
-        actualRequestTelemetryUri.getQuery(),
-        allOf(containsString(TELEMETRY_INTERVAL + "=" + interval)));
+    assertThat(actualRequestTelemetryUri.getQuery()).contains(TELEMETRY_INTERVAL + "=" + interval);
   }
 
   @Test

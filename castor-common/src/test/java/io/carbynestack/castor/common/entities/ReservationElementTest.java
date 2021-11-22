@@ -7,8 +7,7 @@
 
 package io.carbynestack.castor.common.entities;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -68,8 +67,8 @@ class ReservationElementTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, ReservationElement.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'tupleChunkId'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'tupleChunkId'");
   }
 
   @Test
@@ -84,9 +83,8 @@ class ReservationElementTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, ReservationElement.class));
-    assertThat(
-        actualJpeMie.getMessage(),
-        startsWith("Missing required creator property 'reservedTuples'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'reservedTuples'");
   }
 
   @Test
@@ -101,8 +99,8 @@ class ReservationElementTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, ReservationElement.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'startIndex'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'startIndex'");
   }
 
   @Test

@@ -7,8 +7,7 @@
 
 package io.carbynestack.castor.common.entities;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -52,7 +51,7 @@ class FieldTest {
         assertThrows(
             MismatchedInputException.class,
             () -> om.readerFor(Field.class).readValue(invalidGfpFieldJsonString));
-    assertThat(mie.getMessage(), startsWith("Missing required creator property 'name'"));
+    assertThat(mie.getMessage()).startsWith("Missing required creator property 'name'");
   }
 
   @Test
@@ -63,6 +62,6 @@ class FieldTest {
         assertThrows(
             MismatchedInputException.class,
             () -> om.readerFor(Field.class).readValue(invalidGfpFieldJsonString));
-    assertThat(mie.getMessage(), startsWith("Missing required creator property 'elementSize'"));
+    assertThat(mie.getMessage()).startsWith("Missing required creator property 'elementSize'");
   }
 }

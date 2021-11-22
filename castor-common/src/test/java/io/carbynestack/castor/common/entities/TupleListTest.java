@@ -7,7 +7,7 @@
 
 package io.carbynestack.castor.common.entities;
 
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -24,8 +24,7 @@ import java.util.UUID;
 import java.util.stream.IntStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
+import org.assertj.core.util.Lists;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
@@ -53,9 +52,8 @@ class TupleListTest {
             TupleType.BIT_GFP.getField(),
             new ByteArrayInputStream(tupleData),
             tupleData.length);
-    MatcherAssert.assertThat(
-        (TupleList<Bit<Field.Gfp>, Field.Gfp>) actualTupleList,
-        Matchers.containsInRelativeOrder(expectedTuple1, expectedTuple2));
+    assertThat((TupleList<Bit<Field.Gfp>, Field.Gfp>) actualTupleList)
+        .containsExactlyElementsOf(Lists.list(expectedTuple1, expectedTuple2));
   }
 
   @Test
@@ -70,8 +68,7 @@ class TupleListTest {
         assertThrows(
             JsonMappingException.class,
             () -> objectMapper.readValue(missingMacData, TupleList.class));
-    MatcherAssert.assertThat(
-        jme.getMessage(), startsWith("Missing required creator property 'mac'"));
+    assertThat(jme.getMessage()).startsWith("Missing required creator property 'mac'");
   }
 
   @Test
