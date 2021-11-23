@@ -17,7 +17,7 @@
          <name>Apache Commons Codec</name>
          <groupId>commons-codec</groupId>
          <artifactId>commons-codec</artifactId>
-         <version>1.13</version>
+         <version>1.15</version>
          <projectUrl>https://commons.apache.org/proper/commons-codec/</projectUrl>
          <licenses>
             <license>
@@ -43,8 +43,8 @@
          <name>Apache Commons Lang</name>
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-lang3</artifactId>
-         <version>3.9</version>
-         <projectUrl>http://commons.apache.org/proper/commons-lang/</projectUrl>
+         <version>3.12.0</version>
+         <projectUrl>https://commons.apache.org/proper/commons-lang/</projectUrl>
          <licenses>
             <license>
                <name>Apache License, Version 2.0</name>
@@ -69,7 +69,7 @@
          <name>Apache Commons Pool</name>
          <groupId>org.apache.commons</groupId>
          <artifactId>commons-pool2</artifactId>
-         <version>2.7.0</version>
+         <version>2.9.0</version>
          <projectUrl>https://commons.apache.org/proper/commons-pool/</projectUrl>
          <licenses>
             <license>
@@ -82,7 +82,7 @@
          <name>Apache HttpClient</name>
          <groupId>org.apache.httpcomponents</groupId>
          <artifactId>httpclient</artifactId>
-         <version>4.5.10</version>
+         <version>4.5.13</version>
          <projectUrl>http://hc.apache.org/httpcomponents-client</projectUrl>
          <licenses>
             <license>
@@ -95,7 +95,7 @@
          <name>Apache HttpCore</name>
          <groupId>org.apache.httpcomponents</groupId>
          <artifactId>httpcore</artifactId>
-         <version>4.4.13</version>
+         <version>4.4.14</version>
          <projectUrl>http://hc.apache.org/httpcomponents-core-ga</projectUrl>
          <licenses>
             <license>
@@ -134,7 +134,7 @@
          <name>Apache Log4j JUL Adapter</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-jul</artifactId>
-         <version>2.12.1</version>
+         <version>2.14.1</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-jul/</projectUrl>
          <licenses>
             <license>
@@ -173,7 +173,7 @@
          <name>Byte Buddy (without dependencies)</name>
          <groupId>net.bytebuddy</groupId>
          <artifactId>byte-buddy</artifactId>
-         <version>1.10.6</version>
+         <version>1.10.22</version>
          <projectUrl>https://bytebuddy.net/byte-buddy</projectUrl>
          <licenses>
             <license>
@@ -234,7 +234,7 @@
          <name>Checker Qual</name>
          <groupId>org.checkerframework</groupId>
          <artifactId>checker-qual</artifactId>
-         <version>2.11.1</version>
+         <version>3.5.0</version>
          <projectUrl>https://checkerframework.org</projectUrl>
          <licenses>
             <license>
@@ -260,7 +260,7 @@
          <name>dom4j</name>
          <groupId>org.dom4j</groupId>
          <artifactId>dom4j</artifactId>
-         <version>2.1.1</version>
+         <version>2.1.3</version>
          <projectUrl>http://dom4j.github.io/</projectUrl>
          <licenses>
             <license>
@@ -279,36 +279,6 @@
             <license>
                <name>Apache 2.0</name>
                <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Extended StAX API</name>
-         <groupId>org.jvnet.staxex</groupId>
-         <artifactId>stax-ex</artifactId>
-         <version>1.8.1</version>
-         <projectUrl>https://projects.eclipse.org/projects/ee4j/stax-ex</projectUrl>
-         <licenses>
-            <license>
-               <name>Eclipse Distribution License - v 1.0</name>
-               <url>http://www.eclipse.org/org/documents/edl-v10.php</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>fastinfoset</name>
-         <groupId>com.sun.xml.fastinfoset</groupId>
-         <artifactId>FastInfoset</artifactId>
-         <version>1.2.16</version>
-         <projectUrl>https://projects.eclipse.org/projects/ee4j.jaxb-impl/FastInfoset</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>http://www.opensource.org/licenses/apache2.0.php</url>
-            </license>
-            <license>
-               <name>Eclipse Distribution License - v 1.0</name>
-               <url>http://www.eclipse.org/org/documents/edl-v10.php</url>
             </license>
          </licenses>
       </dependency>
@@ -355,7 +325,7 @@
          <name>Guava: Google Core Libraries for Java</name>
          <groupId>com.google.guava</groupId>
          <artifactId>guava</artifactId>
-         <version>29.0-jre</version>
+         <version>30.0-jre</version>
          <projectUrl>https://github.com/google/guava/guava</projectUrl>
          <licenses>
             <license>
@@ -368,7 +338,7 @@
          <name>HdrHistogram</name>
          <groupId>org.hdrhistogram</groupId>
          <artifactId>HdrHistogram</artifactId>
-         <version>2.1.11</version>
+         <version>2.1.12</version>
          <projectUrl>http://hdrhistogram.github.io/HdrHistogram/</projectUrl>
          <licenses>
             <license>
@@ -385,7 +355,7 @@
          <name>Hibernate Commons Annotations</name>
          <groupId>org.hibernate.common</groupId>
          <artifactId>hibernate-commons-annotations</artifactId>
-         <version>5.1.0.Final</version>
+         <version>5.1.2.Final</version>
          <projectUrl>http://hibernate.org</projectUrl>
          <licenses>
             <license>
@@ -398,7 +368,7 @@
          <name>Hibernate ORM - hibernate-core</name>
          <groupId>org.hibernate</groupId>
          <artifactId>hibernate-core</artifactId>
-         <version>5.4.10.Final</version>
+         <version>5.4.32.Final</version>
          <projectUrl>http://hibernate.org/orm</projectUrl>
          <licenses>
             <license>
@@ -408,23 +378,10 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>Hibernate Validator Engine</name>
-         <groupId>org.hibernate.validator</groupId>
-         <artifactId>hibernate-validator</artifactId>
-         <version>6.0.18.Final</version>
-         <projectUrl>http://hibernate.org/validator/hibernate-validator</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>HikariCP</name>
          <groupId>com.zaxxer</groupId>
          <artifactId>HikariCP</artifactId>
-         <version>3.4.2</version>
+         <version>4.0.3</version>
          <projectUrl>https://github.com/brettwooldridge/HikariCP</projectUrl>
          <licenses>
             <license>
@@ -437,7 +394,7 @@
          <name>istack common utility code runtime</name>
          <groupId>com.sun.istack</groupId>
          <artifactId>istack-commons-runtime</artifactId>
-         <version>3.0.8</version>
+         <version>3.0.12</version>
          <projectUrl>https://projects.eclipse.org/projects/ee4j/istack-commons/istack-commons-runtime</projectUrl>
          <licenses>
             <license>
@@ -463,7 +420,7 @@
          <name>Jackson datatype: jdk8</name>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-jdk8</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.5</version>
          <projectUrl>https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8</projectUrl>
          <licenses>
             <license>
@@ -476,7 +433,7 @@
          <name>Jackson datatype: JSR310</name>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-jsr310</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.5</version>
          <projectUrl>https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310</projectUrl>
          <licenses>
             <license>
@@ -489,7 +446,7 @@
          <name>Jackson-annotations</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.5</version>
          <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
@@ -502,7 +459,7 @@
          <name>Jackson-core</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.5</version>
          <projectUrl>https://github.com/FasterXML/jackson-core</projectUrl>
          <licenses>
             <license>
@@ -515,7 +472,7 @@
          <name>jackson-databind</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.5</version>
          <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
@@ -528,12 +485,38 @@
          <name>Jackson-module-parameter-names</name>
          <groupId>com.fasterxml.jackson.module</groupId>
          <artifactId>jackson-module-parameter-names</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.5</version>
          <projectUrl>https://github.com/FasterXML/jackson-modules-java8/jackson-module-parameter-names</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
                <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>Jakarta Activation</name>
+         <groupId>com.sun.activation</groupId>
+         <artifactId>jakarta.activation</artifactId>
+         <version>1.2.2</version>
+         <projectUrl>https://github.com/eclipse-ee4j/jaf/jakarta.activation</projectUrl>
+         <licenses>
+            <license>
+               <name>EDL 1.0</name>
+               <url>http://www.eclipse.org/org/documents/edl-v10.php</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>Jakarta Activation API jar</name>
+         <groupId>jakarta.activation</groupId>
+         <artifactId>jakarta.activation-api</artifactId>
+         <version>1.2.2</version>
+         <projectUrl>https://github.com/eclipse-ee4j/jaf/jakarta.activation-api</projectUrl>
+         <licenses>
+            <license>
+               <name>EDL 1.0</name>
+               <url>http://www.eclipse.org/org/documents/edl-v10.php</url>
             </license>
          </licenses>
       </dependency>
@@ -555,19 +538,6 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>Jakarta Bean Validation API</name>
-         <groupId>jakarta.validation</groupId>
-         <artifactId>jakarta.validation-api</artifactId>
-         <version>2.0.2</version>
-         <projectUrl>https://beanvalidation.org</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>Jakarta Persistence API</name>
          <groupId>jakarta.persistence</groupId>
          <artifactId>jakarta.persistence-api</artifactId>
@@ -585,10 +555,10 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>jakarta.xml.bind-api</name>
+         <name>Jakarta XML Binding API</name>
          <groupId>jakarta.xml.bind</groupId>
          <artifactId>jakarta.xml.bind-api</artifactId>
-         <version>2.3.2</version>
+         <version>2.3.3</version>
          <projectUrl>https://github.com/eclipse-ee4j/jaxb-api/jakarta.xml.bind-api</projectUrl>
          <licenses>
             <license>
@@ -601,7 +571,7 @@
          <name>Java Annotation Indexer</name>
          <groupId>org.jboss</groupId>
          <artifactId>jandex</artifactId>
-         <version>2.1.1.Final</version>
+         <version>2.2.3.Final</version>
          <projectUrl>http://www.jboss.org/jandex</projectUrl>
          <licenses>
             <license>
@@ -611,23 +581,10 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>JavaBeans Activation Framework API jar</name>
-         <groupId>jakarta.activation</groupId>
-         <artifactId>jakarta.activation-api</artifactId>
-         <version>1.2.1</version>
-         <projectUrl>https://github.com/eclipse-ee4j/jaf/jakarta.activation-api</projectUrl>
-         <licenses>
-            <license>
-               <name>EDL 1.0</name>
-               <url>http://www.eclipse.org/org/documents/edl-v10.php</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>Javassist</name>
          <groupId>org.javassist</groupId>
          <artifactId>javassist</artifactId>
-         <version>3.24.0-GA</version>
+         <version>3.27.0-GA</version>
          <projectUrl>http://www.javassist.org/</projectUrl>
          <licenses>
             <license>
@@ -665,8 +622,8 @@
          <name>JAXB Runtime</name>
          <groupId>org.glassfish.jaxb</groupId>
          <artifactId>jaxb-runtime</artifactId>
-         <version>2.3.2</version>
-         <projectUrl>https://javaee.github.io/jaxb-v2/jaxb-runtime-parent/jaxb-runtime/</projectUrl>
+         <version>2.3.5</version>
+         <projectUrl>https://eclipse-ee4j.github.io/jaxb-ri/</projectUrl>
          <licenses>
             <license>
                <name>Eclipse Distribution License - v 1.0</name>
@@ -678,7 +635,7 @@
          <name>JBoss Logging 3</name>
          <groupId>org.jboss.logging</groupId>
          <artifactId>jboss-logging</artifactId>
-         <version>3.4.1.Final</version>
+         <version>3.4.2.Final</version>
          <projectUrl>http://www.jboss.org</projectUrl>
          <licenses>
             <license>
@@ -691,12 +648,12 @@
          <name>Jedis</name>
          <groupId>redis.clients</groupId>
          <artifactId>jedis</artifactId>
-         <version>3.2.0</version>
-         <projectUrl>https://github.com/xetorthio/jedis</projectUrl>
+         <version>3.6.3</version>
+         <projectUrl>https://github.com/redis/jedis</projectUrl>
          <licenses>
             <license>
                <name>MIT</name>
-               <url>http://github.com/xetorthio/jedis/raw/master/LICENSE.txt</url>
+               <url>http://github.com/redis/jedis/raw/master/LICENSE.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -704,7 +661,7 @@
          <name>JUL to SLF4J bridge</name>
          <groupId>org.slf4j</groupId>
          <artifactId>jul-to-slf4j</artifactId>
-         <version>1.7.30</version>
+         <version>1.7.32</version>
          <projectUrl>http://www.slf4j.org</projectUrl>
          <licenses>
             <license>
@@ -730,7 +687,7 @@
          <name>micrometer-core</name>
          <groupId>io.micrometer</groupId>
          <artifactId>micrometer-core</artifactId>
-         <version>1.3.2</version>
+         <version>1.7.5</version>
          <projectUrl>https://github.com/micrometer-metrics/micrometer</projectUrl>
          <licenses>
             <license>
@@ -756,7 +713,7 @@
          <name>OkHttp</name>
          <groupId>com.squareup.okhttp3</groupId>
          <artifactId>okhttp</artifactId>
-         <version>3.14.6</version>
+         <version>3.14.9</version>
          <projectUrl>https://github.com/square/okhttp/okhttp</projectUrl>
          <licenses>
             <license>
@@ -795,7 +752,7 @@
          <name>Project Lombok</name>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.18.18</version>
+         <version>1.18.20</version>
          <projectUrl>https://projectlombok.org</projectUrl>
          <licenses>
             <license>
@@ -834,7 +791,7 @@
          <name>SnakeYAML</name>
          <groupId>org.yaml</groupId>
          <artifactId>snakeyaml</artifactId>
-         <version>1.25</version>
+         <version>1.28</version>
          <projectUrl>http://www.snakeyaml.org</projectUrl>
          <licenses>
             <license>
@@ -847,7 +804,7 @@
          <name>Spring AOP</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-aop</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -860,7 +817,7 @@
          <name>Spring Aspects</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-aspects</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -873,216 +830,8 @@
          <name>Spring Beans</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-beans</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Actuator</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-actuator</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-actuator</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Actuator AutoConfigure</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-actuator-autoconfigure</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-actuator-autoconfigure</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Actuator Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-actuator</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-actuator</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot AOP Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-aop</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-aop</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot AutoConfigure</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-autoconfigure</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-autoconfigure</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Configuration Processor</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-configuration-processor</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-tools/spring-boot-configuration-processor</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Data JPA Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-data-jpa</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-data-jpa</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot JDBC Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-jdbc</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-jdbc</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Json Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-json</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-json</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Log4j 2 Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-log4j2</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-log4j2</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Tomcat Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-tomcat</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-tomcat</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Validation Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-validation</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-validation</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot Web Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-web</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-web</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
-         <name>Spring Boot WebSocket Starter</name>
-         <groupId>org.springframework.boot</groupId>
-         <artifactId>spring-boot-starter-websocket</artifactId>
-         <version>2.2.4.RELEASE</version>
-         <projectUrl>https://projects.spring.io/spring-boot/#/spring-boot-parent/spring-boot-starters/spring-boot-starter-websocket</projectUrl>
          <licenses>
             <license>
                <name>Apache License, Version 2.0</name>
@@ -1094,7 +843,7 @@
          <name>Spring Commons Logging Bridge</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-jcl</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1107,7 +856,7 @@
          <name>Spring Context</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-context</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1120,7 +869,7 @@
          <name>Spring Context Support</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-context-support</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1133,7 +882,7 @@
          <name>Spring Core</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-core</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1146,7 +895,7 @@
          <name>Spring Data Core</name>
          <groupId>org.springframework.data</groupId>
          <artifactId>spring-data-commons</artifactId>
-         <version>2.2.4.RELEASE</version>
+         <version>2.5.6</version>
          <projectUrl>https://www.spring.io/spring-data/spring-data-commons</projectUrl>
          <licenses>
             <license>
@@ -1159,7 +908,7 @@
          <name>Spring Data JPA</name>
          <groupId>org.springframework.data</groupId>
          <artifactId>spring-data-jpa</artifactId>
-         <version>2.2.4.RELEASE</version>
+         <version>2.5.6</version>
          <projectUrl>https://projects.spring.io/spring-data-jpa</projectUrl>
          <licenses>
             <license>
@@ -1172,7 +921,7 @@
          <name>Spring Data KeyValue</name>
          <groupId>org.springframework.data</groupId>
          <artifactId>spring-data-keyvalue</artifactId>
-         <version>2.2.4.RELEASE</version>
+         <version>2.5.6</version>
          <projectUrl>https://www.spring.io/spring-data/spring-data-keyvalue</projectUrl>
          <licenses>
             <license>
@@ -1185,7 +934,7 @@
          <name>Spring Data Redis</name>
          <groupId>org.springframework.data</groupId>
          <artifactId>spring-data-redis</artifactId>
-         <version>2.2.4.RELEASE</version>
+         <version>2.5.6</version>
          <projectUrl>https://www.spring.io/spring-data/spring-data-redis</projectUrl>
          <licenses>
             <license>
@@ -1198,7 +947,7 @@
          <name>Spring Expression Language (SpEL)</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-expression</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1211,7 +960,7 @@
          <name>Spring JDBC</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-jdbc</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1224,7 +973,7 @@
          <name>Spring Messaging</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-messaging</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1237,7 +986,7 @@
          <name>Spring Object/Relational Mapping</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-orm</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1250,7 +999,7 @@
          <name>Spring Object/XML Marshalling</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-oxm</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1276,7 +1025,7 @@
          <name>Spring Transaction</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-tx</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1289,7 +1038,7 @@
          <name>Spring Web</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-web</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1302,7 +1051,7 @@
          <name>Spring Web MVC</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-webmvc</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
          <licenses>
             <license>
@@ -1315,8 +1064,203 @@
          <name>Spring WebSocket</name>
          <groupId>org.springframework</groupId>
          <artifactId>spring-websocket</artifactId>
-         <version>5.2.3.RELEASE</version>
+         <version>5.3.12</version>
          <projectUrl>https://github.com/spring-projects/spring-framework</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-actuator</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-actuator</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-actuator-autoconfigure</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-actuator-autoconfigure</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-autoconfigure</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-autoconfigure</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-configuration-processor</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-configuration-processor</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-actuator</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-actuator</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-aop</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-aop</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-data-jpa</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-data-jpa</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-jdbc</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-jdbc</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-json</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-json</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-log4j2</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-log4j2</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-tomcat</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-tomcat</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-web</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-web</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-boot-starter-websocket</name>
+         <groupId>org.springframework.boot</groupId>
+         <artifactId>spring-boot-starter-websocket</artifactId>
+         <version>2.5.6</version>
+         <projectUrl>https://spring.io/projects/spring-boot</projectUrl>
          <licenses>
             <license>
                <name>Apache License, Version 2.0</name>
@@ -1328,12 +1272,25 @@
          <name>spring-security-core</name>
          <groupId>org.springframework.security</groupId>
          <artifactId>spring-security-core</artifactId>
-         <version>5.2.1.RELEASE</version>
-         <projectUrl>http://spring.io/spring-security</projectUrl>
+         <version>5.5.3</version>
+         <projectUrl>https://spring.io/projects/spring-security</projectUrl>
          <licenses>
             <license>
-               <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>spring-security-crypto</name>
+         <groupId>org.springframework.security</groupId>
+         <artifactId>spring-security-crypto</artifactId>
+         <version>5.5.3</version>
+         <projectUrl>https://spring.io/projects/spring-security</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
             </license>
          </licenses>
       </dependency>
@@ -1341,12 +1298,12 @@
          <name>spring-security-web</name>
          <groupId>org.springframework.security</groupId>
          <artifactId>spring-security-web</artifactId>
-         <version>5.2.1.RELEASE</version>
-         <projectUrl>http://spring.io/spring-security</projectUrl>
+         <version>5.5.3</version>
+         <projectUrl>https://spring.io/projects/spring-security</projectUrl>
          <licenses>
             <license>
-               <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0</url>
             </license>
          </licenses>
       </dependency>
@@ -1354,7 +1311,7 @@
          <name>tomcat-embed-core</name>
          <groupId>org.apache.tomcat.embed</groupId>
          <artifactId>tomcat-embed-core</artifactId>
-         <version>9.0.30</version>
+         <version>9.0.54</version>
          <projectUrl>https://tomcat.apache.org/</projectUrl>
          <licenses>
             <license>
@@ -1367,7 +1324,7 @@
          <name>tomcat-embed-el</name>
          <groupId>org.apache.tomcat.embed</groupId>
          <artifactId>tomcat-embed-el</artifactId>
-         <version>9.0.30</version>
+         <version>9.0.54</version>
          <projectUrl>https://tomcat.apache.org/</projectUrl>
          <licenses>
             <license>
@@ -1380,7 +1337,7 @@
          <name>tomcat-embed-websocket</name>
          <groupId>org.apache.tomcat.embed</groupId>
          <artifactId>tomcat-embed-websocket</artifactId>
-         <version>9.0.30</version>
+         <version>9.0.54</version>
          <projectUrl>https://tomcat.apache.org/</projectUrl>
          <licenses>
             <license>
@@ -1393,8 +1350,8 @@
          <name>TXW2 Runtime</name>
          <groupId>org.glassfish.jaxb</groupId>
          <artifactId>txw2</artifactId>
-         <version>2.3.2</version>
-         <projectUrl>https://javaee.github.io/jaxb-v2/jaxb-txw-parent/txw2/</projectUrl>
+         <version>2.3.5</version>
+         <projectUrl>https://eclipse-ee4j.github.io/jaxb-ri/</projectUrl>
          <licenses>
             <license>
                <name>Eclipse Distribution License - v 1.0</name>

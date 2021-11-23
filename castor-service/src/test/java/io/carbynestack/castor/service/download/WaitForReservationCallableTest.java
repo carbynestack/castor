@@ -7,8 +7,8 @@
 
 package io.carbynestack.castor.service.download;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.ActivationStatus;
@@ -16,22 +16,22 @@ import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 @Slf4j
-@RunWith(MockitoJUnitRunner.class)
-public class WaitForReservationCallableTest {
+@ExtendWith(MockitoExtension.class)
+class WaitForReservationCallableTest {
   @Mock private ReservationCachingService reservationCachingServiceMock;
 
   private final String reservationId = "reservationId";
 
   @Test
-  public void givenNoReservationRetrievedAndCancelled_whenCall_thenReturnNull() {
+  void givenNoReservationRetrievedAndCancelled_whenCall_thenReturnNull() {
     int retries = 1;
     WaitForReservationCallable wfrc =
         new WaitForReservationCallable(reservationId, reservationCachingServiceMock, 0);
@@ -42,7 +42,7 @@ public class WaitForReservationCallableTest {
   }
 
   @Test
-  public void givenReservationLockedInitially_whenCall_thenWaitUntilUnlockedAndReturnReservation() {
+  void givenReservationLockedInitially_whenCall_thenWaitUntilUnlockedAndReturnReservation() {
     int retries = 2;
     Reservation expectedReservation = mock(Reservation.class);
     WaitForReservationCallable wfrc =

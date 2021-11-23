@@ -8,7 +8,7 @@
 package io.carbynestack.castor.service.download;
 
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,14 +18,14 @@ import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
 import java.util.UUID;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class UpdateReservationSupplierTest {
+@ExtendWith(MockitoExtension.class)
+class UpdateReservationSupplierTest {
   @Mock private CastorInterVcpClient castorInterVcpClientMock;
   @Mock private ReservationCachingService reservationCachingServiceMock;
   @Mock private Reservation reservationMock;
@@ -33,7 +33,7 @@ public class UpdateReservationSupplierTest {
   @InjectMocks UpdateReservationSupplier updateReservationSupplier;
 
   @Test
-  public void givenSuccessfulRequest_whenGet_thenSetStatusToUnlockedAndPropagate() {
+  void givenSuccessfulRequest_whenGet_thenSetStatusToUnlockedAndPropagate() {
     UUID requestId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
     TupleType tupleType = INPUT_MASK_GFP;
     String reservationId = requestId + "_" + tupleType;

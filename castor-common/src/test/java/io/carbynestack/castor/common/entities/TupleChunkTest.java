@@ -9,18 +9,18 @@ package io.carbynestack.castor.common.entities;
 
 import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.common.entities.TupleChunk.INVALID_DATA_LENGTH_EXCEPTION_MSG;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import java.util.UUID;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TupleChunkTest {
+class TupleChunkTest {
 
   @Test
-  public void givenValidAttributes_whenCreate_thenReturnExpectedChunk() {
+  void givenValidAttributes_whenCreate_thenReturnExpectedChunk() {
     TupleType expectedTupleType = TupleType.BIT_GFP;
     UUID expectedUUID = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     byte[] expectedTupleData =
@@ -38,7 +38,7 @@ public class TupleChunkTest {
   }
 
   @Test
-  public void givenDataOfInvalidLength_whenCreate_thenThrowCastorClientException() {
+  void givenDataOfInvalidLength_whenCreate_thenThrowCastorClientException() {
     TupleType tupleType = TupleType.BIT_GFP;
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     byte[] invalidTupleData =

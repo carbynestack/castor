@@ -8,7 +8,7 @@
 package io.carbynestack.castor.service.download;
 
 import static io.carbynestack.castor.common.entities.TupleType.*;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -20,22 +20,21 @@ import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaData
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TelemetryServiceTest {
+@ExtendWith(MockitoExtension.class)
+class TelemetryServiceTest {
   @Mock private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageServiceMock;
   @Mock private ConsumptionCachingService consumptionCachingServiceMock;
 
   @InjectMocks private TelemetryService telemetryService;
 
   @Test
-  public void
-      givenSuccessfulRequest_whenGetTelemetryDataForInterval_thenReturnExpectedTelemetryData() {
+  void givenSuccessfulRequest_whenGetTelemetryDataForInterval_thenReturnExpectedTelemetryData() {
     Duration interval = Duration.ofSeconds(42);
     List<TupleMetric> expectedMetrics =
         Arrays.asList(

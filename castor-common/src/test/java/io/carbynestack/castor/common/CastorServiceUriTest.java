@@ -10,46 +10,41 @@ package io.carbynestack.castor.common;
 import static io.carbynestack.castor.common.CastorServiceUri.INVALID_SERVICE_ADDRESS_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.CastorServiceUri.MUST_NOT_BE_EMPTY_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.rest.CastorRestApiEndpoints.*;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.carbynestack.castor.common.entities.TupleType;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.UUID;
-import lombok.SneakyThrows;
-import org.hamcrest.junit.MatcherAssert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class CastorServiceUriTest {
+class CastorServiceUriTest {
 
   @Test
-  public void
-      givenNullAsServiceAddress_whenCreatingCastorServiceUri_thenThrowIllegalArgumentException() {
+  void givenNullAsServiceAddress_whenCreatingCastorServiceUri_thenThrowIllegalArgumentException() {
     IllegalArgumentException expectedIae =
         assertThrows(IllegalArgumentException.class, () -> new CastorServiceUri(null));
     assertEquals(MUST_NOT_BE_EMPTY_EXCEPTION_MSG, expectedIae.getMessage());
   }
 
   @Test
-  public void
-      givenNoSchemeDefined_whenCreatingCastorServiceUri_thenThrowIllegalArgumentException() {
+  void givenNoSchemeDefined_whenCreatingCastorServiceUri_thenThrowIllegalArgumentException() {
     IllegalArgumentException iae =
         assertThrows(IllegalArgumentException.class, () -> new CastorServiceUri("localhost:8080"));
     assertEquals(INVALID_SERVICE_ADDRESS_EXCEPTION_MSG, iae.getMessage());
   }
 
   @Test
-  public void
-      givenInvalidUriString_whenCreatingCastorServiceUri_thenThrowIllegalArgumentException() {
+  void givenInvalidUriString_whenCreatingCastorServiceUri_thenThrowIllegalArgumentException() {
     IllegalArgumentException iae =
         assertThrows(IllegalArgumentException.class, () -> new CastorServiceUri("invalidUri"));
     assertEquals(INVALID_SERVICE_ADDRESS_EXCEPTION_MSG, iae.getMessage());
   }
 
   @Test
-  public void
+  void
       givenHttpsUriStringWithDomain_whenCreatingCastorServiceUri_thenCreateExpectedCastorServiceUri() {
     CastorServiceUri serviceUri = new CastorServiceUri("https://castor.carbynestack.io:8080");
     assertEquals("https://castor.carbynestack.io:8080", serviceUri.getRestServiceUri().toString());
@@ -64,7 +59,7 @@ public class CastorServiceUriTest {
   }
 
   @Test
-  public void
+  void
       givenWsUriStringWithDomain_whenCreatingCastorServiceUri_thenCreateExpectedCastorServiceUri() {
     CastorServiceUri serviceUri = new CastorServiceUri("ws://castor.carbynestack.io:8080");
     assertEquals("http://castor.carbynestack.io:8080", serviceUri.getRestServiceUri().toString());
@@ -79,7 +74,7 @@ public class CastorServiceUriTest {
   }
 
   @Test
-  public void
+  void
       givenUriStringWithTrailingSlash_whenCreateCastorServiceUri_thenReturnExpectedCastorServiceUri() {
     CastorServiceUri aUri = new CastorServiceUri("https://castor.carbynestack.io:8081/");
     URI inputMaskUri = aUri.getIntraVcpTelemetryUri();
@@ -94,7 +89,7 @@ public class CastorServiceUriTest {
   }
 
   @Test
-  public void givenCastorServiceUri_whenGetActivateTupleChunkUri_thenReturnExpectedUri() {
+  void givenCastorServiceUri_whenGetActivateTupleChunkUri_thenReturnExpectedUri() {
     CastorServiceUri serviceUri = new CastorServiceUri("https://castor.carbynestack.io:8081");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     String expectedPath =
@@ -107,7 +102,7 @@ public class CastorServiceUriTest {
   }
 
   @Test
-  public void givenCastorServiceUri_whenGetRequestTupleUri_thenReturnExpectedUri() {
+  void givenCastorServiceUri_whenGetRequestTupleUri_thenReturnExpectedUri() {
     CastorServiceUri serviceUri = new CastorServiceUri("https://castor.carbynestack.io:8081");
     UUID requestId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleType tupleType = TupleType.INPUT_MASK_GFP;
@@ -115,29 +110,26 @@ public class CastorServiceUriTest {
     URI actualRequestTuplesUri =
         serviceUri.getIntraVcpRequestTuplesUri(requestId, tupleType, count);
     assertEquals(INTRA_VCP_OPERATIONS_SEGMENT + TUPLES_ENDPOINT, actualRequestTuplesUri.getPath());
-    MatcherAssert.assertThat(
-        actualRequestTuplesUri.getQuery(),
-        allOf(
-            containsString(DOWNLOAD_COUNT_PARAMETER + "=" + count),
-            containsString(DOWNLOAD_REQUEST_ID_PARAMETER + "=" + requestId),
-            containsString(DOWNLOAD_TUPLE_TYPE_PARAMETER + "=" + tupleType.name())));
+    assertThat(actualRequestTuplesUri.getQuery())
+        .contains(
+            DOWNLOAD_COUNT_PARAMETER + "=" + count,
+            DOWNLOAD_REQUEST_ID_PARAMETER + "=" + requestId,
+            DOWNLOAD_TUPLE_TYPE_PARAMETER + "=" + tupleType.name());
   }
 
   @Test
-  public void givenCastorServiceUri_whenGetRequestTelemetryUri_thenReturnExpectedUri() {
+  void givenCastorServiceUri_whenGetRequestTelemetryUri_thenReturnExpectedUri() {
     CastorServiceUri serviceUri = new CastorServiceUri("https://castor.carbynestack.io:8081");
     long interval = 5000L;
     URI actualRequestTelemetryUri = serviceUri.getRequestTelemetryUri(interval);
     assertEquals(
         INTRA_VCP_OPERATIONS_SEGMENT + TELEMETRY_ENDPOINT, actualRequestTelemetryUri.getPath());
-    MatcherAssert.assertThat(
-        actualRequestTelemetryUri.getQuery(),
-        allOf(containsString(TELEMETRY_INTERVAL + "=" + interval)));
+    assertThat(actualRequestTelemetryUri.getQuery()).contains(TELEMETRY_INTERVAL + "=" + interval);
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidPathSegments_whenBuildingResourceUri_thenReturnExpectedUri() {
+  void givenValidPathSegments_whenBuildingResourceUri_thenReturnExpectedUri()
+      throws URISyntaxException {
     String baseUri = "https://castor.carbynestack.io/Castor";
     String pathVariable = "1234";
     CastorServiceUri CastorServiceUri = new CastorServiceUri(baseUri);

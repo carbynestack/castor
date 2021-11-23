@@ -11,11 +11,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.util.function.Supplier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class DedicatedTransactionServiceTest {
+class DedicatedTransactionServiceTest {
   @Test
-  public void givenSupplier_whenRunAsNewTransaction_thenCallSupplier() {
+  void givenSupplier_whenRunAsNewTransaction_thenCallSupplier() {
     Supplier supplierMock = mock(Supplier.class);
     new DedicatedTransactionService().runAsNewTransaction(supplierMock);
 

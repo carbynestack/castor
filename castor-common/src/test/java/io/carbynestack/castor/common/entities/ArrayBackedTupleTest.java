@@ -9,21 +9,19 @@ package io.carbynestack.castor.common.entities;
 
 import static io.carbynestack.castor.common.entities.ArrayBackedTuple.*;
 import static io.carbynestack.castor.common.entities.Field.GFP;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ArrayBackedTupleTest {
+class ArrayBackedTupleTest {
 
-  @SneakyThrows
   @Test
-  public void givenValidStream_whenCreateFromStream_thenReturnExpectedTuple() {
+  void givenValidStream_whenCreateFromStream_thenReturnExpectedTuple() throws IOException {
     byte[] expectedTupleValueData = RandomUtils.nextBytes(GFP.getElementSize());
     byte[] expectedTupleMacData = RandomUtils.nextBytes(GFP.getElementSize());
     Share expectedShare = Share.of(expectedTupleValueData, expectedTupleMacData);
@@ -36,9 +34,8 @@ public class ArrayBackedTupleTest {
     assertEquals(expectedShare, actualBitTuple.getShare(0));
   }
 
-  @SneakyThrows
   @Test
-  public void givenStreamOfInvalidLength_whenCreateFromStream_thenReturnExpectedTuple() {
+  void givenStreamOfInvalidLength_whenCreateFromStream_thenReturnExpectedTuple() {
     byte[] tupleValueData = RandomUtils.nextBytes(GFP.getElementSize());
     byte[] invalidTupleMacData = RandomUtils.nextBytes(GFP.getElementSize() - 1);
     IOException actualIoe =
@@ -52,9 +49,8 @@ public class ArrayBackedTupleTest {
     assertEquals(NO_MORE_TUPLE_DATA_AVAILABLE_EXCEPTION_MSG, actualIoe.getMessage());
   }
 
-  @SneakyThrows
   @Test
-  public void givenValidNumberOfShares_whenCreateNewTuple_thenReturnExpectedTuple() {
+  void givenValidNumberOfShares_whenCreateNewTuple_thenReturnExpectedTuple() {
     byte[] expectedTupleValueData = RandomUtils.nextBytes(GFP.getElementSize());
     byte[] expectedTupleMacData = RandomUtils.nextBytes(GFP.getElementSize());
     Share expectedShare = Share.of(expectedTupleValueData, expectedTupleMacData);
@@ -62,9 +58,8 @@ public class ArrayBackedTupleTest {
     assertArrayEquals(new Share[] {expectedShare}, actualBitTuple.getShares());
   }
 
-  @SneakyThrows
   @Test
-  public void givenInvalidNumberOfShares_whenCreateNewTuple_thenThrowIllegalArgumentException() {
+  void givenInvalidNumberOfShares_whenCreateNewTuple_thenThrowIllegalArgumentException() {
     IllegalArgumentException actualIae =
         assertThrows(IllegalArgumentException.class, () -> new Bit<>(GFP, new Share[0]));
     assertEquals(
@@ -75,10 +70,10 @@ public class ArrayBackedTupleTest {
         actualIae.getMessage());
   }
 
-  @SneakyThrows
   @Test
-  public void
-      givenRequestedShareIndexIsOutOfBounds_whenRetrievingIndividualShare_thenThrowCastorClientException() {
+  void
+      givenRequestedShareIndexIsOutOfBounds_whenRetrievingIndividualShare_thenThrowCastorClientException()
+          throws IOException {
     int invalidIndex = TupleType.BIT_GFP.getArity() + 1;
     byte[] expectedTupleValueData = RandomUtils.nextBytes(GFP.getElementSize());
     byte[] expectedTupleMacData = RandomUtils.nextBytes(GFP.getElementSize());

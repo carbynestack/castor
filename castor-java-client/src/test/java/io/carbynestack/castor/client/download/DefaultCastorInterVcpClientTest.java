@@ -8,7 +8,7 @@ package io.carbynestack.castor.client.download;
 
 import static io.carbynestack.castor.common.CastorServiceUri.MUST_NOT_BE_EMPTY_EXCEPTION_MSG;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -26,15 +26,14 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import lombok.SneakyThrows;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultCastorInterVcpClientTest {
+@ExtendWith(MockitoExtension.class)
+class DefaultCastorInterVcpClientTest {
 
   private final CsHttpClient<String> csHttpClientMock;
   private final List<String> serviceAddresses =
@@ -50,15 +49,14 @@ public class DefaultCastorInterVcpClientTest {
   }
 
   @Test
-  public void givenServiceAddressIsNull_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
+  void givenServiceAddressIsNull_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
     NullPointerException actualNpe =
         assertThrows(NullPointerException.class, () -> DefaultCastorInterVcpClient.builder(null));
     assertEquals("serviceAddresses is marked non-null but is null", actualNpe.getMessage());
   }
 
   @Test
-  public void
-      givenSingleServiceAddressIsNull_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
+  void givenSingleServiceAddressIsNull_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
     List<String> listWithNullAddress = singletonList(null);
     IllegalArgumentException actualIae =
         assertThrows(
@@ -68,8 +66,7 @@ public class DefaultCastorInterVcpClientTest {
   }
 
   @Test
-  public void
-      givenSingleServiceAddressIsEmpty_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
+  void givenSingleServiceAddressIsEmpty_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
     List<String> listWithEmptyAddress = singletonList("");
     IllegalArgumentException actualIae =
         assertThrows(
@@ -78,9 +75,8 @@ public class DefaultCastorInterVcpClientTest {
     assertEquals(MUST_NOT_BE_EMPTY_EXCEPTION_MSG, actualIae.getMessage());
   }
 
-  @SneakyThrows
   @Test
-  public void givenSslConfiguration_whenBuildClient_thenInitializeCsHttpClientAccordingly() {
+  void givenSslConfiguration_whenBuildClient_thenInitializeCsHttpClientAccordingly() {
     String expectedBearerToken = "testBearerToken";
     BearerTokenProvider expectedBearerTokenProvider = mock(BearerTokenProvider.class);
     File expectedTrustedCertificateFile = mock(File.class);
@@ -106,9 +102,9 @@ public class DefaultCastorInterVcpClientTest {
     }
   }
 
-  @SneakyThrows
   @Test
-  public void givenSingleEndpointReturnsFailure_whenShareReservation_thenReturnFalse() {
+  void givenSingleEndpointReturnsFailure_whenShareReservation_thenReturnFalse()
+      throws CsHttpClientException {
     URI successEndpoint = new CastorServiceUri(serviceAddresses.get(0)).getInterVcpReservationUri();
     URI failureEndpoint = new CastorServiceUri(serviceAddresses.get(1)).getInterVcpReservationUri();
     Reservation sharedReservation = mock(Reservation.class);
@@ -125,9 +121,9 @@ public class DefaultCastorInterVcpClientTest {
     assertFalse(castorInterVcpClient.shareReservation(sharedReservation));
   }
 
-  @SneakyThrows
   @Test
-  public void givenCommunicationFails_whenShareReservation_thenThrowCastorClientException() {
+  void givenCommunicationFails_whenShareReservation_thenThrowCastorClientException()
+      throws CsHttpClientException {
     CsHttpClientException expectedException = new CsHttpClientException("expected");
     Reservation sharedReservation = mock(Reservation.class);
 
@@ -143,9 +139,8 @@ public class DefaultCastorInterVcpClientTest {
     assertEquals(expectedException, actualCce.getCause());
   }
 
-  @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenShareReservation_thenReturnTrue() {
+  void givenSuccessfulRequest_whenShareReservation_thenReturnTrue() throws CsHttpClientException {
     Reservation sharedReservation = mock(Reservation.class);
     CsResponseEntity<String, String> successResponse = CsResponseEntity.success(200, "success");
 
@@ -160,9 +155,9 @@ public class DefaultCastorInterVcpClientTest {
     assertTrue(castorInterVcpClient.shareReservation(sharedReservation));
   }
 
-  @SneakyThrows
   @Test
-  public void givenCommunicationFails_whenUpdateReservation_thenThrowCastorClientException() {
+  void givenCommunicationFails_whenUpdateReservation_thenThrowCastorClientException()
+      throws CsHttpClientException {
     CsHttpClientException expectedException = new CsHttpClientException("expected");
     String reservationId = "reservationId";
     ActivationStatus status = ActivationStatus.UNLOCKED;
@@ -179,9 +174,8 @@ public class DefaultCastorInterVcpClientTest {
     assertEquals(expectedException, actualCce.getCause());
   }
 
-  @SneakyThrows
   @Test
-  public void givenSuccessfulRequests_whenUpdateReservation_thenDoNothing() {
+  void givenSuccessfulRequests_whenUpdateReservation_thenDoNothing() throws CsHttpClientException {
     String reservationId = "reservationId";
     ActivationStatus status = ActivationStatus.UNLOCKED;
 

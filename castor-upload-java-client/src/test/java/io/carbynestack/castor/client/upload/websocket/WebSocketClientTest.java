@@ -11,8 +11,8 @@ import static io.carbynestack.castor.client.upload.websocket.WebSocketClient.*;
 import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.common.rest.CastorRestApiEndpoints.UPLOAD_TUPLES_ENDPOINT;
 import static io.carbynestack.castor.common.websocket.CastorWebSocketApiEndpoints.APPLICATION_PREFIX;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_OCTET_STREAM_VALUE;
 
@@ -24,18 +24,18 @@ import io.carbynestack.castor.common.exceptions.UnsupportedPayloadException;
 import io.carbynestack.castor.common.websocket.UploadTupleChunkResponse;
 import io.vavr.control.Option;
 import java.net.URI;
+import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import javax.websocket.ContainerProvider;
 import javax.websocket.WebSocketContainer;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -43,8 +43,8 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 
-@RunWith(MockitoJUnitRunner.class)
-public class WebSocketClientTest {
+@ExtendWith(MockitoExtension.class)
+class WebSocketClientTest {
 
   private final CastorServiceUri castorServiceUri =
       new CastorServiceUri("https://castor.carbynestack.io:8080");
@@ -58,8 +58,7 @@ public class WebSocketClientTest {
   private final WebSocketSessionHandler sessionHandlerMock;
   private final WebSocketClient webSocketClient;
 
-  @SneakyThrows
-  public WebSocketClientTest() {
+  public WebSocketClientTest() throws NoSuchAlgorithmException {
     responseCollectorMock = mock(ResponseCollector.class);
     webSocketContainerMock = mock(WebSocketContainer.class);
     try (MockedStatic<ContainerProvider> csMockedStatic = mockStatic(ContainerProvider.class)) {
@@ -85,7 +84,7 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenBearerTokenDefined_whenConnect_thenConnectWithAdequateHeader() {
+  void givenBearerTokenDefined_whenConnect_thenConnectWithAdequateHeader() {
     when(standardWebSocketClientMock.doHandshake(
             any(WebSocketHandler.class), any(WebSocketHttpHeaders.class), any(URI.class)))
         .thenReturn(mock(ListenableFuture.class));
@@ -106,7 +105,7 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenConnectionAlreadyEstablished_whenConnect_doNotReinitializeConnection() {
+  void givenConnectionAlreadyEstablished_whenConnect_doNotReinitializeConnection() {
     reset(standardWebSocketClientMock);
     when(sessionHandlerMock.isConnected()).thenReturn(true);
 
@@ -116,14 +115,14 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenSessionHandlerDefined_whenDisconnect_thenInvokeDisconnect() {
+  void givenSessionHandlerDefined_whenDisconnect_thenInvokeDisconnect() {
     webSocketClient.disconnect();
 
     verify(sessionHandlerMock, times(1)).disconnect();
   }
 
   @Test
-  public void givenEstablishedNotConnection_whenSend_thenThrowConnectionFailedException() {
+  void givenEstablishedNotConnection_whenSend_thenThrowConnectionFailedException() {
     when(webSocketClient.isConnected()).thenReturn(false);
     ConnectionFailedException actualCfe =
         assertThrows(ConnectionFailedException.class, () -> webSocketClient.send(null));
@@ -134,7 +133,7 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenEstablishedConnection_whenSend_thenSendExpectedMessage() {
+  void givenEstablishedConnection_whenSend_thenSendExpectedMessage() {
     TupleType tupleType = TupleType.BIT_GFP;
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     byte[] tupleData =
@@ -166,7 +165,7 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenUnsupportedPayload_whenHandleFrame_thenThrowUnsupportedPayloadException() {
+  void givenUnsupportedPayload_whenHandleFrame_thenThrowUnsupportedPayloadException() {
     String unsupportedPayload = "Unsupported payload";
     UnsupportedPayloadException actualUpe =
         assertThrows(
@@ -176,7 +175,7 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenResponseMessageHasNoChunkIdDefined_whenHandleFrame_thenDiscardMessage() {
+  void givenResponseMessageHasNoChunkIdDefined_whenHandleFrame_thenDiscardMessage() {
     reset(responseCollectorMock);
     UploadTupleChunkResponse responseWithoutId = UploadTupleChunkResponse.failure(null, "failure");
     byte[] payload = SerializationUtils.serialize(responseWithoutId);
@@ -185,7 +184,7 @@ public class WebSocketClientTest {
   }
 
   @Test
-  public void givenValidResponseMessage_whenHandleFrame_thenProcessAccordingly() {
+  void givenValidResponseMessage_whenHandleFrame_thenProcessAccordingly() {
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     UploadTupleChunkResponse successfulResponse = UploadTupleChunkResponse.success(chunkId);
     byte[] payload = SerializationUtils.serialize(successfulResponse);

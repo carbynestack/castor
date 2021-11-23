@@ -7,8 +7,8 @@
 
 package io.carbynestack.castor.service.persistence.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -21,16 +21,15 @@ import io.carbynestack.castor.service.config.CastorCacheProperties;
 import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataEntity;
 import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
-import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
-import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
+import io.carbynestack.castor.service.testconfig.ReusableMinioContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusableRedisContainerExtension;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
@@ -38,26 +37,24 @@ import org.springframework.cache.CacheManager;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
-public class ReservationCachingServiceIT {
+class ReservationCachingServiceIT {
 
-  @ClassRule
-  public static ReusableRedisContainer reusableRedisContainer =
-      ReusableRedisContainer.getInstance();
+  @RegisterExtension
+  public static ReusableRedisContainerExtension reusableRedisContainer =
+      ReusableRedisContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  @RegisterExtension
+  public static ReusableMinioContainerExtension reusableMinioContainer =
+      ReusableMinioContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
-      ReusablePostgreSQLContainer.getInstance();
+  @RegisterExtension
+  public static ReusablePostgreSQLContainerExtension reusablePostgreSQLContainer =
+      ReusablePostgreSQLContainerExtension.getInstance();
 
   @Autowired private ConsumptionCachingService consumptionCachingService;
 
@@ -87,7 +84,7 @@ public class ReservationCachingServiceIT {
           Collections.singletonList(
               new ReservationElement(testChunkId, testNumberReservedTuples, 0)));
 
-  @Before
+  @BeforeEach
   public void setUp() {
     if (reservationCache == null) {
       reservationCache = cacheManager.getCache(cacheProperties.getReservationStore());
@@ -103,12 +100,12 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void givenCacheIsEmpty_whenGetReservation_thenReturnNull() {
+  void givenCacheIsEmpty_whenGetReservation_thenReturnNull() {
     assertNull(reservationCachingService.getReservation(testReservation.getReservationId()));
   }
 
   @Test
-  public void givenSuccessfulRequest_whenKeepReservation_thenStoreInCacheAndUpdateConsumption() {
+  void givenSuccessfulRequest_whenKeepReservation_thenStoreInCacheAndUpdateConsumption() {
     TupleChunkMetaDataEntity metaDataEntityMock = mock(TupleChunkMetaDataEntity.class);
     when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(testChunkId))
         .thenReturn(metaDataEntityMock);
@@ -139,7 +136,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void givenReservationInCache_whenGetReservation_thenKeepReservationUntouchedInCache() {
+  void givenReservationInCache_whenGetReservation_thenKeepReservationUntouchedInCache() {
     reservationCache.put(testReservation.getReservationId(), testReservation);
     assertEquals(
         testReservation,
@@ -150,7 +147,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenForgetReservation_thenRemoveFromCache() {
+  void givenSuccessfulRequest_whenForgetReservation_thenRemoveFromCache() {
     reservationCache.put(testReservation.getReservationId(), testReservation);
     assertEquals(
         testReservation,

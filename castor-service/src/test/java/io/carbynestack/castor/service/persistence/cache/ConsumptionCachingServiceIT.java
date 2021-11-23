@@ -9,8 +9,8 @@ package io.carbynestack.castor.service.persistence.cache;
 
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -18,43 +18,39 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
-import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
-import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
+import io.carbynestack.castor.service.testconfig.ReusableMinioContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainerExtension;
+import io.carbynestack.castor.service.testconfig.ReusableRedisContainerExtension;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
-public class ConsumptionCachingServiceIT {
+class ConsumptionCachingServiceIT {
 
-  @ClassRule
-  public static ReusableRedisContainer reusableRedisContainer =
-      ReusableRedisContainer.getInstance();
+  @RegisterExtension
+  public static ReusableRedisContainerExtension reusableRedisContainer =
+      ReusableRedisContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  @RegisterExtension
+  public static ReusableMinioContainerExtension reusableMinioContainer =
+      ReusableMinioContainerExtension.getInstance();
 
-  @ClassRule
-  public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
-      ReusablePostgreSQLContainer.getInstance();
+  @RegisterExtension
+  public static ReusablePostgreSQLContainerExtension reusablePostgreSQLContainer =
+      ReusablePostgreSQLContainerExtension.getInstance();
 
   @Autowired private PersistenceTestEnvironment testEnvironment;
 
@@ -64,20 +60,20 @@ public class ConsumptionCachingServiceIT {
 
   @Autowired private ConsumptionCachingService consumptionCachingService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnvironment.clearAllData();
   }
 
   @Test
-  public void givenCacheIsEmpty_whenGetConsumption_thenReturnZero() {
+  void givenCacheIsEmpty_whenGetConsumption_thenReturnZero() {
     long actualConsumption =
         consumptionCachingService.getConsumptionForTupleType(0L, INPUT_MASK_GFP);
     assertEquals(0L, actualConsumption);
   }
 
   @Test
-  public void
+  void
       givenMultipleConsumptionValues_whenGetConsumption_thenReturnExpectedOverallConsumptionForTimeFrame() {
     long timestamp1 = 100;
     long timestamp2 = 200;
@@ -103,9 +99,9 @@ public class ConsumptionCachingServiceIT {
     assertEquals(0L, actualConsumption201ff);
   }
 
-  @SneakyThrows
   @Test
-  public void givenTimeToLife_whenKeepConsumption_thenRemoveValueAutomaticallyFromCache() {
+  void givenTimeToLife_whenKeepConsumption_thenRemoveValueAutomaticallyFromCache()
+      throws InterruptedException {
     long time = 100;
     long ttl = 1;
     long consumed = 42;
@@ -116,7 +112,7 @@ public class ConsumptionCachingServiceIT {
   }
 
   @Test
-  public void givenMultipleConsumptionValuesForSameTimestamp_whenKeepConsumption_thenSumUpValues() {
+  void givenMultipleConsumptionValuesForSameTimestamp_whenKeepConsumption_thenSumUpValues() {
     long timestamp = 100L;
     long[] consumptionValues = {1, 12, 23, 34, 42};
     long expectedTotal = Arrays.stream(consumptionValues).sum();

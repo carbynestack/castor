@@ -11,8 +11,8 @@ import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
 import static io.carbynestack.castor.service.download.DefaultTuplesDownloadService.*;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -26,20 +26,20 @@ import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaData
 import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
-import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockedConstruction;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultTuplesDownloadServiceTest {
+@ExtendWith(MockitoExtension.class)
+class DefaultTuplesDownloadServiceTest {
 
   @Mock private TupleStore tupleStoreMock;
   @Mock private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageServiceMock;
@@ -51,7 +51,7 @@ public class DefaultTuplesDownloadServiceTest {
 
   private DefaultTuplesDownloadService tuplesDownloadService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     tuplesDownloadService =
         new DefaultTuplesDownloadService(
@@ -64,8 +64,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
-      givenNoReservationReceivedInTime_whenObtainReservation_thenThrowCastorServiceException() {
+  void givenNoReservationReceivedInTime_whenObtainReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     long retryDelay = 5;
     long reservationTimeout = 10;
@@ -102,7 +101,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenObtainReservation_thenReturnExpectedReservation() {
+  void givenSuccessfulRequest_whenObtainReservation_thenReturnExpectedReservation() {
     String reservationId = "testReservationId";
     long retryDelay = 5;
     long reservationTimeout = 10;
@@ -124,7 +123,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenDedicatedTransactionServiceNotDefined_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(false);
 
@@ -139,7 +138,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenCastorInterVcpClientIsNotDefined_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
     when(castorInterVcpClientOptional.isPresent()).thenReturn(false);
@@ -155,7 +154,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenUnlockedReservationWithMatchingConfigurationInCache_whenGetOrCreateReservation_thenReturnCachedReservation() {
     String reservationId = "testReservationId";
     TupleType tupleType = INPUT_MASK_GFP;
@@ -179,7 +178,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenLockedReservationForIdInCache_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     long count = 42;
@@ -203,7 +202,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenCachedReservationForIdMismatchType_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     TupleType tupleType = INPUT_MASK_GFP;
@@ -234,7 +233,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenCachedReservationForIdMismatchReservedCount_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     TupleType tupleType = INPUT_MASK_GFP;
@@ -268,7 +267,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoCachedReservationButCreationThrows_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     CastorClientException expectedException = new CastorClientException("expected");
@@ -290,7 +289,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoCachedReservationActivationThrows_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     CastorClientException expectedException = new CastorClientException("expected");
@@ -315,7 +314,7 @@ public class DefaultTuplesDownloadServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoCachedReservationAndSuccessfulRequest_whenGetOrCreateReservation_thenReturnNewReservation() {
     String reservationId = "testReservationId";
     Reservation expectedReservationMock = mock(Reservation.class);
@@ -370,9 +369,8 @@ public class DefaultTuplesDownloadServiceTest {
   //        }
   //    }
 
-  @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenGetTuplesAsMaster_thenReturnExpectedTuples() {
+  void givenSuccessfulRequest_whenGetTuplesAsMaster_thenReturnExpectedTuples() throws IOException {
     TupleType tupleType = INPUT_MASK_GFP;
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     long count = 2;
