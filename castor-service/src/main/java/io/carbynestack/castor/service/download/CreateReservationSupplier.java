@@ -89,7 +89,7 @@ final class CreateReservationSupplier implements Supplier<Reservation> {
           new ReservationElement(
               tupleChunkData.getTupleChunkId(), tuplesToRead, tupleChunkData.getReservedMarker()));
       stillToReserve -= tuplesToRead;
-      if(stillToReserve == 0) {
+      if (stillToReserve == 0) {
         break;
       }
     }
