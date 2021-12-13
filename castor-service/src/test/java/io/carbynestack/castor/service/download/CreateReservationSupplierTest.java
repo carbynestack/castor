@@ -131,9 +131,6 @@ public class CreateReservationSupplierTest {
     when(metaDataEntity1Mock.getTupleChunkId()).thenReturn(chunk1Id);
     when(metaDataEntity1Mock.getReservedMarker()).thenReturn(reservedMarker);
     when(metaDataEntity1Mock.getNumberOfTuples()).thenReturn(count);
-    when(metaDataEntity2Mock.getTupleChunkId()).thenReturn(chunk2Id);
-    when(metaDataEntity2Mock.getReservedMarker()).thenReturn(reservedMarker);
-    when(metaDataEntity2Mock.getNumberOfTuples()).thenReturn(count);
     when(castorInterVcpClientMock.shareReservation(expectedReservation)).thenReturn(true);
 
     assertEquals(expectedReservation, createReservationSupplier.get());
