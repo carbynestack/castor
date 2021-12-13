@@ -22,6 +22,8 @@ import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
 import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataEntity;
 import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -111,21 +113,52 @@ public class CreateReservationSupplierTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenGet_thenReturnExpectedReservation() {
-    TupleChunkMetaDataEntity metaDataEntityMock = mock(TupleChunkMetaDataEntity.class);
-    UUID chunkId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
+  public void givenMultipleChunksWithAvailable_whenGet_thenReturnExpectedReservation() {
+    TupleChunkMetaDataEntity metaDataEntity1Mock = mock(TupleChunkMetaDataEntity.class);
+    TupleChunkMetaDataEntity metaDataEntity2Mock = mock(TupleChunkMetaDataEntity.class);
+    UUID chunk1Id = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
     long reservedMarker = 0;
     ReservationElement expectedReservationElement =
-        new ReservationElement(chunkId, count, reservedMarker);
+        new ReservationElement(chunk1Id, count, reservedMarker);
     Reservation expectedReservation =
         new Reservation(reservationId, tupleType, singletonList(expectedReservationElement));
 
     when(tupleChunkMetaDataStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
     when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(tupleType))
-        .thenReturn(singletonList(metaDataEntityMock));
-    when(metaDataEntityMock.getTupleChunkId()).thenReturn(chunkId);
-    when(metaDataEntityMock.getReservedMarker()).thenReturn(reservedMarker);
-    when(metaDataEntityMock.getNumberOfTuples()).thenReturn(count);
+        .thenReturn(Arrays.asList(metaDataEntity1Mock, metaDataEntity2Mock));
+    when(metaDataEntity1Mock.getTupleChunkId()).thenReturn(chunk1Id);
+    when(metaDataEntity1Mock.getReservedMarker()).thenReturn(reservedMarker);
+    when(metaDataEntity1Mock.getNumberOfTuples()).thenReturn(count);
+    when(castorInterVcpClientMock.shareReservation(expectedReservation)).thenReturn(true);
+
+    assertEquals(expectedReservation, createReservationSupplier.get());
+    verify(reservationCachingServiceMock).keepReservation(expectedReservation);
+  }
+
+  @Test
+  public void
+      givenFirstChunkHasNotEnoughTuples_whenGet_thenCreateReservationReferencingMultipleChunks() {
+    TupleChunkMetaDataEntity metaDataEntity1Mock = mock(TupleChunkMetaDataEntity.class);
+    TupleChunkMetaDataEntity metaDataEntity2Mock = mock(TupleChunkMetaDataEntity.class);
+    UUID chunk1Id = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
+    UUID chunk2Id = UUID.fromString("4d206204-96a0-4ddc-b409-4ac05b1f12f2");
+    long reservedMarker = 0;
+    List<ReservationElement> expectedReservationElements =
+        Arrays.asList(
+            new ReservationElement(chunk1Id, count - 1, reservedMarker),
+            new ReservationElement(chunk2Id, 1, reservedMarker));
+    Reservation expectedReservation =
+        new Reservation(reservationId, tupleType, expectedReservationElements);
+
+    when(tupleChunkMetaDataStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
+    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(tupleType))
+        .thenReturn(Arrays.asList(metaDataEntity1Mock, metaDataEntity2Mock));
+    when(metaDataEntity1Mock.getTupleChunkId()).thenReturn(chunk1Id);
+    when(metaDataEntity1Mock.getReservedMarker()).thenReturn(reservedMarker);
+    when(metaDataEntity1Mock.getNumberOfTuples()).thenReturn(count - 1);
+    when(metaDataEntity2Mock.getTupleChunkId()).thenReturn(chunk2Id);
+    when(metaDataEntity2Mock.getReservedMarker()).thenReturn(reservedMarker);
+    when(metaDataEntity2Mock.getNumberOfTuples()).thenReturn(count);
     when(castorInterVcpClientMock.shareReservation(expectedReservation)).thenReturn(true);
 
     assertEquals(expectedReservation, createReservationSupplier.get());

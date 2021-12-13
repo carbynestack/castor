@@ -89,6 +89,9 @@ final class CreateReservationSupplier implements Supplier<Reservation> {
           new ReservationElement(
               tupleChunkData.getTupleChunkId(), tuplesToRead, tupleChunkData.getReservedMarker()));
       stillToReserve -= tuplesToRead;
+      if (stillToReserve == 0) {
+        break;
+      }
     }
     if (stillToReserve > 0) {
       throw new CastorServiceException(
