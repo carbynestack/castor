@@ -117,7 +117,6 @@ public class CreateReservationSupplierTest {
     TupleChunkMetaDataEntity metaDataEntity1Mock = mock(TupleChunkMetaDataEntity.class);
     TupleChunkMetaDataEntity metaDataEntity2Mock = mock(TupleChunkMetaDataEntity.class);
     UUID chunk1Id = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
-    UUID chunk2Id = UUID.fromString("4d206204-96a0-4ddc-b409-4ac05b1f12f2");
     long reservedMarker = 0;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunk1Id, count, reservedMarker);
