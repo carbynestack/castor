@@ -72,7 +72,7 @@
         <commons-io.version>2.9.0</commons-io.version>
         <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
         <junit.version>4.13</junit.version>
-        <log4j.version>2.14.1</log4j.version>
+        <log4j.version>2.16.0</log4j.version>
         <lombok.version>1.18.18</lombok.version>
         <mockito.version>3.11.2</mockito.version>
         <slf4j.version>1.7.30</slf4j.version>
