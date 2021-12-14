@@ -108,7 +108,7 @@
          <name>Apache Log4j API</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-api</artifactId>
-         <version>2.14.1</version>
+         <version>2.16.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-api/</projectUrl>
          <licenses>
             <license>
@@ -121,7 +121,7 @@
          <name>Apache Log4j Core</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-core</artifactId>
-         <version>2.14.1</version>
+         <version>2.16.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-core/</projectUrl>
          <licenses>
             <license>
@@ -147,7 +147,7 @@
          <name>Apache Log4j SLF4J Binding</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-slf4j-impl</artifactId>
-         <version>2.14.1</version>
+         <version>2.16.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-slf4j-impl/</projectUrl>
          <licenses>
             <license>
