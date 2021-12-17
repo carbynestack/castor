@@ -29,7 +29,7 @@ public class ReservationRestController {
   @PostMapping
   public ResponseEntity<String> reserveTuples(@RequestBody Reservation reservation) {
     reservation.setStatus(ActivationStatus.LOCKED);
-    reservationCachingService.keepReservation(reservation);
+    reservationCachingService.keepAndApplyReservation(reservation);
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 

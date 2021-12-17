@@ -7,22 +7,15 @@
 
 package io.carbynestack.castor.service.download;
 
-import io.carbynestack.castor.client.download.CastorInterVcpClient;
 import io.carbynestack.castor.common.entities.*;
-import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataEntity;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,28 +23,27 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class DefaultTuplesDownloadService implements TuplesDownloadService {
-
-  public static final String NOT_DECLARED_TO_BE_THE_MASTER_EXCEPTION_MSG =
-      "Operating as master even though service is not declared to be the master";
-  public static final String NO_RELEASED_TUPLE_RESERVATION_EXCEPTION_MSG =
-      "No released tuple reservation was found for the given request ID #%s";
-  public static final String RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG =
-      "Reservation does not match expected specification (id: \"%s\", tupleType: \"%s\", count:"
-          + " %d): %s";
-  public static final String COMMUNICATION_WITH_SLAVES_FAILED_EXCEPTION_MSG =
-      "Communication with slaves failed.";
   public static final String FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG =
       "Failed retrieving tuples from database.";
-  private final TupleStore tupleStore;
-  private final TupleChunkMetaDataStorageService markerStore;
-  private final ReservationCachingService reservationCachingService;
-  private final CastorSlaveServiceProperties slaveServiceProperties;
-  private final Optional<CastorInterVcpClient> castorInterVcpClientOptional;
-  private final Optional<DedicatedTransactionService> dedicatedTransactionServiceOptional;
 
-  private ExecutorService executorService = Executors.newCachedThreadPool();
+  private final TupleStore tupleStore;
+  private final TupleChunkFragmentStorageService fragmentStorageService;
+  private final ReservationCachingService reservationCachingService;
+  private final CastorServiceProperties castorServiceProperties;
+
+  @Autowired
+  public DefaultTuplesDownloadService(
+      TupleStore tupleStore,
+      TupleChunkFragmentStorageService fragmentStorageService,
+      ReservationCachingService reservationCachingService,
+      CastorServiceProperties castorServiceProperties) {
+    this.tupleStore = tupleStore;
+    this.fragmentStorageService = fragmentStorageService;
+    this.reservationCachingService = reservationCachingService;
+    this.castorServiceProperties = castorServiceProperties;
+  }
+
   /**
    * @throws CastorServiceException if reservation was not shared successfully
    * @throws CastorServiceException if communication with slaves failed
@@ -59,6 +51,9 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
    * @throws CastorServiceException if no {@link Reservation} with the given id could be obtained
    *     within a defined timout (see {@link
    *     CastorSlaveServiceProperties#getWaitForReservationTimeout()}).
+   * @throws CastorServiceException if reservation with given ID is already available but does not
+   *     match given criteria
+   * @throws CastorServiceException if tuples cannot be retrieved from database
    */
   @Transactional
   @Override
@@ -67,109 +62,24 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     TupleType tupleType = TupleType.findTupleType(tupleCls, field);
     String reservationId = requestId + "_" + tupleType;
     Reservation reservation;
-    if (castorInterVcpClientOptional.isPresent()
-        && dedicatedTransactionServiceOptional.isPresent()) {
-      reservation = getOrCreateReservation(reservationId, tupleType, count);
-      log.debug("Reservation successfully activated on all slaves.");
+    if (castorServiceProperties.isMaster()) {
+      reservation =
+          reservationCachingService.getUnlockedReservation(reservationId, tupleType, count);
+      if (reservation == null) {
+        reservation = reservationCachingService.createReservation(reservationId, tupleType, count);
+        log.debug("Reservation successfully activated on all slaves.");
+      }
     } else {
-      reservation = obtainReservation(reservationId);
+      reservation =
+          reservationCachingService.getReservationWithRetry(reservationId, tupleType, count);
     }
     TupleList<T, F> result = consumeReservation(tupleCls, field, reservation);
-    deleteTupleChunksAndMarkerIfUsed(reservation);
+    deleteReservedFragments(reservation);
     reservationCachingService.forgetReservation(reservationId);
     return result;
   }
 
-  /**
-   * @throws CastorServiceException if reservation was not created successfully
-   * @throws CastorServiceException if reservation was not activated successfully
-   * @throws CastorServiceException if reservation was not shared successfully
-   * @throws CastorServiceException if no reservation could be made for the given configuration
-   * @throws CastorServiceException if method is called even tho this castor service is no master
-   * @throws CastorServiceException if reservation with given ID is already available but is {@link
-   *     ActivationStatus#LOCKED}
-   * @throws CastorServiceException if reservation with given ID is already available but does not
-   *     match expected configuration
-   */
-  Reservation getOrCreateReservation(String reservationId, TupleType tupleType, long count) {
-    if (!dedicatedTransactionServiceOptional.isPresent()
-        || !castorInterVcpClientOptional.isPresent()) {
-      throw new CastorServiceException(NOT_DECLARED_TO_BE_THE_MASTER_EXCEPTION_MSG);
-    }
-    Reservation reservation = reservationCachingService.getReservation(reservationId);
-    if (reservation == null) {
-      try {
-        reservation =
-            dedicatedTransactionServiceOptional
-                .get()
-                .runAsNewTransaction(
-                    new CreateReservationSupplier(
-                        castorInterVcpClientOptional.get(),
-                        reservationCachingService,
-                        markerStore,
-                        reservationId,
-                        tupleType,
-                        count));
-        reservation =
-            dedicatedTransactionServiceOptional
-                .get()
-                .runAsNewTransaction(
-                    new UpdateReservationSupplier(
-                        castorInterVcpClientOptional.get(),
-                        reservationCachingService,
-                        reservation));
-      } catch (CastorClientException cce) {
-        throw new CastorServiceException(COMMUNICATION_WITH_SLAVES_FAILED_EXCEPTION_MSG, cce);
-      }
-    } else {
-      if (reservation.getStatus() != ActivationStatus.UNLOCKED) {
-        throw new CastorServiceException(
-            String.format(NO_RELEASED_TUPLE_RESERVATION_EXCEPTION_MSG, reservationId));
-      } else if (reservation.getTupleType() != tupleType
-          || reservation.getReservations().stream()
-                  .mapToLong(ReservationElement::getReservedTuples)
-                  .sum()
-              != count) {
-        throw new CastorServiceException(
-            String.format(
-                RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,
-                reservationId,
-                tupleType,
-                count,
-                reservation));
-      }
-    }
-    return reservation;
-  }
-
-  /**
-   * @throws CastorServiceException if no unlocked {@link Reservation} with the given id could be
-   *     obtained within a defined timout (see {@link
-   *     CastorSlaveServiceProperties#getWaitForReservationTimeout()}).
-   */
-  Reservation obtainReservation(String reservationId) {
-    Reservation reservation = null;
-    WaitForReservationCallable waitForReservationCallable =
-        new WaitForReservationCallable(
-            reservationId, reservationCachingService, slaveServiceProperties.getRetryDelay());
-    try {
-      reservation =
-          executorService
-              .submit(waitForReservationCallable)
-              .get(slaveServiceProperties.getWaitForReservationTimeout(), TimeUnit.MILLISECONDS);
-    } catch (InterruptedException ie) {
-      waitForReservationCallable.cancel();
-      Thread.currentThread().interrupt();
-    } catch (Exception e) {
-      waitForReservationCallable.cancel();
-    }
-    if (reservation == null) {
-      throw new CastorServiceException(
-          String.format(NO_RELEASED_TUPLE_RESERVATION_EXCEPTION_MSG, reservationId));
-    }
-    return reservation;
-  }
-
+  /** @throws CastorServiceException if tuples cannot be retrieved from database */
   private <T extends Tuple<T, F>, F extends Field> TupleList<T, F> consumeReservation(
       Class<T> tupleCls, F field, Reservation reservation) {
     TupleList<T, F> tuples = new TupleList<>(tupleCls, field);
@@ -188,19 +98,20 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     TupleType tupleType = TupleType.findTupleType(tupleCls, field);
     final long offset = reservationElement.getStartIndex() * tupleType.getTupleSize();
     final long length = reservationElement.getReservedTuples() * tupleType.getTupleSize();
-    return tupleStore.downloadTuples(tupleCls, field, tupleChunkId, offset, length);
+    try {
+      return tupleStore.downloadTuples(tupleCls, field, tupleChunkId, offset, length);
+    } catch (Exception e) {
+      throw new CastorServiceException(FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG, e);
+    }
   }
 
   /** @throws CastorServiceException if metadata cannot be updated */
-  private void deleteTupleChunksAndMarkerIfUsed(Reservation reservation) {
+  private void deleteReservedFragments(Reservation reservation) {
+    fragmentStorageService.deleteAllForReservationId(reservation.getReservationId());
     for (ReservationElement reservationElement : reservation.getReservations()) {
-      UUID tupleChunkId = reservationElement.getTupleChunkId();
-      TupleChunkMetaDataEntity tupleChunkData =
-          markerStore.updateConsumptionForTupleChunkData(
-              tupleChunkId, reservationElement.getReservedTuples());
-      if (tupleChunkData.getConsumedMarker() == tupleChunkData.getNumberOfTuples()) {
-        markerStore.forgetTupleChunkData(tupleChunkId);
-        tupleStore.deleteTupleChunk(tupleChunkId);
+      if (!fragmentStorageService.isChunkReferencedByFragments(
+          reservationElement.getTupleChunkId())) {
+        tupleStore.deleteTupleChunk(reservationElement.getTupleChunkId());
       }
     }
   }

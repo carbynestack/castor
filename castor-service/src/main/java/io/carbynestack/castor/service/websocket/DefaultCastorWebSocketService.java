@@ -13,7 +13,8 @@ import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.common.websocket.CastorWebSocketApiEndpoints;
 import io.carbynestack.castor.common.websocket.UploadTupleChunkResponse;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
       "Failed writing tuple chunk to database.";
   private final SimpMessagingTemplate template;
   private final TupleStore tupleStore;
-  private final TupleChunkMetaDataStorageService metaDataStore;
+  private final TupleChunkFragmentStorageService fragmentStorageService;
 
   @Override
   @MessageMapping(UPLOAD_TUPLES_ENDPOINT)
@@ -65,10 +66,14 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
 
     try {
       tupleStore.save(tupleChunk);
-      log.debug("Saved tuple chunk {} to tuple store...", tupleChunk.getChunkId());
-      metaDataStore.keepTupleChunkData(
-          tupleChunk.getChunkId(), tupleChunk.getTupleType(), tupleChunk.getNumberOfTuples());
-      log.debug("Saved marker for {} to marker store... ", tupleChunk.getChunkId());
+      log.debug("Saved tuple chunk #{}.", tupleChunk.getChunkId());
+      fragmentStorageService.keep(
+          TupleChunkFragmentEntity.of(
+              tupleChunk.getChunkId(),
+              tupleChunk.getTupleType(),
+              0,
+              tupleChunk.getNumberOfTuples()));
+      log.debug("Saved fragment for #{}.", tupleChunk.getChunkId());
       UploadTupleChunkResponse response = UploadTupleChunkResponse.success(tupleChunk.getChunkId());
       template.convertAndSend(
           CastorWebSocketApiEndpoints.RESPONSE_QUEUE_ENDPOINT,

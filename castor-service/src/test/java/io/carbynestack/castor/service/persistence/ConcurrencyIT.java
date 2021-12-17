@@ -3,12 +3,14 @@ package io.carbynestack.castor.service.persistence;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.ReservationElement;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
 import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
@@ -45,23 +47,25 @@ public class ConcurrencyIT {
 
   @Autowired private PersistenceTestEnvironment testEnvironment;
   @Autowired private ReservationCachingService reservationCachingService;
-  @Autowired private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageService;
+  @Autowired private TupleChunkFragmentStorageService fragmentStorageService;
 
   private final TupleType testTupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
   private final UUID testChunkId = UUID.fromString("d1ea9d52-2b1d-42f0-85eb-e36caa6a623c");
-  private final long tuplesInChunk = 100;
-  private final long tuplesToReserve = 3;
 
   @Before
   public void setUp() {
     testEnvironment.clearAllData();
-    tupleChunkMetaDataStorageService.keepTupleChunkData(testChunkId, testTupleType, tuplesInChunk);
-    tupleChunkMetaDataStorageService.activateTupleChunk(testChunkId);
+    long tuplesInChunk = 100;
+    fragmentStorageService.keep(
+        TupleChunkFragmentEntity.of(
+            testChunkId, testTupleType, 0, tuplesInChunk, ActivationStatus.UNLOCKED, null));
+    fragmentStorageService.activateFragmentsForTupleChunk(testChunkId);
   }
 
   @Test
   public void
       givenSubsequentReservationIsProcessedFirst_whenMasterSharesReservationOnParallelRequests_thenSucceedAsExpected() {
+    long tuplesToReserve = 3;
     Reservation firstReservation =
         new Reservation(
             "1636913e-87b7-4331-97d7-4b14a1552604",
