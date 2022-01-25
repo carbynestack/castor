@@ -44,6 +44,12 @@ spec:
                 - /dev/null
             periodSeconds: 5
             initialDelaySeconds: 30
+      {{- if .Values.redis.image.pullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.redis.image.pullSecrets }}
+        - name: {{ . }}
+        {{- end}}
+      {{- end}}
       volumes:
         - name: config-volume
           configMap:

@@ -71,3 +71,4 @@ redis:
     repository: redis
     tag: 6.2.5
     pullPolicy: "IfNotPresent"
+    pullSecrets: []
