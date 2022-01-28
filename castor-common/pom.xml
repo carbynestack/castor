@@ -20,7 +20,7 @@
         <!-- external dependencies -->
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <httpclient.version>4.5.13</httpclient.version>
-        <jackson.version>2.10.2</jackson.version>
+        <jackson.version>2.12.6</jackson.version>
     </properties>
     <dependencies>
         <!-- internal dependencies -->

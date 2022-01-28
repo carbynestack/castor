@@ -118,7 +118,7 @@
          <name>Jackson-annotations</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.6</version>
          <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
@@ -131,7 +131,7 @@
          <name>Jackson-core</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.6</version>
          <projectUrl>https://github.com/FasterXML/jackson-core</projectUrl>
          <licenses>
             <license>
@@ -144,7 +144,7 @@
          <name>jackson-databind</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>2.10.2</version>
+         <version>2.12.6</version>
          <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
