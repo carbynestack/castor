@@ -93,5 +93,5 @@ The _castor-java-client_ library can be build and installed in the local maven
 repository using:
 
 ```bash
-mvn install
+../mvnw install
 ```
