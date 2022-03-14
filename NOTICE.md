@@ -14,6 +14,12 @@ file in the Carbyne Stack
 - Schoelzel Hanna [hanna.schoelzel@bosch.io](mailto:hanna.schoelzel@bosch.io)
 - Suschke Volker [volker.suschke@bosch.io](mailto:volker.suschke@bosch.io)
 
+### Honda Research Institute Europe GmbH
+
+- Graf Johannes (synyx) [info@honda-ri.de](mailto:info@honda-ri.de)
+- Klenk Timo (synyx) [info@honda-ri.de](mailto:info@honda-ri.de)
+- Scherer Petra (synyx) [info@honda-ri.de](mailto:info@honda-ri.de)
+
 ### Robert Bosch GmbH
 
 - Becker Sebastian
