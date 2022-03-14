@@ -792,11 +792,11 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>PostgreSQL JDBC Driver - JDBC 4.2</name>
+         <name>PostgreSQL JDBC Driver</name>
          <groupId>org.postgresql</groupId>
          <artifactId>postgresql</artifactId>
-         <version>42.2.1</version>
-         <projectUrl>https://github.com/pgjdbc/pgjdbc</projectUrl>
+         <version>42.2.25</version>
+         <projectUrl>https://jdbc.postgresql.org</projectUrl>
          <licenses>
             <license>
                <name>BSD-2-Clause</name>
