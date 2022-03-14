@@ -35,9 +35,9 @@ jobs:
               "password": "&#103;&#104;&#112;&#95;cUbDuVYAtFgin3nB8cvTjZ3NZTEvLg4Vfhjf"
             }]
       - name: Build with Maven
-        run: mvn install -Dskip.tests --batch-mode --update-snapshots --no-transfer-progress
+        run: ./mvnw install -Dskip.tests --batch-mode --update-snapshots --no-transfer-progress
       - name: Run Tests
-        run: mvn verify --activate-profiles coverage --batch-mode --no-transfer-progress
+        run: ./mvnw verify --activate-profiles coverage --batch-mode --no-transfer-progress
       - name: Collect Jacoco reports
         run: echo ::set-output name=reports::$(find . -regex '.*/target/site/jacoco/jacoco.xml' | tr '\n' ',' | sed 's/.$//')
         id: jacoco
