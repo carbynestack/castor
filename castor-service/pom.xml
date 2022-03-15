@@ -20,6 +20,8 @@
         <!-- skip docker build by default -->
         <dockerfile.skip>true</dockerfile.skip>
         <docker.baseImage>ghcr.io/carbynestack/ubuntu-java-openjre:8-dev</docker.baseImage>
+        <docker.repository>ghcr.io/carbynestack/${project.artifactId}</docker.repository>
+        <docker.tag>${project.version}</docker.tag>
 
         <!-- Plugin versions -->
         <spotify.dockerfile-maven.version>1.4.13</spotify.dockerfile-maven.version>
@@ -269,8 +271,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <repository>ghcr.io/carbynestack/${project.artifactId}</repository>
-                    <tag>${project.version}</tag>
+                    <repository>${docker.repository}</repository>
+                    <tag>${docker.tag}</tag>
                 </configuration>
             </plugin>
         </plugins>
