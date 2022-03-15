@@ -12,6 +12,12 @@ server:
   servlet:
     context-path: /
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health,prometheus
+
 carbynestack:
   castor:
     serverHeartbeat: 0
