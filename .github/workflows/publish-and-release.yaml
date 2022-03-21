@@ -26,7 +26,7 @@ jobs:
         id: short-sha
       - uses: actions/checkout@v2
       - name: Get Maven project version
-        run: echo ::set-output name=version::$(mvn -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
+        run: echo ::set-output name=version::$(./mvnw -q -Dexec.executable=echo -Dexec.args='${project.version}' --non-recursive exec:exec)
         id: maven-project
   draft-release:
     runs-on: ubuntu-20.04
@@ -92,9 +92,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Update Maven project version
-        run: mvn versions:set -DnewVersion=${{ env.VERSION }} -DprocessAllModules -DgenerateBackupPoms=false
+        run: ./mvnw versions:set -DnewVersion=${{ env.VERSION }} -DprocessAllModules -DgenerateBackupPoms=false
       - name: Publish SNAPSHOT version to GitHub Packages and Docker Image on GHCR
-        run: mvn deploy -Ddockerfile.skip=false -Dskip.tests --batch-mode --no-transfer-progress
+        run: ./mvnw deploy -Ddockerfile.skip=false -Dskip.tests --batch-mode --no-transfer-progress
       - name: Configure Helm Chart
         run: |
           sed -i 's/version: \(.*\)/version: \1-${{ env.VERSION }}/g' castor-service/charts/castor/Chart.yaml

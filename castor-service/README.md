@@ -68,7 +68,7 @@ dependency management.
 To build a custom Castor docker image, run:
 
 ```bash
-mvn clean package docker:build
+../mvnw clean package docker:build
 ```
 
 ### Deploy locally
