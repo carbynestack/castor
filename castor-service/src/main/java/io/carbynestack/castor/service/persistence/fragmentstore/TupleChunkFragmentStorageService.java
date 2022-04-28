@@ -10,6 +10,7 @@ package io.carbynestack.castor.service.persistence.fragmentstore;
 import io.carbynestack.castor.common.entities.*;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
@@ -46,6 +47,22 @@ public class TupleChunkFragmentStorageService {
       throws CastorClientException {
     checkNoConflict(fragment.getTupleChunkId(), fragment.getStartIndex(), fragment.getEndIndex());
     return fragmentRepository.save(fragment);
+  }
+
+  /**
+   * Persists a List of {@link TupleChunkFragmentEntity}
+   *
+   * @param fragments List of {@link TupleChunkFragmentEntity}s to persist.
+   * @throws IllegalArgumentException If the list or any of the given fragments is {@code null}.
+   * @throws CastorClientException If any of the tuples referenced by the given {@link
+   *     TupleChunkFragmentEntity} is already covered by another {@link TupleChunkFragmentEntity}.
+   */
+  @Transactional
+  public void keep(@NotNull List<TupleChunkFragmentEntity> fragments) throws CastorClientException {
+    for (TupleChunkFragmentEntity fragment : fragments) {
+      checkNoConflict(fragment.getTupleChunkId(), fragment.getStartIndex(), fragment.getEndIndex());
+    }
+    fragmentRepository.saveAll(fragments);
   }
 
   /**

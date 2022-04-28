@@ -42,6 +42,7 @@ castor:
   isMaster: "true"
   slaveUri: ""
   noSslValidation: "false"
+  initialFragmentSize: 1000
   redis:
     # helmfile overrides this var
     host: "redis.default.svc.cluster.local"

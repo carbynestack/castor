@@ -16,6 +16,8 @@ import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.Test;
@@ -48,6 +50,51 @@ public class TupleChunkFragmentStorageServiceTest {
     tupleChunkFragmentStorageService.keep(fragmentEntity);
 
     verify(tupleChunkFragmentRepositoryMock, times(1)).save(fragmentEntity);
+  }
+
+  @Test
+  public void givenNoConflictingFragments_whenKeepList_thenPersist() {
+    UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
+    int fragmentSize = 12;
+    List<TupleChunkFragmentEntity> fragments =
+        Arrays.asList(
+            TupleChunkFragmentEntity.of(tupleChunkId, tupleType, 0, fragmentSize),
+            TupleChunkFragmentEntity.of(tupleChunkId, tupleType, fragmentSize, fragmentSize * 2));
+
+    when(tupleChunkFragmentRepositoryMock.findFirstFragmentContainingAnyTupleOfSequence(
+            any(UUID.class), anyLong(), anyLong()))
+        .thenReturn(Optional.empty());
+
+    tupleChunkFragmentStorageService.keep(fragments);
+
+    verify(tupleChunkFragmentRepositoryMock, times(1)).saveAll(fragments);
+  }
+
+  @Test
+  public void givenConflictingFragment_whenKeepList_thenThrowException() {
+    UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
+    int fragmentSize = 12;
+    TupleChunkFragmentEntity fragment1 =
+        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, 0, fragmentSize);
+    TupleChunkFragmentEntity conflictingFragment =
+        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, fragmentSize, fragmentSize * 2);
+    List<TupleChunkFragmentEntity> fragments = Arrays.asList(fragment1, conflictingFragment);
+
+    when(tupleChunkFragmentRepositoryMock.findFirstFragmentContainingAnyTupleOfSequence(
+            tupleChunkId, fragment1.getStartIndex(), fragment1.getEndIndex()))
+        .thenReturn(Optional.empty());
+    when(tupleChunkFragmentRepositoryMock.findFirstFragmentContainingAnyTupleOfSequence(
+            tupleChunkId, conflictingFragment.getStartIndex(), conflictingFragment.getEndIndex()))
+        .thenReturn(Optional.of(conflictingFragment));
+
+    CastorClientException actualCCE =
+        assertThrows(
+            CastorClientException.class, () -> tupleChunkFragmentStorageService.keep(fragments));
+
+    assertEquals(CONFLICT_EXCEPTION_MSG, actualCCE.getMessage());
+    verify(tupleChunkFragmentRepositoryMock, never()).saveAll(anyList());
   }
 
   @Test
