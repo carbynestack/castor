@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 public final class CreateReservationSupplier implements Supplier<Reservation> {
   public static final String INSUFFICIENT_TUPLES_EXCEPTION_MSG =
-      "Insufficient Tuples of type %s available (%s out of %s)";
+      "Insufficient Tuples of type %s available (%s out of %s).";
   public static final String SHARING_RESERVATION_FAILED_EXCEPTION_MSG =
       "Sharing reservation with slave services failed.";
   public static final String FAILED_RESERVE_TUPLES_EXCEPTION_MSG = "Failed to reserve the tuples.";

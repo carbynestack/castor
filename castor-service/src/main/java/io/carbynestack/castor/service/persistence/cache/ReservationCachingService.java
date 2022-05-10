@@ -15,6 +15,7 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.download.DedicatedTransactionService;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
@@ -39,15 +40,15 @@ public class ReservationCachingService {
       "No reservation was found for requestId %s.";
   public static final String RESERVATION_CONFLICT_EXCEPTION_MSG =
       "Reservation conflict. Reservation with ID #%s already exists.";
-  public static final String RE_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT =
-      "No fragment found to fulfill given reservation: %s";
+  public static final String RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT =
+      "No fragment found to fulfill given reservation: %s.";
   public static final String NO_RELEASED_TUPLE_RESERVATION_EXCEPTION_MSG =
-      "No released tuple reservation was found for the given request ID #%s";
+      "No released tuple reservation was found for the given request ID #%s.";
   public static final String NOT_DECLARED_TO_BE_THE_MASTER_EXCEPTION_MSG =
-      "Operating as master even though service is not declared to be the master";
+      "Operating as master even though service is not declared to be the master.";
   public static final String RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG =
       "Reservation does not match expected specification (id: \"%s\", tupleType: \"%s\", count:"
-          + " %d): %s";
+          + " %d): %s.";
   public static final String FAILED_CREATE_RESERVATION_EXCEPTION_MSG =
       "Creating the reservation failed.";
 
@@ -134,7 +135,8 @@ public class ReservationCachingService {
                   .orElseThrow(
                       () ->
                           new CastorServiceException(
-                              String.format(RE_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation)));
+                              String.format(
+                                  RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation)));
           if (fragment.getStartIndex() < startIndex) {
             fragment = tupleChunkFragmentStorageService.splitBefore(fragment, startIndex);
           }
@@ -180,6 +182,16 @@ public class ReservationCachingService {
   }
 
   /**
+   * Composes and persists a {@link Reservation} according to the given parameters. When successful,
+   * the reservation will be shared with all declared followers.
+   *
+   * <p>This behaviour is supposed to be performed by declared Castor master services (see {@link
+   * CastorServiceProperties#isMaster()}) only. The method will throw an exception if called by a
+   * Castor follower service.
+   *
+   * @param reservationId Identifier for the new {@link Reservation}.
+   * @param tupleType Type of tuples to be reserved.
+   * @param count Number of tuples to reserve.
    * @throws CastorServiceException if reservation was not created successfully
    * @throws CastorServiceException if reservation was not activated successfully
    * @throws CastorServiceException if reservation was not shared successfully
@@ -248,7 +260,7 @@ public class ReservationCachingService {
       waitForReservationCallable.cancel();
       Thread.currentThread().interrupt();
     } catch (Exception e) {
-      log.debug("getReservationWithRetry threw exception.", e);
+      log.error("getReservationWithRetry threw exception.", e);
       waitForReservationCallable.cancel();
     }
     if (reservation == null) {

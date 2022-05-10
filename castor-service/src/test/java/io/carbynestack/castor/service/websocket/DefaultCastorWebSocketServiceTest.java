@@ -157,7 +157,7 @@ public class DefaultCastorWebSocketServiceTest {
     int initialFragmentSize = 7;
     int numberOfTuples = initialFragmentSize * 2 - 1;
     byte[] tupleData = RandomUtils.nextBytes(tupleType.getTupleSize() * numberOfTuples);
-    TupleChunk emptyTupleChunk =
+    TupleChunk tupleChunk =
         TupleChunk.of(tupleType.getTupleCls(), tupleType.getField(), chunkId, tupleData);
     List<TupleChunkFragmentEntity> expectedFragments =
         Arrays.asList(
@@ -166,7 +166,6 @@ public class DefaultCastorWebSocketServiceTest {
 
     when(servicePropertiesMock.getInitialFragmentSize()).thenReturn(initialFragmentSize);
 
-    assertEquals(
-        castorWebSocketService.generateFragmentsForChunk(emptyTupleChunk), expectedFragments);
+    assertEquals(castorWebSocketService.generateFragmentsForChunk(tupleChunk), expectedFragments);
   }
 }

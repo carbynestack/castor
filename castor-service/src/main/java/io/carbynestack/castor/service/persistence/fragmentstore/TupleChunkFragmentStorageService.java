@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2022 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TupleChunkFragmentStorageService {
   public static final String CONFLICT_EXCEPTION_MSG =
       "At least one tuple described by the given sequence is already referenced by another"
-          + " TupleChunkFragment";
+          + " TupleChunkFragment.";
   public static final String NOT_A_SINGLE_FRAGMENT_FOR_CHUNK_ERROR_MSG =
       "Not a single fragment associated with the given identifier.";
 
@@ -70,10 +70,10 @@ public class TupleChunkFragmentStorageService {
    * meets the following criteria:
    *
    * <ul>
-   *   <li>is available for consumption having {@link TupleChunkFragmentEntity#activationStatus} set
-   *       to {@link ActivationStatus#UNLOCKED}.
+   *   <li>is available for consumption having {@link
+   *       TupleChunkFragmentEntity#getActivationStatus()} set to {@link ActivationStatus#UNLOCKED}.
    *   <li>is not yet reserved to any other operation (having {@link
-   *       TupleChunkFragmentEntity#reservationId} set to <code>null</code>.
+   *       TupleChunkFragmentEntity#getReservationId()} set to <code>null</code>.
    *   <li>contains the specified start index in the referenced tuple sequence.
    * </ul>
    *
@@ -94,10 +94,10 @@ public class TupleChunkFragmentStorageService {
    * Gets a {@link TupleChunkFragmentEntity} that meets the following criteria:
    *
    * <ul>
-   *   <li>is available for consumption having {@link TupleChunkFragmentEntity#activationStatus} set
-   *       to {@link ActivationStatus#UNLOCKED}.
+   *   <li>is available for consumption having {@link
+   *       TupleChunkFragmentEntity#getActivationStatus()} set to {@link ActivationStatus#UNLOCKED}.
    *   <li>is not yet reserved to any other operation (having {@link
-   *       TupleChunkFragmentEntity#reservationId} set to <code>null</code>.
+   *       TupleChunkFragmentEntity#getReservationId()} set to <code>null</code>.
    *   <li>references a chunk for the requested {@link TupleType}.
    * </ul>
    *
@@ -115,7 +115,7 @@ public class TupleChunkFragmentStorageService {
 
   /**
    * Splits a {@link TupleChunkFragmentEntity} at the given index by setting the {@link
-   * TupleChunkFragmentEntity#endIndex} to the given index and creating an additional {@link
+   * TupleChunkFragmentEntity#getEndIndex()} to the given index and creating an additional {@link
    * TupleChunkFragmentEntity} for the remaining tuples.
    *
    * <p>The given fragment will remain untouched if the defined index is not <b>within</b> the
@@ -128,7 +128,10 @@ public class TupleChunkFragmentStorageService {
    */
   @Transactional
   public TupleChunkFragmentEntity splitAt(TupleChunkFragmentEntity fragment, long index) {
-    log.debug("splittingAt {} {}", index, fragment);
+    String oldFragmentState = null;
+    if (log.isDebugEnabled()) {
+      oldFragmentState = fragment.toString();
+    }
     TupleChunkFragmentEntity nf =
         TupleChunkFragmentEntity.of(
             fragment.getTupleChunkId(),
@@ -138,15 +141,19 @@ public class TupleChunkFragmentStorageService {
             fragment.getActivationStatus(),
             fragment.getReservationId());
     fragmentRepository.save(nf);
-    log.debug("  created new {}", nf);
     fragment.setEndIndex(index);
-    log.debug(" updated existing {}", fragment);
+    log.debug(
+        "Fragment {} split at index {} into\n\tnew Fragment {}\n\tand updated own state to {}",
+        oldFragmentState,
+        index,
+        nf,
+        fragment);
     return fragmentRepository.save(fragment);
   }
 
   /**
    * Splits a {@link TupleChunkFragmentEntity} at the given index by setting the {@link
-   * TupleChunkFragmentEntity#startIndex} to the given index and creating an additional {@link
+   * TupleChunkFragmentEntity#getStartIndex()} to the given index and creating an additional {@link
    * TupleChunkFragmentEntity} for the remaining tuples.
    *
    * <p>The given fragment will remain untouched if the defined index is not <b>within</b> the
@@ -163,7 +170,10 @@ public class TupleChunkFragmentStorageService {
     if (index <= fragment.getStartIndex() || index >= fragment.getEndIndex()) {
       return fragment;
     }
-    log.debug("splitting before {} {}", index, fragment);
+    String oldFragmentState = null;
+    if (log.isDebugEnabled()) {
+      oldFragmentState = fragment.toString();
+    }
     TupleChunkFragmentEntity nf =
         TupleChunkFragmentEntity.of(
             fragment.getTupleChunkId(),
@@ -172,16 +182,20 @@ public class TupleChunkFragmentStorageService {
             fragment.getEndIndex(),
             fragment.getActivationStatus(),
             fragment.getReservationId());
-    log.debug("  created new {}", nf);
     fragment.setEndIndex(index);
     fragmentRepository.save(fragment);
-    log.debug(" updated existing {}", fragment);
+    log.debug(
+        "Fragment {} split before index {} into\n\tnew Fragment {}\n\tand updated own state to {}",
+        oldFragmentState,
+        index,
+        nf,
+        fragment);
     return fragmentRepository.save(nf);
   }
 
   /**
-   * Verifies that a sequential section of tuple(s) within a {@link TupleChunk} is not yet described
-   * by a {@link TupleChunkFragmentEntity}.
+   * Verifies that a consecutive section of tuple(s) within a {@link TupleChunk} is not yet
+   * described by a {@link TupleChunkFragmentEntity}.
    *
    * @param chunkId The unique identifier of the referenced {@link TupleChunk}
    * @param startIndex The beginning of the tuple section to check
@@ -202,8 +216,8 @@ public class TupleChunkFragmentStorageService {
    * Returns the number of available tuples of a given {@link TupleType}.
    *
    * <p>Tuples referenced by {@link TupleChunkFragmentEntity fragments} that are either {@link
-   * ActivationStatus#LOCKED} or reserved (see {@link TupleChunkFragmentEntity#reservationId} are
-   * not counted.
+   * ActivationStatus#LOCKED} or reserved (see {@link TupleChunkFragmentEntity#getReservationId()})
+   * are not counted.
    *
    * @param type T{@link TupleType} of interest.
    * @return the number of available tuples for the given type.
@@ -214,7 +228,7 @@ public class TupleChunkFragmentStorageService {
     } catch (Exception e) {
       log.debug(
           String.format(
-              "FragmentRepository threw exception when requesting number of available %s:.", type),
+              "FragmentRepository threw exception when requesting number of available %s.", type),
           e);
       return 0;
     }

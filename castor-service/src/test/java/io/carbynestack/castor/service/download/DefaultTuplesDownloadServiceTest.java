@@ -106,7 +106,7 @@ public class DefaultTuplesDownloadServiceTest {
                 resultingReservationId, tupleType, singletonList(availableReservationElement))
             .setStatus(ActivationStatus.UNLOCKED);
     long expectedTupleDownloadLength = tupleType.getTupleSize() * count;
-    byte[] tupleData = RandomUtils.nextBytes((int) (tupleType.getTupleSize() * (count)));
+    byte[] tupleData = RandomUtils.nextBytes((int) expectedTupleDownloadLength);
     TupleList expectedTupleList =
         TupleList.fromStream(
             tupleType.getTupleCls(),

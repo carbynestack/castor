@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2022 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  *  SPDX-License-Identifier: Apache-2.0
@@ -9,7 +9,6 @@ package io.carbynestack.castor.service.persistence.fragmentstore;
 
 import static io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity.TABLE_NAME;
 
-import com.google.common.base.Objects;
 import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.Tuple;
 import io.carbynestack.castor.common.entities.TupleChunk;
@@ -32,6 +31,7 @@ import org.springframework.util.Assert;
  */
 @Getter
 @ToString
+@EqualsAndHashCode
 @Accessors(chain = true)
 @Entity
 @Table(name = TABLE_NAME)
@@ -43,7 +43,7 @@ public class TupleChunkFragmentEntity implements Serializable {
   public static final String TUPLE_TYPE_MUST_NOT_BE_NULL_EXCEPTION_MSG =
       "TupleType must not be null.";
   public static final String INVALID_START_INDEX_EXCEPTION_FORMAT =
-      "Illegal start index (%d). (must be >= 0)";
+      "Illegal start index (%d). (must be >= 0).";
   public static final String ILLEGAL_LAST_INDEX_EXCEPTION_FORMAT = "Illegal last index (%d).";
 
   static final String CLASS_NAME = "TupleChunkFragmentEntity";
@@ -70,29 +70,34 @@ public class TupleChunkFragmentEntity implements Serializable {
   @GeneratedValue(strategy = GenerationType.AUTO)
   @Column(name = FRAGMENT_ID_COLUMN)
   private Long id;
+
   /**
    * Unique identifier of the {@link TupleChunk} referenced by this {@link
    * TupleChunkFragmentEntity}.
    */
   @Column(name = TUPLE_CHUNK_ID_COLUMN)
   private final UUID tupleChunkId;
+
   /**
    * The type of tuples (see {@link TupleType}) described by this {@link TupleChunkFragmentEntity}
    */
   @Column(name = TUPLE_TYPE_COLUMN)
   @Enumerated(EnumType.STRING)
   private final TupleType tupleType;
+
   /**
    * The index of the first tuple within the {@link TupleChunk} referenced by this {@link
    * TupleChunkFragmentEntity}
    */
   @Column(name = START_INDEX_COLUMN)
   private final long startIndex;
+
   /**
    * The index of the last tuple (<b>exclusive</b>) of the {@link TupleChunk} referenced by this
    * {@link TupleChunkFragmentEntity}
    */
   private long endIndex;
+
   /**
    * Indicator whether the referenced {@link TupleChunk} is cleared for consumption. (see {@link
    * ActivationStatus})
@@ -101,6 +106,7 @@ public class TupleChunkFragmentEntity implements Serializable {
   @Column(name = ACTIVATION_STATUS_COLUMN)
   @Enumerated(EnumType.STRING)
   private ActivationStatus activationStatus;
+
   /**
    * The unique reservation identifier this {@link TupleChunkFragmentEntity} is reserved for /
    * related to.
@@ -203,7 +209,7 @@ public class TupleChunkFragmentEntity implements Serializable {
         tupleChunkId, tupleType, startIndex, endIndex, activationStatus, reservationId);
   }
 
-  /** @throws IllegalArgumentException if either startIndex < 0. */
+  /** @throws IllegalArgumentException if startIndex < 0. */
   private static void verifyStartIndex(long startIndex) {
     if (startIndex < 0) {
       throw new IllegalArgumentException(
@@ -217,25 +223,5 @@ public class TupleChunkFragmentEntity implements Serializable {
       throw new IllegalArgumentException(
           String.format(ILLEGAL_LAST_INDEX_EXCEPTION_FORMAT, endIndex));
     }
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    TupleChunkFragmentEntity that = (TupleChunkFragmentEntity) o;
-    return startIndex == that.startIndex
-        && endIndex == that.endIndex
-        && Objects.equal(id, that.id)
-        && Objects.equal(tupleChunkId, that.tupleChunkId)
-        && tupleType == that.tupleType
-        && activationStatus == that.activationStatus
-        && Objects.equal(reservationId, that.reservationId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(
-        id, tupleChunkId, tupleType, startIndex, endIndex, activationStatus, reservationId);
   }
 }

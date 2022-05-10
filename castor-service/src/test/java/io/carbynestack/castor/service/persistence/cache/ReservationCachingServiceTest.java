@@ -221,7 +221,8 @@ public class ReservationCachingServiceTest {
             CastorServiceException.class,
             () -> reservationCachingService.keepAndApplyReservation(r));
 
-    assertEquals(String.format(RE_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, r), actualCse.getMessage());
+    assertEquals(
+        String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, r), actualCse.getMessage());
   }
 
   @Test

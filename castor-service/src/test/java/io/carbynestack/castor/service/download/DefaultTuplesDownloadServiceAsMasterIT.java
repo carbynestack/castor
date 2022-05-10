@@ -158,7 +158,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
 
   @Test
   public void
-      givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarkerButRemainConsumptionMarkerUntouched() {
+      givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarkerButConsumptionMarkerRemainsUntouched() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
