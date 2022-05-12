@@ -7,12 +7,15 @@
 
 package io.carbynestack.castor.service.persistence.cache;
 
+import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
+import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
 import static io.carbynestack.castor.service.persistence.cache.ReservationCachingService.*;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
+import io.carbynestack.castor.client.download.CastorInterVcpClient;
 import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.ReservationElement;
@@ -20,9 +23,13 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataEntity;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
+import io.carbynestack.castor.service.download.DedicatedTransactionService;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +49,15 @@ public class ReservationCachingServiceTest {
 
   @Mock private CastorCacheProperties castorCachePropertiesMock;
 
-  @Mock private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageServiceMock;
+  @Mock private TupleChunkFragmentStorageService tupleChunkFragmentStorageServiceMock;
+
+  @Mock private CastorSlaveServiceProperties castorSlaveServicePropertiesMock;
+
+  @Mock private Optional<CastorInterVcpClient> castorInterVcpClientOptionalMock;
+
+  @Mock private Optional<DedicatedTransactionService> dedicatedTransactionServiceOptionalMock;
+
+  @Mock private ExecutorService executorServiceMock;
 
   private final String testCacheName = "testCache";
   private final String testCachePrefix = CacheKeyPrefix.simple().compute(testCacheName);
@@ -58,199 +73,23 @@ public class ReservationCachingServiceTest {
             castorCachePropertiesMock,
             consumptionCachingServiceMock,
             redisTemplateMock,
-            tupleChunkMetaDataStorageServiceMock);
-  }
-
-  @Test
-  public void givenReferencedChunkIsNotKnown_whenKeepReservation_throwCastorServiceException() {
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
-    ReservationElement reservationElementMock = mock(ReservationElement.class);
-    Reservation reservationMock = mock(Reservation.class);
-
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
-    when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(null);
-
-    CastorServiceException actualCse =
-        assertThrows(
-            CastorServiceException.class,
-            () -> reservationCachingService.keepReservation(reservationMock));
-
-    assertEquals(
-        String.format(NO_METADATA_FOR_REFERENCED_CHUNK_EXCEPTION_MSG, chunkId),
-        actualCse.getMessage());
-  }
-
-  @Test
-  public void givenReferencedChunkIsNotUnlocked_whenKeepReservation_throwCastorServiceException() {
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
-    ReservationElement reservationElementMock = mock(ReservationElement.class);
-    Reservation reservationMock = mock(Reservation.class);
-    TupleChunkMetaDataEntity metaDataMock = mock(TupleChunkMetaDataEntity.class);
-
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
-    when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(metaDataMock);
-    when(metaDataMock.getStatus()).thenReturn(ActivationStatus.LOCKED);
-
-    CastorServiceException actualCse =
-        assertThrows(
-            CastorServiceException.class,
-            () -> reservationCachingService.keepReservation(reservationMock));
-
-    assertEquals(
-        String.format(REFERENCED_CHUNK_NOT_ACTIVATED_EXCEPTION_MSG, chunkId),
-        actualCse.getMessage());
-  }
-
-  @Test
-  public void
-      givenReferencedChunkTupleTypeMismatch_whenKeepReservation_throwCastorServiceException() {
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
-    TupleType requestedTupleType = TupleType.INPUT_MASK_GFP;
-    TupleType actualTupleType = TupleType.SQUARE_TUPLE_GF2N;
-    ReservationElement reservationElementMock = mock(ReservationElement.class);
-    Reservation reservationMock = mock(Reservation.class);
-    TupleChunkMetaDataEntity metaDataMock = mock(TupleChunkMetaDataEntity.class);
-
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
-    when(reservationMock.getTupleType()).thenReturn(requestedTupleType);
-    when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(metaDataMock);
-    when(metaDataMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
-    when(metaDataMock.getTupleType()).thenReturn(actualTupleType);
-
-    CastorServiceException actualCse =
-        assertThrows(
-            CastorServiceException.class,
-            () -> reservationCachingService.keepReservation(reservationMock));
-
-    assertEquals(
-        String.format(TUPLE_TYPE_MISMATCH_EXCEPTION_MSG, actualTupleType, requestedTupleType),
-        actualCse.getMessage());
-  }
-
-  @Test
-  public void
-      givenTuplesOfReferencedChunkNotAvailable_whenKeepReservation_throwCastorServiceException() {
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
-    TupleType tupleType = TupleType.INPUT_MASK_GFP;
-    long reservedMarker = 5;
-    long startIndex = 0;
-    ReservationElement reservationElementMock = mock(ReservationElement.class);
-    Reservation reservationMock = mock(Reservation.class);
-    TupleChunkMetaDataEntity metaDataMock = mock(TupleChunkMetaDataEntity.class);
-
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
-    when(reservationElementMock.getStartIndex()).thenReturn(startIndex);
-    when(reservationMock.getTupleType()).thenReturn(tupleType);
-    when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(metaDataMock);
-    when(metaDataMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
-    when(metaDataMock.getTupleType()).thenReturn(tupleType);
-    when(metaDataMock.getReservedMarker()).thenReturn(reservedMarker);
-
-    CastorServiceException actualCse =
-        assertThrows(
-            CastorServiceException.class,
-            () -> reservationCachingService.keepReservation(reservationMock));
-
-    assertEquals(TUPLES_NOT_AVAILABLE_EXCEPTION_MSG, actualCse.getMessage());
-  }
-
-  @Test
-  public void givenChunkHasNotEnoughTuples_whenKeepReservation_throwCastorServiceException() {
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
-    TupleType tupleType = TupleType.INPUT_MASK_GFP;
-    long tupleStartIndex = 5;
-    long requestedTuples = 10;
-    long totalTuplesInChunk = 10;
-    ReservationElement reservationElementMock = mock(ReservationElement.class);
-    Reservation reservationMock = mock(Reservation.class);
-    TupleChunkMetaDataEntity metaDataMock = mock(TupleChunkMetaDataEntity.class);
-
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
-    when(reservationElementMock.getStartIndex()).thenReturn(tupleStartIndex);
-    when(reservationElementMock.getReservedTuples()).thenReturn(requestedTuples);
-    when(reservationMock.getTupleType()).thenReturn(tupleType);
-    when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(metaDataMock);
-    when(metaDataMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
-    when(metaDataMock.getTupleType()).thenReturn(tupleType);
-    when(metaDataMock.getReservedMarker()).thenReturn(tupleStartIndex);
-    when(metaDataMock.getNumberOfTuples()).thenReturn(totalTuplesInChunk);
-
-    CastorServiceException actualCse =
-        assertThrows(
-            CastorServiceException.class,
-            () -> reservationCachingService.keepReservation(reservationMock));
-
-    assertEquals(
-        String.format(
-            NOT_ENOUGH_TUPLES_IN_CHUNK_EXCEPTION_MSG,
-            requestedTuples,
-            totalTuplesInChunk - tupleStartIndex),
-        actualCse.getMessage());
-  }
-
-  @Test
-  public void
-      givenUpdateReservedTuplesForChunkFails_whenKeepReservation_thenThrowCastorServiceException() {
-    CastorClientException expectedException = new CastorClientException("expected");
-    long consumption = 42;
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
-    ReservationElement reservationElementMock = mock(ReservationElement.class);
-    String reservationId = "reservationId";
-    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
-    Reservation reservationMock = mock(Reservation.class);
-    TupleChunkMetaDataEntity metaDataMock = mock(TupleChunkMetaDataEntity.class);
-
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
-    when(reservationElementMock.getReservedTuples()).thenReturn(consumption);
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(metaDataMock);
-    when(metaDataMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
-    when(metaDataMock.getReservedMarker()).thenReturn(0L);
-    when(metaDataMock.getNumberOfTuples()).thenReturn(consumption);
-    when(metaDataMock.getTupleType()).thenReturn(tupleType);
-    when(reservationMock.getReservationId()).thenReturn(reservationId);
-    when(reservationMock.getTupleType()).thenReturn(tupleType);
-    when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
-    when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(null);
-    doThrow(expectedException)
-        .when(tupleChunkMetaDataStorageServiceMock)
-        .updateReservationForTupleChunkData(chunkId, consumption);
-
-    CastorServiceException actualCse =
-        assertThrows(
-            CastorServiceException.class,
-            () -> reservationCachingService.keepReservation(reservationMock));
-
-    assertEquals(
-        String.format(FAILED_UPDATING_RESERVATION_EXCEPTION_MSG, chunkId), actualCse.getMessage());
-    assertEquals(expectedException, actualCse.getCause());
-    verify(valueOperationsMock).set(testCachePrefix + reservationId, reservationMock);
-    verify(consumptionCachingServiceMock, never())
-        .keepConsumption(anyLong(), any(TupleType.class), anyLong());
+            tupleChunkFragmentStorageServiceMock,
+            castorSlaveServicePropertiesMock,
+            castorInterVcpClientOptionalMock,
+            dedicatedTransactionServiceOptionalMock);
+    this.reservationCachingService.executorService = executorServiceMock;
   }
 
   @Test
   public void
       givenNoReservationWithGivenIdInCache_whenKeepReservation_thenStoreInCacheAndEmitConsumption() {
     long consumption = 42;
-    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
     ReservationElement reservationElementMock = mock(ReservationElement.class);
     String reservationId = "reservationId";
-    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
     Reservation reservationMock = mock(Reservation.class);
-    TupleChunkMetaDataEntity metaDataMock = mock(TupleChunkMetaDataEntity.class);
 
-    when(reservationElementMock.getTupleChunkId()).thenReturn(chunkId);
     when(reservationElementMock.getReservedTuples()).thenReturn(consumption);
-    when(tupleChunkMetaDataStorageServiceMock.getTupleChunkData(chunkId)).thenReturn(metaDataMock);
-    when(metaDataMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
-    when(metaDataMock.getReservedMarker()).thenReturn(0L);
-    when(metaDataMock.getNumberOfTuples()).thenReturn(consumption);
-    when(metaDataMock.getTupleType()).thenReturn(tupleType);
     when(reservationMock.getReservationId()).thenReturn(reservationId);
     when(reservationMock.getTupleType()).thenReturn(tupleType);
     when(reservationMock.getReservations()).thenReturn(singletonList(reservationElementMock));
@@ -259,8 +98,6 @@ public class ReservationCachingServiceTest {
     reservationCachingService.keepReservation(reservationMock);
 
     verify(valueOperationsMock).set(testCachePrefix + reservationId, reservationMock);
-    verify(tupleChunkMetaDataStorageServiceMock)
-        .updateReservationForTupleChunkData(chunkId, consumption);
     verify(consumptionCachingServiceMock)
         .keepConsumption(anyLong(), eq(tupleType), eq(consumption));
   }
@@ -319,13 +156,22 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void givenReservationWithIdInCache_whenGetReservation_thenReturnExpectedReservation() {
+  public void
+      givenReservationWithIdInCache_whenGetUnlockedReservation_thenReturnExpectedReservation() {
+    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
+    long tupleCount = 42;
     String reservationId = "reservationId";
-    Reservation reservationMock = mock(Reservation.class);
+    ReservationElement existingReservationElement = new ReservationElement(chunkId, tupleCount, 0);
+    Reservation existingReservation =
+        new Reservation(reservationId, tupleType, singletonList(existingReservationElement))
+            .setStatus(ActivationStatus.UNLOCKED);
 
-    when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(reservationMock);
+    when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
 
-    assertEquals(reservationMock, reservationCachingService.getReservation(reservationId));
+    assertEquals(
+        existingReservation,
+        reservationCachingService.getUnlockedReservation(reservationId, tupleType, tupleCount));
   }
 
   @Test
@@ -335,5 +181,327 @@ public class ReservationCachingServiceTest {
     reservationCachingService.forgetReservation(reservationId);
 
     verify(redisTemplateMock).delete(testCachePrefix + reservationId);
+  }
+
+  @Test
+  public void givenAlreadyAReservationWithGivenIdInCache_whenKeepAndApplyReservation_thenThrow() {
+    String reservationId = "testReservation";
+    Reservation existingReservationMock = mock(Reservation.class);
+
+    when(existingReservationMock.getReservationId()).thenReturn(reservationId);
+    when(valueOperationsMock.get(testCachePrefix + reservationId))
+        .thenReturn(existingReservationMock);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () -> reservationCachingService.keepAndApplyReservation(existingReservationMock));
+
+    assertEquals(
+        String.format(RESERVATION_CONFLICT_EXCEPTION_MSG, reservationId), actualCse.getMessage());
+  }
+
+  @Test
+  public void givenNoFragmentWithReferencedStartIndex_whenKeepAndApplyReservation_thenThrow() {
+    UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    long requestedStartIndex = 42;
+    long requestedLength = 21;
+    ReservationElement re =
+        new ReservationElement(tupleChunkId, requestedLength, requestedStartIndex);
+    String reservationId = "testReservation";
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
+    Reservation r = new Reservation(reservationId, tupleType, singletonList(re));
+
+    when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentForChunkContainingIndex(
+            tupleChunkId, requestedStartIndex))
+        .thenReturn(Optional.empty());
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () -> reservationCachingService.keepAndApplyReservation(r));
+
+    assertEquals(
+        String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, r), actualCse.getMessage());
+  }
+
+  @Test
+  public void
+      givenReferencedSequenceLiesWithin_whenKeepAndApplyReservation_thenSplitFragmentAccordingly() {
+    UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    long requestedStartIndex = 42;
+    long requestedLength = 21;
+    ReservationElement re =
+        new ReservationElement(tupleChunkId, requestedLength, requestedStartIndex);
+    String reservationId = "testReservation";
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
+    Reservation r = new Reservation(reservationId, tupleType, singletonList(re));
+    long existingFragmentStartIndex = 0;
+    long existingFragmentEndIndex = 99;
+    TupleChunkFragmentEntity existingFragment =
+        TupleChunkFragmentEntity.of(
+            tupleChunkId,
+            tupleType,
+            existingFragmentStartIndex,
+            existingFragmentEndIndex,
+            ActivationStatus.UNLOCKED,
+            null);
+
+    when(tupleChunkFragmentStorageServiceMock.splitAt(
+            existingFragment, requestedStartIndex + requestedLength))
+        .thenReturn(existingFragment);
+    when(tupleChunkFragmentStorageServiceMock.splitBefore(existingFragment, requestedStartIndex))
+        .thenReturn(existingFragment);
+    when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentForChunkContainingIndex(
+            tupleChunkId, requestedStartIndex))
+        .thenReturn(Optional.of(existingFragment));
+
+    reservationCachingService.keepAndApplyReservation(r);
+    verify(tupleChunkFragmentStorageServiceMock, times(1)).update(existingFragment);
+    verify(tupleChunkFragmentStorageServiceMock, times(1))
+        .splitBefore(existingFragment, requestedStartIndex);
+    verify(tupleChunkFragmentStorageServiceMock, times(1))
+        .splitAt(existingFragment, requestedStartIndex + requestedLength);
+    verify(consumptionCachingServiceMock)
+        .keepConsumption(anyLong(), eq(tupleType), eq(requestedLength));
+  }
+
+  @Test
+  public void
+      givenNoReservationReceivedInTime_whenGetReservationWithRetry_thenThrowCastorServiceException()
+          throws ExecutionException, InterruptedException, TimeoutException {
+    String reservationId = "testReservationId";
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
+    long tupleCount = 42;
+    long retryDelay = 5;
+    long reservationTimeout = 0;
+    when(castorSlaveServicePropertiesMock.getRetryDelay()).thenReturn(retryDelay);
+    when(castorSlaveServicePropertiesMock.getWaitForReservationTimeout())
+        .thenReturn(reservationTimeout);
+    Future<Reservation> reservationFutureMock = mock(Future.class);
+
+    when(executorServiceMock.submit(any(WaitForReservationCallable.class)))
+        .thenReturn(reservationFutureMock);
+    when(reservationFutureMock.get(reservationTimeout, TimeUnit.MILLISECONDS))
+        .thenThrow(new InterruptedException("expected"));
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () ->
+                reservationCachingService.getReservationWithRetry(
+                    reservationId, tupleType, tupleCount));
+    assertEquals(
+        String.format(NO_RELEASED_TUPLE_RESERVATION_EXCEPTION_MSG, reservationId),
+        actualCse.getMessage());
+  }
+
+  @Test
+  public void givenSuccessfulRequest_whenGetReservationWithRetry_thenReturnExpectedReservation()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    String reservationId = "testReservationId";
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
+    long tupleCount = 42;
+    long retryDelay = 5;
+    long reservationTimeout = 10;
+    Reservation expectedReservationMock = mock(Reservation.class);
+    Future<Reservation> reservationFutureMock = mock(Future.class);
+
+    when(castorSlaveServicePropertiesMock.getRetryDelay()).thenReturn(retryDelay);
+    when(castorSlaveServicePropertiesMock.getWaitForReservationTimeout())
+        .thenReturn(reservationTimeout);
+    when(executorServiceMock.submit(any(WaitForReservationCallable.class)))
+        .thenReturn(reservationFutureMock);
+    when(reservationFutureMock.get(reservationTimeout, TimeUnit.MILLISECONDS))
+        .thenReturn(expectedReservationMock);
+
+    assertEquals(
+        expectedReservationMock,
+        reservationCachingService.getReservationWithRetry(reservationId, tupleType, tupleCount));
+  }
+
+  @Test
+  public void
+      givenDedicatedTransactionServiceNotDefined_whenGetOrCreateReservation_thenThrowCastorServiceException() {
+    when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(false);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () ->
+                reservationCachingService.createReservation(
+                    "testReservationId", INPUT_MASK_GFP, 42));
+
+    assertEquals(NOT_DECLARED_TO_BE_THE_MASTER_EXCEPTION_MSG, actualCse.getMessage());
+  }
+
+  @Test
+  public void
+      givenCastorInterVcpClientIsNotDefined_whenGetOrCreateReservation_thenThrowCastorServiceException() {
+    when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
+    when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(false);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () ->
+                reservationCachingService.createReservation(
+                    "testReservationId", INPUT_MASK_GFP, 42));
+
+    assertEquals(NOT_DECLARED_TO_BE_THE_MASTER_EXCEPTION_MSG, actualCse.getMessage());
+  }
+
+  @Test
+  public void
+      givenUnlockedReservationWithMatchingConfigurationInCache_whenGetReservation_thenReturnCachedReservation() {
+    String reservationId = "testReservationId";
+    TupleType tupleType = INPUT_MASK_GFP;
+    long count = 42;
+    Reservation expectedReservationMock = mock(Reservation.class);
+    ReservationElement reservationElementMock = mock(ReservationElement.class);
+
+    when(valueOperationsMock.get(testCachePrefix + reservationId))
+        .thenReturn(expectedReservationMock);
+    when(expectedReservationMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
+    when(expectedReservationMock.getTupleType()).thenReturn(tupleType);
+    when(reservationElementMock.getReservedTuples()).thenReturn(count);
+    when(expectedReservationMock.getReservations())
+        .thenReturn(singletonList(reservationElementMock));
+
+    assertEquals(
+        expectedReservationMock,
+        reservationCachingService.getUnlockedReservation(reservationId, tupleType, count));
+  }
+
+  @Test
+  public void
+      givenCachedReservationForIdMismatchType_whenGetUnlockedReservation_thenThrowCastorServiceException() {
+    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
+    String reservationId = "testReservationId";
+    TupleType tupleType = INPUT_MASK_GFP;
+    TupleType mismatchedTupleType = MULTIPLICATION_TRIPLE_GFP;
+    long count = 42;
+    ReservationElement existingReservationElement = new ReservationElement(chunkId, count, 0);
+    Reservation existingReservation =
+        new Reservation(
+                reservationId, mismatchedTupleType, singletonList(existingReservationElement))
+            .setStatus(ActivationStatus.UNLOCKED);
+
+    when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () ->
+                reservationCachingService.getUnlockedReservation(reservationId, tupleType, count));
+
+    assertEquals(
+        String.format(
+            RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,
+            reservationId,
+            tupleType,
+            count,
+            existingReservation),
+        actualCse.getMessage());
+  }
+
+  @Test
+  public void
+      givenCachedReservationForIdMismatchReservedCount_whenGetUnlockedReservation_thenThrowCastorServiceException() {
+    UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
+    String reservationId = "testReservationId";
+    TupleType tupleType = INPUT_MASK_GFP;
+    long count = 42;
+    ReservationElement existingReservationElement = new ReservationElement(chunkId, count - 1, 0);
+    Reservation existingReservation =
+        new Reservation(reservationId, tupleType, singletonList(existingReservationElement))
+            .setStatus(ActivationStatus.UNLOCKED);
+
+    when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () ->
+                reservationCachingService.getUnlockedReservation(reservationId, tupleType, count));
+
+    assertEquals(
+        String.format(
+            RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,
+            reservationId,
+            tupleType,
+            count,
+            existingReservation),
+        actualCse.getMessage());
+  }
+
+  @Test
+  public void
+      givenNoCachedReservationButCreationThrows_whenCreateReservation_thenThrowCastorServiceException() {
+    String reservationId = "testReservationId";
+    CastorClientException expectedException = new CastorClientException("expected");
+    DedicatedTransactionService dedicatedTransactionServiceMock =
+        mock(DedicatedTransactionService.class);
+
+    when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceMock);
+    when(dedicatedTransactionServiceMock.runAsNewTransaction(any(CreateReservationSupplier.class)))
+        .thenThrow(expectedException);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () -> reservationCachingService.createReservation(reservationId, INPUT_MASK_GFP, 42));
+
+    assertEquals(FAILED_CREATE_RESERVATION_EXCEPTION_MSG, actualCse.getMessage());
+    assertEquals(expectedException, actualCse.getCause());
+  }
+
+  @Test
+  public void
+      givenNoCachedReservationActivationThrows_whenCreateReservation_thenThrowCastorServiceException() {
+    String reservationId = "testReservationId";
+    CastorClientException expectedException = new CastorClientException("expected");
+    DedicatedTransactionService dedicatedTransactionServiceMock =
+        mock(DedicatedTransactionService.class);
+    Reservation reservationMock = mock(Reservation.class);
+
+    when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceMock);
+    when(dedicatedTransactionServiceMock.runAsNewTransaction(any(CreateReservationSupplier.class)))
+        .thenReturn(reservationMock);
+    when(dedicatedTransactionServiceMock.runAsNewTransaction(any(UnlockReservationSupplier.class)))
+        .thenThrow(expectedException);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () -> reservationCachingService.createReservation(reservationId, INPUT_MASK_GFP, 42));
+
+    assertEquals(FAILED_CREATE_RESERVATION_EXCEPTION_MSG, actualCse.getMessage());
+    assertEquals(expectedException, actualCse.getCause());
+  }
+
+  @Test
+  public void
+      givenNoCachedReservationAndSuccessfulRequest_whenGetOrCreateReservation_thenReturnNewReservation() {
+    String reservationId = "testReservationId";
+    DedicatedTransactionService dedicatedTransactionServiceMock =
+        mock(DedicatedTransactionService.class);
+    Reservation expectedReservationMock = mock(Reservation.class);
+
+    when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceMock);
+    when(dedicatedTransactionServiceMock.runAsNewTransaction(any(CreateReservationSupplier.class)))
+        .thenReturn(expectedReservationMock);
+    when(dedicatedTransactionServiceMock.runAsNewTransaction(any(UnlockReservationSupplier.class)))
+        .thenReturn(expectedReservationMock);
+
+    assertEquals(
+        expectedReservationMock,
+        reservationCachingService.createReservation(reservationId, INPUT_MASK_GFP, 42));
   }
 }

@@ -11,7 +11,7 @@ import io.carbynestack.castor.common.entities.TelemetryData;
 import io.carbynestack.castor.common.entities.TupleMetric;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.service.persistence.cache.ConsumptionCachingService;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor(onConstructor_ = @Autowired)
 public class TelemetryService {
 
-  private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageService;
+  private TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
   private ConsumptionCachingService consumptionCachingService;
 
   public TelemetryData getTelemetryDataForInterval(Duration interval) {
@@ -32,7 +32,7 @@ public class TelemetryService {
     for (TupleType type : TupleType.values()) {
       TupleMetric metric =
           TupleMetric.of(
-              tupleChunkMetaDataStorageService.getAvailableTuples(type),
+              tupleChunkFragmentStorageService.getAvailableTuples(type),
               getConsumptionRateForType(interval, type),
               type);
       metrics.add(metric);

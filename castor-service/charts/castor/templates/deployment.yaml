@@ -38,6 +38,8 @@ spec:
               value: "{{ .Values.castor.slaveUri }}"
             - name: NO_SSL_VALIDATION
               value: "{{ .Values.castor.noSslValidation }}"
+            - name: INITIAL_FRAGMENT_SIZE
+              value: {{ .Values.castor.initialFragmentSize }}
             - name: REDIS_HOST
               value: {{ .Values.castor.redis.host }}
             - name: REDIS_PORT

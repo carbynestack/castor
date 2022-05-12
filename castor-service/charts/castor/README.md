@@ -72,8 +72,9 @@ documentation for the
 | `castor.image.tag`                         | Castor Image tag                                                                          | `latest`                                      |
 | `castor.image.pullPolicy`                  | Castor Image pull policy                                                                  | `IfNotPresent`                                |
 | `castor.springActiveProfiles`              | Defines the Castor's Spring profiles to be loaded                                         | `k8s`                                         |
-| \`castor.isMaster                          | Defines if Castor is running as a master service                                          | `true`                                        |
-| \`castor.slaveUri                          | Defines the URI for the Castor slave service                                              | \`\`                                          |
+| `castor.isMaster`                          | Defines if Castor is running as a master service                                          | `true`                                        |
+| `castor.slaveUri`                          | Defines the URI for the Castor slave service                                              | \`\`                                          |
+| `castor.initialFragmentSize`               | Defines the initial size of the fragments a chunk is split into                           | `1000`                                        |
 | `castor.redis.host`                        | The host address to the redis key/value store                                             | `redis.default.svc.cluster.local`             |
 | `castor.redis.port`                        | The port of the redis key/value store                                                     | `6379`                                        |
 | `castor.minio.endpoint`                    | The minio object store endpoint                                                           | `http://minio.default.svc.cluster.local:9000` |
@@ -81,12 +82,12 @@ documentation for the
 | `castor.redis.port`                        | The postgres database port                                                                | `5432`                                        |
 | `castor.db.userSecretName`                 | Name of an existing secret to be used for the database username                           | \`\`                                          |
 | `castor.db.passwordSecretName`             | Name of an existing secret to be used for the database password                           | \`\`                                          |
-| \`castor.probes.liveness.initialDelay      | Number of seconds after the container has started before the liveness probe is initiated  | `120`                                         |
-| \`castor.probes.liveness.period            | How often (in seconds) to perform the liveness probe                                      | `10`                                          |
-| \`castor.probes.liveness.failureThreshold  | How often to fail the liveness probe before finally be marked as unsuccessful             | `3`                                           |
-| \`castor.probes.readiness.initialDelay     | Number of seconds after the container has started before the readiness probe is initiated | `0`                                           |
-| \`castor.probes.readiness.period           | How often (in seconds) to perform the readiness probe                                     | `5`                                           |
-| \`castor.probes.readiness.failureThreshold | How often to fail the readiness probe before finally be marked as unsuccessful            | `3`                                           |
+| `castor.probes.liveness.initialDelay`      | Number of seconds after the container has started before the liveness probe is initiated  | `120`                                         |
+| `castor.probes.liveness.period`            | How often (in seconds) to perform the liveness probe                                      | `10`                                          |
+| `castor.probes.liveness.failureThreshold`  | How often to fail the liveness probe before finally be marked as unsuccessful             | `3`                                           |
+| `castor.probes.readiness.initialDelay`     | Number of seconds after the container has started before the readiness probe is initiated | `0`                                           |
+| `castor.probes.readiness.period`           | How often (in seconds) to perform the readiness probe                                     | `5`                                           |
+| `castor.probes.readiness.failureThreshold` | How often to fail the readiness probe before finally be marked as unsuccessful            | `3`                                           |
 | `redis.name`                               | Name for the redis container                                                              | `redis`                                       |
 | `redis.image.repository`                   | Redis Image name                                                                          | `redis`                                       |
 | `redis.image.tag`                          | Redis Image tag                                                                           | `latest`                                      |

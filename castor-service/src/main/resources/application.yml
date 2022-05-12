@@ -26,6 +26,7 @@ carbynestack:
     master: ${IS_MASTER:true}
     noSslValidation: ${NO_SSL_VALIDATION:false}
     trustedCertificates: ${TRUSTED_CERTIFICATES:} # list of trusted certificates comma separated (absolute path)
+    initialFragmentSize: ${INITIAL_FRAGMENT_SIZE:1000} # Default size of the fragments an uploaded tuple chunk is split into.
     slaveUris:
       - ${SLAVE_URI} #can be an empty string, if this is the slave
     slave:
