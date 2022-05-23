@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 import io.carbynestack.castor.common.entities.TelemetryData;
 import io.carbynestack.castor.common.entities.TupleMetric;
 import io.carbynestack.castor.service.persistence.cache.ConsumptionCachingService;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -28,7 +28,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TelemetryServiceTest {
-  @Mock private TupleChunkMetaDataStorageService tupleChunkMetaDataStorageServiceMock;
+  @Mock private TupleChunkFragmentStorageService fragmentStorageServiceMock;
   @Mock private ConsumptionCachingService consumptionCachingServiceMock;
 
   @InjectMocks private TelemetryService telemetryService;
@@ -51,7 +51,7 @@ public class TelemetryServiceTest {
             TupleMetric.of(10, 1024, MULTIPLICATION_TRIPLE_GF2N));
     expectedMetrics.forEach(
         m -> {
-          when(tupleChunkMetaDataStorageServiceMock.getAvailableTuples(m.getType()))
+          when(fragmentStorageServiceMock.getAvailableTuples(m.getType()))
               .thenReturn(m.getAvailable());
           when(consumptionCachingServiceMock.getConsumptionForTupleType(anyLong(), eq(m.getType())))
               .thenReturn(m.getConsumptionRate() * interval.getSeconds());

@@ -28,6 +28,7 @@ public class CastorServiceProperties {
   private List<String> slaveUris;
   private boolean noSslValidation = false;
   private List<File> trustedCertificates = new ArrayList<>();
+  private int initialFragmentSize;
 
   private CastorCacheProperties cache;
   private CastorSlaveServiceProperties slave;

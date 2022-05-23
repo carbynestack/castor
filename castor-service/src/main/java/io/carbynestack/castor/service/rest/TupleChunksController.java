@@ -9,8 +9,8 @@ package io.carbynestack.castor.service.rest;
 
 import static io.carbynestack.castor.common.rest.CastorRestApiEndpoints.*;
 
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataEntity;
-import io.carbynestack.castor.service.persistence.markerstore.TupleChunkMetaDataStorageService;
+import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,17 +26,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = INTRA_VCP_OPERATIONS_SEGMENT + ACTIVATE_TUPLE_CHUNK_ENDPOINT)
 @AllArgsConstructor(onConstructor_ = @Autowired)
 public class TupleChunksController {
-  private final TupleChunkMetaDataStorageService tupleChunkMetaDataStorageService;
+  private final TupleChunkFragmentStorageService fragmentStorageService;
 
   /**
    * @param chunkId Unique identifier of the Tuple Chunk.
-   * @return
+   * @throws CastorServiceException if not a single TupleChunkFragmentEntity was associated with the
+   *     given tuple chunk id
    */
   @PutMapping(path = "/{" + TUPLE_CHUNK_ID_PARAMETER + "}")
-  public ResponseEntity<TupleChunkMetaDataEntity> activateTupleChunk(
+  public ResponseEntity<String> activateTupleChunk(
       @PathVariable(value = TUPLE_CHUNK_ID_PARAMETER) UUID chunkId) {
     Assert.notNull(chunkId, "Chunk identifier must not be omitted");
-    return new ResponseEntity<>(
-        this.tupleChunkMetaDataStorageService.activateTupleChunk(chunkId), HttpStatus.OK);
+    this.fragmentStorageService.activateFragmentsForTupleChunk(chunkId);
+    return new ResponseEntity<>(HttpStatus.OK);
   }
 }
