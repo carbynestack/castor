@@ -33,17 +33,17 @@ spec:
             - name: SPRING_PROFILES_ACTIVE
               value: {{ .Values.castor.springActiveProfiles }}
             - name: IS_MASTER
-              value: "{{ .Values.castor.isMaster }}"
+              value: {{ .Values.castor.isMaster | quote }}
             - name: SLAVE_URI
-              value: "{{ .Values.castor.slaveUri }}"
+              value: {{ .Values.castor.slaveUri | quote }}
             - name: NO_SSL_VALIDATION
-              value: "{{ .Values.castor.noSslValidation }}"
+              value: {{ .Values.castor.noSslValidation | quote }}
             - name: INITIAL_FRAGMENT_SIZE
-              value: {{ .Values.castor.initialFragmentSize }}
+              value: {{ .Values.castor.initialFragmentSize | quote }}
             - name: REDIS_HOST
               value: {{ .Values.castor.redis.host }}
             - name: REDIS_PORT
-              value:  "{{ .Values.castor.redis.port }}"
+              value:  {{ .Values.castor.redis.port | quote }}
             - name: MINIO_ENDPOINT
               value: {{ .Values.castor.minio.endpoint }}
             - name: DB_HOST
@@ -59,9 +59,9 @@ spec:
                   name: {{ .Values.castor.db.passwordSecretName }}
                   key: password
             - name: DB_PORT
-              value: "{{ .Values.castor.db.port }}"
+              value: {{ .Values.castor.db.port | quote }}
             - name: LOG_LEVEL
-              value: "{{ .Values.castor.logLevel }}"
+              value: {{ .Values.castor.logLevel | quote }}
           ports:
             - name: mgmt
               containerPort: 10100
