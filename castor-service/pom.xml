@@ -29,7 +29,7 @@
         <!-- external lib versions -->
         <aspectj-weaver.version>1.9.7</aspectj-weaver.version>
         <jedis.version>3.2.0</jedis.version>
-        <minio-sdk.version>8.2.1</minio-sdk.version>
+        <minio-sdk.version>8.4.6</minio-sdk.version>
         <postgresql-java-client.version>42.2.25</postgresql-java-client.version>
         <spring-cloud.version>Hoxton.RELEASE</spring-cloud.version>
         <spring-data-redis.version>2.2.4.RELEASE</spring-data-redis.version>
