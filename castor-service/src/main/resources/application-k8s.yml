@@ -1,10 +1,8 @@
 # Configuration for profile docker.
 spring:
-  profiles: k8s
-  profiles.include:
-    - tuplestore-minio
-    - cache-redis
-    - markerstorage-postgres-k8s
+  config:
+    activate:
+      on-profile: k8s
 
 logging:
   level:

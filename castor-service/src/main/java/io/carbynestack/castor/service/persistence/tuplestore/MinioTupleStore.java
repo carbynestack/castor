@@ -72,7 +72,6 @@ public class MinioTupleStore implements TupleStore {
               .bucket(minioProperties.getBucket())
               .object(tupleChunk.getChunkId().toString())
               .stream(inputStream, tupleChunk.getTuples().length, -1)
-              .contentType("ByteArray")
               .build());
     } catch (InvalidKeyException
         | IOException
