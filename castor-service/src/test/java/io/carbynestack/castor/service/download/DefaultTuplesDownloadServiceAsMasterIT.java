@@ -256,7 +256,6 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
               .bucket(minioProperties.getBucket())
               .object(chunkId.toString())
               .stream(inputStream, size, -1)
-              .contentType("ByteArray")
               .build());
     }
 

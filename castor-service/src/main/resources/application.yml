@@ -1,3 +1,8 @@
+spring:
+  profiles:
+    group:
+      k8s: tuplestore-minio, cache-redis, markerstorage-postgres-k8s
+
 # Configuration of Acutator info endpoint
 info:
   name: "@project.name@"

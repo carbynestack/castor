@@ -75,7 +75,6 @@ public class MinioTupleStoreTest {
     PutObjectArgs actualPoa = poaCaptor.getValue();
     assertEquals(testBucketName, actualPoa.bucket());
     assertEquals(chunkId.toString(), actualPoa.object());
-    assertEquals("ByteArray", actualPoa.contentType());
     assertArrayEquals(chunkData, IOUtils.toByteArray(actualPoa.stream()));
   }
 
@@ -101,7 +100,6 @@ public class MinioTupleStoreTest {
     PutObjectArgs actualPoa = poaCaptor.getValue();
     assertEquals(testBucketName, actualPoa.bucket());
     assertEquals(chunkId.toString(), actualPoa.object());
-    assertEquals("ByteArray", actualPoa.contentType());
     assertArrayEquals(chunkData, IOUtils.toByteArray(actualPoa.stream()));
   }
 

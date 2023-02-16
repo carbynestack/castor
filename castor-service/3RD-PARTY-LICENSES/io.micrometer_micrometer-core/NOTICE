@@ -37,13 +37,6 @@ in the Moshi library distributed by Square, Inc:
   * License: Apache License v2.0
   * Homepage: https://github.com/square/moshi
 
-The micrometer-core and micrometer-registry-statsd modules package a
-modified copy of the PCollections library by Harold Cooper.
-
-  * Copyright 2008 Harold Cooper
-  * License: MIT License
-  * Homepage: https://github.com/hrldcpr/pcollections
-
 This product contains a modified portion of the 'org.springframework.lang'
 package in the Spring Framework library, distributed by VMware, Inc:
 

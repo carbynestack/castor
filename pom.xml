@@ -66,18 +66,19 @@
 
         <!-- internal dependency versions -->
         <cs-spdz-integration.version>0.1-SNAPSHOT-1257545971-1-d751c28</cs-spdz-integration.version>
-        <cs-java-client.version>0.1-SNAPSHOT-1257534854-1-46815a7</cs-java-client.version>
+        <cs-java-client.version>0.1-SNAPSHOT-4075044562-9-8ffab9c</cs-java-client.version>
 
         <!-- external dependency versions -->
-        <commons-io.version>2.9.0</commons-io.version>
+        <commons-io.version>2.11.0</commons-io.version>
         <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
-        <junit.version>4.13</junit.version>
-        <log4j.version>2.16.0</log4j.version>
-        <lombok.version>1.18.18</lombok.version>
+        <junit.version>4.13.2</junit.version>
+        <log4j.version>2.19.0</log4j.version>
+        <lombok.version>1.18.24</lombok.version>
         <mockito.version>3.11.2</mockito.version>
-        <slf4j.version>1.7.30</slf4j.version>
-        <spring-boot.version>2.2.4.RELEASE</spring-boot.version>
-        <vavr.version>0.10.3</vavr.version>
+        <slf4j.version>2.0.6</slf4j.version>
+        <spring-boot.version>2.5.14</spring-boot.version>
+        <tomcat-embed.version>9.0.71</tomcat-embed.version>
+        <vavr.version>0.10.4</vavr.version>
     </properties>
     <build>
         <plugins>

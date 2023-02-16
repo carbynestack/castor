@@ -17,7 +17,7 @@
          <name>Apache Commons IO</name>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
-         <version>2.9.0</version>
+         <version>2.11.0</version>
          <projectUrl>https://commons.apache.org/proper/commons-io/</projectUrl>
          <licenses>
             <license>
@@ -56,8 +56,8 @@
          <name>Apache HttpClient</name>
          <groupId>org.apache.httpcomponents</groupId>
          <artifactId>httpclient</artifactId>
-         <version>4.5.13</version>
-         <projectUrl>http://hc.apache.org/httpcomponents-client</projectUrl>
+         <version>4.5.14</version>
+         <projectUrl>http://hc.apache.org/httpcomponents-client-ga</projectUrl>
          <licenses>
             <license>
                <name>Apache License, Version 2.0</name>
@@ -69,7 +69,7 @@
          <name>Apache HttpCore</name>
          <groupId>org.apache.httpcomponents</groupId>
          <artifactId>httpcore</artifactId>
-         <version>4.4.13</version>
+         <version>4.4.16</version>
          <projectUrl>http://hc.apache.org/httpcomponents-core-ga</projectUrl>
          <licenses>
             <license>
@@ -94,12 +94,12 @@
          <name>Jackson-annotations</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
-         <version>2.12.6</version>
-         <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
+         <version>2.14.1</version>
+         <projectUrl>https://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -107,12 +107,12 @@
          <name>Jackson-core</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>2.12.6</version>
+         <version>2.14.1</version>
          <projectUrl>https://github.com/FasterXML/jackson-core</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -120,12 +120,12 @@
          <name>jackson-databind</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>2.12.6</version>
-         <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
+         <version>2.14.1</version>
+         <projectUrl>https://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -133,7 +133,7 @@
          <name>Project Lombok</name>
          <groupId>org.projectlombok</groupId>
          <artifactId>lombok</artifactId>
-         <version>1.18.18</version>
+         <version>1.18.24</version>
          <projectUrl>https://projectlombok.org</projectUrl>
          <licenses>
             <license>
@@ -146,7 +146,7 @@
          <name>Vavr</name>
          <groupId>io.vavr</groupId>
          <artifactId>vavr</artifactId>
-         <version>0.10.3</version>
+         <version>0.10.4</version>
          <projectUrl>http://vavr.io</projectUrl>
          <licenses>
             <license>
@@ -159,7 +159,7 @@
          <name>Vavr Match</name>
          <groupId>io.vavr</groupId>
          <artifactId>vavr-match</artifactId>
-         <version>0.10.3</version>
+         <version>0.10.4</version>
          <projectUrl>http://vavr.io</projectUrl>
          <licenses>
             <license>

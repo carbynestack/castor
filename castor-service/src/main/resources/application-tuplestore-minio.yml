@@ -1,5 +1,7 @@
 spring:
-  profiles: tuplestore-minio
+  config:
+    activate:
+      on-profile: tuplestore-minio
 
 carbynestack:
   castor:
