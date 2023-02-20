@@ -944,19 +944,6 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>SnakeYAML</name>
-         <groupId>org.yaml</groupId>
-         <artifactId>snakeyaml</artifactId>
-         <version>1.28</version>
-         <projectUrl>http://www.snakeyaml.org</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>snappy-java</name>
          <groupId>org.xerial.snappy</groupId>
          <artifactId>snappy-java</artifactId>
