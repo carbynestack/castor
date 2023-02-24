@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -7,17 +7,17 @@
 
 package io.carbynestack.castor.client.upload.websocket;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.SneakyThrows;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class ResponseCollectorTest {
+class ResponseCollectorTest {
 
   @Test
-  public void givenActiveUploadRequestForId_whenRegisterUploadRequest_thenDoNothing() {
+  void givenActiveUploadRequestForId_whenRegisterUploadRequest_thenDoNothing() {
     ResponseCollector responseCollector = new ResponseCollector();
     UUID existingRegisteredChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     ResponseCollector.ActiveUploadRequest existingActiveUploadRequest =
@@ -34,7 +34,7 @@ public class ResponseCollectorTest {
   }
 
   @Test
-  public void
+  void
       givenNoActiveUploadRegisteredForId_whenRegisterUploadRequest_thenCreateNewActiveUploadRequest() {
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     ResponseCollector responseCollector = new ResponseCollector();
@@ -47,7 +47,7 @@ public class ResponseCollectorTest {
   }
 
   @Test
-  public void givenNoActiveUploadRequestForId_whenApplyResponse_thenDoNothing() {
+  void givenNoActiveUploadRequestForId_whenApplyResponse_thenDoNothing() {
     ResponseCollector responseCollector = new ResponseCollector();
     UUID unregisteredChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     responseCollector.applyResponse(unregisteredChunkId, true);
@@ -56,7 +56,7 @@ public class ResponseCollectorTest {
 
   @SneakyThrows
   @Test
-  public void givenNoActiveUploadRequestForId_whenWaitForRequest_thenReturnFalse() {
+  void givenNoActiveUploadRequestForId_whenWaitForRequest_thenReturnFalse() {
     ResponseCollector responseCollector = new ResponseCollector();
     UUID unregisteredChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     assertFalse(responseCollector.waitForRequest(unregisteredChunkId, 0, TimeUnit.MILLISECONDS));
@@ -64,7 +64,7 @@ public class ResponseCollectorTest {
 
   @SneakyThrows
   @Test
-  public void givenUploadRequestTimesOut_whenWaitForRequest_thenReturnFalse() {
+  void givenUploadRequestTimesOut_whenWaitForRequest_thenReturnFalse() {
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     ResponseCollector responseCollector = new ResponseCollector();
     responseCollector.registerUploadRequest(chunkId);
@@ -74,7 +74,7 @@ public class ResponseCollectorTest {
 
   @SneakyThrows
   @Test
-  public void givenRequestReturnedFalse_whenWaitForRequest_thenReturnFalse() {
+  void givenRequestReturnedFalse_whenWaitForRequest_thenReturnFalse() {
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     ResponseCollector.ActiveUploadRequest givenActiveUploadRequest =
         new ResponseCollector.ActiveUploadRequest();
@@ -87,7 +87,7 @@ public class ResponseCollectorTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulUploadRequest_whenWaitForRequest_thenReturnSuccess() {
+  void givenSuccessfulUploadRequest_whenWaitForRequest_thenReturnSuccess() {
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     ResponseCollector.ActiveUploadRequest givenActiveUploadRequest =
         new ResponseCollector.ActiveUploadRequest();

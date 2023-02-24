@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -8,21 +8,21 @@
 package io.carbynestack.castor.client.upload.websocket;
 
 import static io.carbynestack.castor.common.websocket.CastorWebSocketApiEndpoints.RESPONSE_QUEUE_ENDPOINT;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.lang.reflect.Field;
 import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 import org.springframework.messaging.simp.stomp.StompSession;
 
-public class WebSocketSessionHandlerTest {
+class WebSocketSessionHandlerTest {
   private WebSocketClient webSocketClientMock;
   private WebSocketSessionHandler webSocketSessionHandler;
 
-  @Before
+  @BeforeEach
   public void setup() {
     webSocketClientMock = mock(WebSocketClient.class);
     webSocketSessionHandler = new WebSocketSessionHandler(webSocketClientMock);
@@ -30,7 +30,7 @@ public class WebSocketSessionHandlerTest {
 
   @SneakyThrows
   @Test
-  public void
+  void
       givenActiveConnectionScheduler_whenAfterConnect_thenSubscribeToResponseMessagesAndDestroyScheduler() {
     Field reconnectSchedulerField =
         WebSocketSessionHandler.class.getDeclaredField("reconnectScheduler");
@@ -48,8 +48,7 @@ public class WebSocketSessionHandlerTest {
 
   @SneakyThrows
   @Test
-  public void
-      givenSessionIsDisconnected_whenHandleTransportError_thenInitializeConnectionScheduler() {
+  void givenSessionIsDisconnected_whenHandleTransportError_thenInitializeConnectionScheduler() {
     Field sessionField = WebSocketSessionHandler.class.getDeclaredField("session");
     sessionField.setAccessible(true);
     StompSession sessionMock = mock(StompSession.class);

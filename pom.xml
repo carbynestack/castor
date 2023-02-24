@@ -74,6 +74,7 @@
         <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
         <jackson.version>2.14.2</jackson.version>
         <junit.version>4.13.2</junit.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
         <log4j.version>2.20.0</log4j.version>
         <lombok.version>1.18.24</lombok.version>
         <mockito.version>3.11.2</mockito.version>
@@ -253,6 +254,18 @@
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit-jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
