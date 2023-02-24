@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2023 - for information on the respective copyright owner
+  ~ see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
+  ~
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <Configuration status="WARN">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
@@ -7,10 +14,10 @@
     </Appenders>
     <Loggers>
         <Logger name="io.carbynestack" level="debug" additivity="false">
-        <Root level="error">
+            <Root level="error">
+                <AppenderRef ref="Console"/>
+            </Root>
             <AppenderRef ref="Console"/>
-        </Root>
-        <AppenderRef ref="Console"/>
-    </Logger>
+        </Logger>
     </Loggers>
 </Configuration>

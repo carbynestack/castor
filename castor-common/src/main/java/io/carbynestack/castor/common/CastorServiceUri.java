@@ -24,9 +24,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.message.BasicNameValuePair;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 
 /**
  * A class, that manages an Castor Service's URI and provides correct paths for all endpoints. Uses
@@ -190,8 +190,8 @@ public class CastorServiceUri {
     path =
         String.format(
             "%s%s%s",
-            path == null || path.length() == 0 ? "" : path,
-            path != null && path.length() > 0 && path.lastIndexOf('/') == path.length() ? "" : "/",
+            StringUtils.isBlank(path) ? "" : path,
+            StringUtils.endsWith(path, "/") ? "" : "/",
             param);
     uriBuilder.setPath(path);
     return Try.of(uriBuilder::build)
