@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -9,8 +9,8 @@ package io.carbynestack.castor.service.persistence.cache;
 
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -25,34 +25,33 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import lombok.SneakyThrows;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
+@Testcontainers
 public class ConsumptionCachingServiceIT {
 
-  @ClassRule
+  @Container
   public static ReusableRedisContainer reusableRedisContainer =
       ReusableRedisContainer.getInstance();
 
-  @ClassRule
+  @Container
   public static ReusableMinioContainer reusableMinioContainer =
       ReusableMinioContainer.getInstance();
 
-  @ClassRule
+  @Container
   public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
       ReusablePostgreSQLContainer.getInstance();
 
@@ -64,20 +63,20 @@ public class ConsumptionCachingServiceIT {
 
   @Autowired private ConsumptionCachingService consumptionCachingService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     testEnvironment.clearAllData();
   }
 
   @Test
-  public void givenCacheIsEmpty_whenGetConsumption_thenReturnZero() {
+  void givenCacheIsEmpty_whenGetConsumption_thenReturnZero() {
     long actualConsumption =
         consumptionCachingService.getConsumptionForTupleType(0L, INPUT_MASK_GFP);
     assertEquals(0L, actualConsumption);
   }
 
   @Test
-  public void
+  void
       givenMultipleConsumptionValues_whenGetConsumption_thenReturnExpectedOverallConsumptionForTimeFrame() {
     long timestamp1 = 100;
     long timestamp2 = 200;
@@ -105,7 +104,7 @@ public class ConsumptionCachingServiceIT {
 
   @SneakyThrows
   @Test
-  public void givenTimeToLife_whenKeepConsumption_thenRemoveValueAutomaticallyFromCache() {
+  void givenTimeToLife_whenKeepConsumption_thenRemoveValueAutomaticallyFromCache() {
     long time = 100;
     long ttl = 1;
     long consumed = 42;
@@ -116,7 +115,7 @@ public class ConsumptionCachingServiceIT {
   }
 
   @Test
-  public void givenMultipleConsumptionValuesForSameTimestamp_whenKeepConsumption_thenSumUpValues() {
+  void givenMultipleConsumptionValuesForSameTimestamp_whenKeepConsumption_thenSumUpValues() {
     long timestamp = 100L;
     long[] consumptionValues = {1, 12, 23, 34, 42};
     long expectedTotal = Arrays.stream(consumptionValues).sum();

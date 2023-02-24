@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -7,7 +7,7 @@
 
 package io.carbynestack.castor.service.persistence.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,31 +21,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ConsumptionCachingServiceTest {
+@ExtendWith(MockitoExtension.class)
+class ConsumptionCachingServiceTest {
   @Mock private RedisTemplate<String, Object> redisTemplateMock;
   @Mock private CastorCacheProperties castorCachePropertiesMock;
   @Mock private ValueOperations<String, Object> valueOperationsMock;
 
   @InjectMocks private ConsumptionCachingService consumptionCachingService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
   }
 
   @Test
-  public void givenNoValueForTimeStampInCache_whenKeepConsumption_thenPersistGivenValue() {
+  void givenNoValueForTimeStampInCache_whenKeepConsumption_thenPersistGivenValue() {
     long time = 100L;
     TupleType tupleType = TupleType.INPUT_MASK_GFP;
     long consumed = 42;
@@ -63,7 +63,7 @@ public class ConsumptionCachingServiceTest {
   }
 
   @Test
-  public void givenValueForSameTimeInCache_whenKeepConsumption_thenPersistGivenValue() {
+  void givenValueForSameTimeInCache_whenKeepConsumption_thenPersistGivenValue() {
     long time = 100L;
     TupleType tupleType = TupleType.INPUT_MASK_GFP;
     long consumedNew = 42;
@@ -83,7 +83,7 @@ public class ConsumptionCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenTimeStamp_whenGetConsumptionForTupleType_thenFilterAccordinglyAndReturnAggregatedValue() {
     String cachePrefix = "testCache_";
     TupleType tupleType = TupleType.INPUT_MASK_GFP;

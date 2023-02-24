@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -10,8 +10,8 @@ package io.carbynestack.castor.service.download;
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.service.download.DefaultTuplesDownloadService.FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.*;
@@ -24,14 +24,14 @@ import java.io.ByteArrayInputStream;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultTuplesDownloadServiceTest {
+@ExtendWith(MockitoExtension.class)
+class DefaultTuplesDownloadServiceTest {
 
   @Mock private TupleStore tupleStoreMock;
   @Mock private TupleChunkFragmentStorageService tupleChunkFragmentStorageServiceMock;
@@ -40,7 +40,7 @@ public class DefaultTuplesDownloadServiceTest {
 
   private DefaultTuplesDownloadService tuplesDownloadService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     tuplesDownloadService =
         new DefaultTuplesDownloadService(
@@ -52,7 +52,7 @@ public class DefaultTuplesDownloadServiceTest {
 
   @SneakyThrows
   @Test
-  public void givenTuplesCannotBeRetrieved_whenGetTuplesAsSlave_thenThrowCastorServiceException() {
+  void givenTuplesCannotBeRetrieved_whenGetTuplesAsSlave_thenThrowCastorServiceException() {
     UUID requestId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
     TupleType tupleType = INPUT_MASK_GFP;
     String resultingReservationId = requestId + "_" + tupleType;
@@ -92,7 +92,7 @@ public class DefaultTuplesDownloadServiceTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenGetTuplesAsMaster_thenReturnExpectedTuples() {
+  void givenSuccessfulRequest_whenGetTuplesAsMaster_thenReturnExpectedTuples() {
     TupleType tupleType = INPUT_MASK_GFP;
     long count = 2;
     UUID requestId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");

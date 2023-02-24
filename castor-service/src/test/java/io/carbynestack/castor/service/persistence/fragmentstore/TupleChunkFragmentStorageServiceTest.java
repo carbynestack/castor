@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -9,7 +9,7 @@ package io.carbynestack.castor.service.persistence.fragmentstore;
 
 import static io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService.CONFLICT_EXCEPTION_MSG;
 import static io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService.NOT_A_SINGLE_FRAGMENT_FOR_CHUNK_ERROR_MSG;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.ActivationStatus;
@@ -20,22 +20,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 import org.springframework.aop.AopInvocationException;
 
-@RunWith(MockitoJUnitRunner.class)
-public class TupleChunkFragmentStorageServiceTest {
+@ExtendWith(MockitoExtension.class)
+class TupleChunkFragmentStorageServiceTest {
   @Mock private TupleChunkFragmentRepository tupleChunkFragmentRepositoryMock;
 
   @InjectMocks private TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
 
   @Test
-  public void givenNoConflictingFragments_whenKeep_thenPersist() {
+  void givenNoConflictingFragments_whenKeep_thenPersist() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -53,7 +53,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenNoConflictingFragments_whenKeepList_thenPersist() {
+  void givenNoConflictingFragments_whenKeepList_thenPersist() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     int fragmentSize = 12;
@@ -72,7 +72,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenConflictingFragment_whenKeepList_thenThrowException() {
+  void givenConflictingFragment_whenKeepList_thenThrowException() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     int fragmentSize = 12;
@@ -98,8 +98,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void
-      givenNoFragmentInDbMatchingCriteria_whenFindAvailableFragment_thenReturnEmptyOptional() {
+  void givenNoFragmentInDbMatchingCriteria_whenFindAvailableFragment_thenReturnEmptyOptional() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long startIndex = 0;
     when(tupleChunkFragmentRepositoryMock.findAvailableFragmentForTupleChunkContainingIndex(
@@ -113,7 +112,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void giveFragmentMatchesCriteria_whenFindAvailableFragment_thenReturnFragment() {
+  void giveFragmentMatchesCriteria_whenFindAvailableFragment_thenReturnFragment() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long requestedStartIndex = 42;
     TupleChunkFragmentEntity actualFragmentMock = new TupleChunkFragmentEntity();
@@ -129,7 +128,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoFragmentInDbMatchingCriteria_whenFindAvailableFragmentForType_thenReturnEmptyOptional() {
     TupleType requestedTupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     when(tupleChunkFragmentRepositoryMock
@@ -143,7 +142,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void giveFragmentMatchesCriteria_whenFindAvailableFragmentForType_thenReturnFragment() {
+  void giveFragmentMatchesCriteria_whenFindAvailableFragmentForType_thenReturnFragment() {
     TupleType requestedTupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     TupleChunkFragmentEntity actualFragmentMock = mock(TupleChunkFragmentEntity.class);
 
@@ -158,7 +157,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenSplitAt_thenSplitAccordinglyAndReturnAlteredFragment() {
+  void givenSuccessfulRequest_whenSplitAt_thenSplitAccordinglyAndReturnAlteredFragment() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -185,7 +184,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSplitIndexOutOfRange_whenSplitBefore_thenDoNothing() {
+  void givenSplitIndexOutOfRange_whenSplitBefore_thenDoNothing() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -202,7 +201,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenSplitBefore_thenSplitAccordinglyAndReturnNewFragment() {
+  void givenSuccessfulRequest_whenSplitBefore_thenSplitAccordinglyAndReturnNewFragment() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -229,7 +228,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenConflictingFragment_whenCheckNoConflict_thenThrowException() {
+  void givenConflictingFragment_whenCheckNoConflict_thenThrowException() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long startIndex = 42;
     long endIndex = 44;
@@ -250,7 +249,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenNoConflictingFragment_whenCheckNoConflict_thenDoNothing() {
+  void givenNoConflictingFragment_whenCheckNoConflict_thenDoNothing() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long startIndex = 42;
     long endIndex = 44;
@@ -267,7 +266,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenRepositoryThrowsException_whenGetAvailableTuples_thenReturnZero() {
+  void givenRepositoryThrowsException_whenGetAvailableTuples_thenReturnZero() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     AopInvocationException expectedException = new AopInvocationException("expected");
 
@@ -278,7 +277,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenGetAvailableTuples_thenReturnExpectedResult() {
+  void givenSuccessfulRequest_whenGetAvailableTuples_thenReturnExpectedResult() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long availableTuples = 42;
 
@@ -289,8 +288,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void
-      givenNotASingleFragmentActivated_whenActivateFragmentsForTupleChunk_thenThrowException() {
+  void givenNotASingleFragmentActivated_whenActivateFragmentsForTupleChunk_thenThrowException() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     int numberOfActivatedFragments = 0;
 
@@ -306,7 +304,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenActivateFragmentsForTupleChunk_thenDoNothing() {
+  void givenSuccessfulRequest_whenActivateFragmentsForTupleChunk_thenDoNothing() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     int numberOfActivatedFragments = 2;
 
@@ -321,7 +319,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenDeleteAllForReservationId_thenDoNothing() {
+  void givenSuccessfulRequest_whenDeleteAllForReservationId_thenDoNothing() {
     String reservationId = "reservationId";
 
     tupleChunkFragmentStorageService.deleteAllForReservationId(reservationId);
@@ -330,8 +328,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void
-      givenFragmentWithGivenTupleChunkIdExists_whenRequestIsReferencedState_thenReturnTrue() {
+  void givenFragmentWithGivenTupleChunkIdExists_whenRequestIsReferencedState_thenReturnTrue() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     boolean hasAtLeastOneFragmentWithGivenChunkId = true;
 
@@ -344,7 +341,7 @@ public class TupleChunkFragmentStorageServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenDUpdateFragment_thenPersistFragment() {
+  void givenSuccessfulRequest_whenDUpdateFragment_thenPersistFragment() {
     TupleChunkFragmentEntity fragment = mock(TupleChunkFragmentEntity.class);
 
     tupleChunkFragmentStorageService.update(fragment);

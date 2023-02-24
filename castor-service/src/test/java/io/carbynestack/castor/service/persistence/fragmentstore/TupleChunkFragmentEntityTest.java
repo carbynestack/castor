@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -7,18 +7,18 @@
 
 package io.carbynestack.castor.service.persistence.fragmentstore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.TupleType;
 import java.util.UUID;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class TupleChunkFragmentEntityTest {
+class TupleChunkFragmentEntityTest {
 
   @Test
-  public void givenTupleChunkIdIsNull_whenCreateWithFactoryMethod_thenThrowException() {
+  void givenTupleChunkIdIsNull_whenCreateWithFactoryMethod_thenThrowException() {
     UUID invalidChunkId = null;
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -34,7 +34,7 @@ public class TupleChunkFragmentEntityTest {
   }
 
   @Test
-  public void givenTupleTypeIsNull_whenCreateWithFactoryMethod_thenThrowException() {
+  void givenTupleTypeIsNull_whenCreateWithFactoryMethod_thenThrowException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType invalidTupleType = null;
     long startIndex = 0;
@@ -50,7 +50,7 @@ public class TupleChunkFragmentEntityTest {
   }
 
   @Test
-  public void givenStartIndexIsNegative_whenCreateWithFactoryMethod_thenThrowException() {
+  void givenStartIndexIsNegative_whenCreateWithFactoryMethod_thenThrowException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long invalidStartIndex = -2;
@@ -68,7 +68,7 @@ public class TupleChunkFragmentEntityTest {
   }
 
   @Test
-  public void givenInvalidLength_whenCreateWithFactoryMethod_thenThrowException() {
+  void givenInvalidLength_whenCreateWithFactoryMethod_thenThrowException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -86,7 +86,7 @@ public class TupleChunkFragmentEntityTest {
   }
 
   @Test
-  public void givenValidConfiguration_whenCreateWithFactoryMethod_thenReturnExpectedFragment() {
+  void givenValidConfiguration_whenCreateWithFactoryMethod_thenReturnExpectedFragment() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long startIndex = 0;
@@ -107,7 +107,7 @@ public class TupleChunkFragmentEntityTest {
   }
 
   @Test
-  public void givenInvalidIndex_whenSetEndIndex_thenThrowException() {
+  void givenInvalidIndex_whenSetEndIndex_thenThrowException() {
     long invalidEndIndex = -1;
 
     TupleChunkFragmentEntity fragmentMock = new TupleChunkFragmentEntity();

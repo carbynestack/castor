@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -10,7 +10,7 @@ package io.carbynestack.castor.service.persistence.cache;
 import static io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
@@ -32,11 +32,12 @@ import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
 import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
-import java.util.*;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
@@ -45,24 +46,25 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
+@Testcontainers
 public class ReservationCachingServiceIT {
 
-  @ClassRule
+  @Container
   public static ReusableRedisContainer reusableRedisContainer =
       ReusableRedisContainer.getInstance();
 
-  @ClassRule
+  @Container
   public static ReusableMinioContainer reusableMinioContainer =
       ReusableMinioContainer.getInstance();
 
-  @ClassRule
+  @Container
   public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
       ReusablePostgreSQLContainer.getInstance();
 
@@ -103,7 +105,7 @@ public class ReservationCachingServiceIT {
           testTupleType,
           singletonList(new ReservationElement(testChunkId, testNumberReservedTuples, 0)));
 
-  @Before
+  @BeforeEach
   public void setUp() {
     if (reservationCache == null) {
       reservationCache = cacheManager.getCache(cacheProperties.getReservationStore());
@@ -124,14 +126,14 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void givenCacheIsEmpty_whenGetReservation_thenReturnNull() {
+  void givenCacheIsEmpty_whenGetReservation_thenReturnNull() {
     assertNull(
         reservationCachingService.getUnlockedReservation(
             testReservation.getReservationId(), testTupleType, testNumberReservedTuples));
   }
 
   @Test
-  public void givenReservationInCache_whenGetReservation_thenKeepReservationUntouchedInCache() {
+  void givenReservationInCache_whenGetReservation_thenKeepReservationUntouchedInCache() {
     reservationCache.put(testReservation.getReservationId(), testReservation.setStatus(UNLOCKED));
     assertEquals(
         testReservation,
@@ -144,7 +146,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void givenSharingReservationFails_whenCreateReservation_thenRollbackFragmentation() {
+  void givenSharingReservationFails_whenCreateReservation_thenRollbackFragmentation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;
     long requestedNoTuples = 12;
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
@@ -181,7 +183,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenForgetReservation_thenRemoveFromCache() {
+  void givenSuccessfulRequest_whenForgetReservation_thenRemoveFromCache() {
     reservationCache.put(testReservation.getReservationId(), testReservation);
     assertEquals(
         testReservation,
@@ -191,7 +193,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  public void whenReferencedSequenceIsSplitInFragments_whenApplyReservation_thenApplyAccordingly() {
+  void whenReferencedSequenceIsSplitInFragments_whenApplyReservation_thenApplyAccordingly() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long requestedStartIndex = 42;
     long requestedLength = 21;
