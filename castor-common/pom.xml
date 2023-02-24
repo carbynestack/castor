@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2021 - for information on the respective copyright owner
+  ~ Copyright (c) 2023 - for information on the respective copyright owner
   ~ see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
   ~
   ~ SPDX-License-Identifier: Apache-2.0
@@ -20,7 +20,6 @@
         <!-- external dependencies -->
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <httpclient.version>4.5.14</httpclient.version>
-        <jackson.version>2.14.1</jackson.version>
     </properties>
     <dependencies>
         <!-- internal dependencies -->
