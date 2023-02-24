@@ -71,9 +71,7 @@
         <!-- external dependency versions -->
         <assertj.version>3.24.2</assertj.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
         <jackson.version>2.14.2</jackson.version>
-        <junit.version>4.13.2</junit.version>
         <junit-jupiter.version>5.9.2</junit-jupiter.version>
         <log4j.version>2.20.0</log4j.version>
         <lombok.version>1.18.24</lombok.version>
@@ -179,6 +177,11 @@
                 <version>${commons-io.version}</version>
             </dependency>
             <dependency>
+                <groupId>ch.qos.reload4j</groupId>
+                <artifactId>reload4j</artifactId>
+                <version>${reload4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.vavr</groupId>
                 <artifactId>vavr</artifactId>
                 <version>${vavr.version}</version>
@@ -242,18 +245,6 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-junit-jupiter</artifactId>
                 <version>${mockito.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-junit</artifactId>
-                <version>${hamcrest-junit.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

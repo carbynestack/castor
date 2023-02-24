@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -11,8 +11,8 @@ import static io.carbynestack.castor.client.download.DefaultCastorIntraVcpClient
 import static io.carbynestack.castor.common.CastorServiceUri.MUST_NOT_BE_EMPTY_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.entities.Field.GFP;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -33,14 +33,14 @@ import java.util.Collections;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.apache.http.HttpStatus;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultCastorIntraVcpClientTest {
+@ExtendWith(MockitoExtension.class)
+class DefaultCastorIntraVcpClientTest {
   private final Share testShare =
       new Share(
           new byte[] {1, 4, 72, -56, -22, -12, 72, 88, 109, 42, -27, 56, 109, 42, -27, 56},
@@ -59,7 +59,7 @@ public class DefaultCastorIntraVcpClientTest {
   }
 
   @Test
-  public void givenServiceAddressIsNull_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
+  void givenServiceAddressIsNull_whenGetBuilderInstance_thenThrowIllegalArgumentException() {
     IllegalArgumentException actualIae =
         assertThrows(
             IllegalArgumentException.class,
@@ -69,7 +69,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void givenSslConfiguration_whenBuildClient_thenInitializeCsHttpClientAccordingly() {
+  void givenSslConfiguration_whenBuildClient_thenInitializeCsHttpClientAccordingly() {
     CastorServiceUri serviceUri = new CastorServiceUri(serviceAddress);
     String expectedBearerToken = "testBearerToken";
     BearerTokenProvider expectedBearerTokenProvider =
@@ -99,7 +99,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenDownloadTripleShares_thenReturnExpectedContent() {
+  void givenSuccessfulRequest_whenDownloadTripleShares_thenReturnExpectedContent() {
     UUID requestId = UUID.fromString("3dc08ff2-5eed-49a9-979e-3a3ac0e4a2cf");
     int expectedCount = 2;
     TupleList<MultiplicationTriple<Field.Gfp>, Field.Gfp> expectedTripleList =
@@ -125,7 +125,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void givenRequestEmitsError_whenDownloadTripleShares_thenThrowCastorClientException() {
+  void givenRequestEmitsError_whenDownloadTripleShares_thenThrowCastorClientException() {
     UUID requestId = UUID.fromString("3dc08ff2-5eed-49a9-979e-3a3ac0e4a2cf");
     CsHttpClientException expectedCause = new CsHttpClientException("totally expected");
     URI expectedUri = new CastorServiceUri(serviceAddress).getRestServiceUri();
@@ -149,7 +149,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenGetTelemetryData_thenReturnExpectedContent() {
+  void givenSuccessfulRequest_whenGetTelemetryData_thenReturnExpectedContent() {
     TelemetryData expectedTelemetryData = new TelemetryData(new ArrayList<>(), 100);
     CsResponseEntity<String, TelemetryData> responseEntity =
         CsResponseEntity.success(HttpStatus.SC_OK, expectedTelemetryData);
@@ -164,7 +164,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void givenRequestEmitsError_whenGetTelemetryData_thenThrowCastorClientException() {
+  void givenRequestEmitsError_whenGetTelemetryData_thenThrowCastorClientException() {
     CsHttpClientException expectedCause = new CsHttpClientException("totally expected");
     CastorServiceUri serviceUri = new CastorServiceUri(serviceAddress);
     when(csHttpClientMock.getForEntity(
@@ -185,7 +185,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenGetTelemetryDataWithInterval_thenReturnExpectedContent() {
+  void givenSuccessfulRequest_whenGetTelemetryDataWithInterval_thenReturnExpectedContent() {
     long requestInterval = 50;
     TelemetryData expectedTelemetryData = new TelemetryData(new ArrayList<>(), 100);
     CsResponseEntity<String, TelemetryData> responseEntity =
@@ -201,8 +201,7 @@ public class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  public void
-      givenRequestEmitsError_whenGetTelemetryDataWithInterval_thenThrowCastorClientException() {
+  void givenRequestEmitsError_whenGetTelemetryDataWithInterval_thenThrowCastorClientException() {
     long requestInterval = 50;
     CsHttpClientException expectedCause = new CsHttpClientException("totally expected");
 
