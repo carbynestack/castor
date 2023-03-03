@@ -6,4 +6,4 @@
   _,..._|      )_-\ \_=.\           | (_| (_| \__ \ || (_) | |
  `-....-'`------)))`=-'"`'"          \___\__,_|___/\__\___/|_|
 
-                                    ${project.name}   ${project.version}
+                                    ${project.artifactId}   ${project.version}

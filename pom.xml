@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2021 - for information on the respective copyright owner
+  ~ Copyright (c) 2023 - for information on the respective copyright owner
   ~ see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
   ~
   ~ SPDX-License-Identifier: Apache-2.0
@@ -58,7 +58,7 @@
         <!-- Plugin versions -->
         <jacoco-maven-plugin.version>0.8.5</jacoco-maven-plugin.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <maven-failsafe-plugin.version>3.0.0-M5</maven-failsafe-plugin.version>
+        <maven-failsafe-plugin.version>3.0.0-M9</maven-failsafe-plugin.version>
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
@@ -69,12 +69,14 @@
         <cs-java-client.version>0.1-SNAPSHOT-4075044562-9-8ffab9c</cs-java-client.version>
 
         <!-- external dependency versions -->
+        <assertj.version>3.24.2</assertj.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
-        <junit.version>4.13.2</junit.version>
-        <log4j.version>2.19.0</log4j.version>
+        <jackson.version>2.14.2</jackson.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <log4j.version>2.20.0</log4j.version>
         <lombok.version>1.18.24</lombok.version>
         <mockito.version>3.11.2</mockito.version>
+        <reload4j.version>1.2.24</reload4j.version>
         <slf4j.version>2.0.6</slf4j.version>
         <spring-boot.version>2.5.14</spring-boot.version>
         <tomcat-embed.version>9.0.71</tomcat-embed.version>
@@ -175,9 +177,19 @@
                 <version>${commons-io.version}</version>
             </dependency>
             <dependency>
+                <groupId>ch.qos.reload4j</groupId>
+                <artifactId>reload4j</artifactId>
+                <version>${reload4j.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.vavr</groupId>
                 <artifactId>vavr</artifactId>
                 <version>${vavr.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -195,17 +207,28 @@
                 <version>${log4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-jul</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>jul-to-slf4j</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
 
             <!-- Test dependencies -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
@@ -219,15 +242,21 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.hamcrest</groupId>
-                <artifactId>hamcrest-junit</artifactId>
-                <version>${hamcrest-junit.version}</version>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${junit.version}</version>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit-jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

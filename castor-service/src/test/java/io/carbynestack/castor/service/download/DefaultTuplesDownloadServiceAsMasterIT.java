@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -12,7 +12,7 @@ import static io.carbynestack.castor.service.download.DefaultTuplesDownloadServi
 import static io.carbynestack.castor.service.persistence.cache.CreateReservationSupplier.SHARING_RESERVATION_FAILED_EXCEPTION_MSG;
 import static io.carbynestack.castor.service.persistence.tuplestore.MinioTupleStore.ERROR_WHILE_READING_TUPLES_EXCEPTION_MSG;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -43,10 +43,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.util.Lists;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -54,24 +52,25 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Slf4j
-@RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(
     webEnvironment = RANDOM_PORT,
     classes = {CastorServiceApplication.class})
 @ActiveProfiles("test")
+@Testcontainers
 public class DefaultTuplesDownloadServiceAsMasterIT {
-  @ClassRule
+  @Container
   public static ReusableRedisContainer reusableRedisContainer =
       ReusableRedisContainer.getInstance();
 
-  @ClassRule
+  @Container
   public static ReusableMinioContainer reusableMinioContainer =
       ReusableMinioContainer.getInstance();
 
-  @ClassRule
+  @Container
   public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
       ReusablePostgreSQLContainer.getInstance();
 
@@ -98,7 +97,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   private Cache reservationCache;
   private Cache multiplicationTripleTelemetryCache;
 
-  @Before
+  @BeforeEach
   public void setUp() throws NoSuchFieldException, IllegalAccessException {
     if (reservationCache == null) {
       reservationCache =
@@ -114,7 +113,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   }
 
   @Test
-  public void givenSharingReservationFails_whenGetTuples_thenRollbackReservation() {
+  void givenSharingReservationFails_whenGetTuples_thenRollbackReservation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;
     long requestedNoTuples = 12;
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
@@ -157,7 +156,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   }
 
   @Test
-  public void
+  void
       givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarkerButConsumptionMarkerRemainsUntouched() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
@@ -224,7 +223,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
 
   @SneakyThrows
   @Test
-  public void
+  void
       givenSuccessfulRequestAndLastTuplesConsumed_whenGetTuples_thenReturnTuplesAndCleanupAccordingly() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");

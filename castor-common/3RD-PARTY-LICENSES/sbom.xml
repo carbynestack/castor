@@ -1,19 +1,6 @@
 <attributionReport>
    <dependencies>
       <dependency>
-         <name>Apache Commons Codec</name>
-         <groupId>commons-codec</groupId>
-         <artifactId>commons-codec</artifactId>
-         <version>1.11</version>
-         <projectUrl>http://commons.apache.org/proper/commons-codec/</projectUrl>
-         <licenses>
-            <license>
-               <name>Apache License, Version 2.0</name>
-               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>Apache Commons IO</name>
          <groupId>commons-io</groupId>
          <artifactId>commons-io</artifactId>
@@ -40,41 +27,41 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>Apache Commons Logging</name>
-         <groupId>commons-logging</groupId>
-         <artifactId>commons-logging</artifactId>
-         <version>1.2</version>
-         <projectUrl>http://commons.apache.org/proper/commons-logging/</projectUrl>
-         <licenses>
-            <license>
-               <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            </license>
-         </licenses>
-      </dependency>
-      <dependency>
          <name>Apache HttpClient</name>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpclient</artifactId>
-         <version>4.5.14</version>
-         <projectUrl>http://hc.apache.org/httpcomponents-client-ga</projectUrl>
+         <groupId>org.apache.httpcomponents.client5</groupId>
+         <artifactId>httpclient5</artifactId>
+         <version>5.2.1</version>
+         <projectUrl>https://hc.apache.org/httpcomponents-client-5.0.x/5.2.1/httpclient5/</projectUrl>
          <licenses>
             <license>
                <name>Apache License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
       <dependency>
-         <name>Apache HttpCore</name>
-         <groupId>org.apache.httpcomponents</groupId>
-         <artifactId>httpcore</artifactId>
-         <version>4.4.16</version>
-         <projectUrl>http://hc.apache.org/httpcomponents-core-ga</projectUrl>
+         <name>Apache HttpComponents Core HTTP/1.1</name>
+         <groupId>org.apache.httpcomponents.core5</groupId>
+         <artifactId>httpcore5</artifactId>
+         <version>5.2</version>
+         <projectUrl>https://hc.apache.org/httpcomponents-core-5.2.x/5.2/httpcore5/</projectUrl>
          <licenses>
             <license>
                <name>Apache License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>Apache HttpComponents Core HTTP/2</name>
+         <groupId>org.apache.httpcomponents.core5</groupId>
+         <artifactId>httpcore5-h2</artifactId>
+         <version>5.2</version>
+         <projectUrl>https://hc.apache.org/httpcomponents-core-5.2.x/5.2/httpcore5-h2/</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -94,7 +81,7 @@
          <name>Jackson-annotations</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
-         <version>2.14.1</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
@@ -107,7 +94,7 @@
          <name>Jackson-core</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>2.14.1</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson-core</projectUrl>
          <licenses>
             <license>
@@ -120,7 +107,7 @@
          <name>jackson-databind</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>2.14.1</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
@@ -139,6 +126,19 @@
             <license>
                <name>The MIT License</name>
                <url>https://projectlombok.org/LICENSE</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>SLF4J API Module</name>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+         <version>2.0.6</version>
+         <projectUrl>http://www.slf4j.org</projectUrl>
+         <licenses>
+            <license>
+               <name>MIT License</name>
+               <url>http://www.opensource.org/licenses/mit-license.php</url>
             </license>
          </licenses>
       </dependency>

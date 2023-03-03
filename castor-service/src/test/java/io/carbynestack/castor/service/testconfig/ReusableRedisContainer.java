@@ -77,7 +77,7 @@ public class ReusableRedisContainer extends GenericContainer<ReusableRedisContai
   @Override
   public void start() {
     super.start();
-    System.setProperty("REDIS_HOST", container.getContainerIpAddress());
+    System.setProperty("REDIS_HOST", container.getHost());
     System.setProperty("REDIS_PORT", container.getMappedPort(REDIS_PORT).toString());
   }
 

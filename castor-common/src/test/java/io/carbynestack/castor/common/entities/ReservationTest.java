@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -10,10 +10,9 @@ package io.carbynestack.castor.common.entities;
 import static io.carbynestack.castor.common.entities.Reservation.ID_MUST_NOT_BE_NULL_OR_EMPTY_EXCEPTION_MSG;
 import static io.carbynestack.castor.common.entities.Reservation.ONE_RESERVATION_ELEMENT_REQUIRED_EXCEPTION_MSG;
 import static java.util.Collections.emptyList;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
@@ -21,12 +20,12 @@ import java.util.*;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ReservationTest {
+@ExtendWith(MockitoExtension.class)
+class ReservationTest {
   private final String testReservationId =
       "80fbba1b-3da8-4b1e-8a2c-cebd65229fad_MULTIPLICATION_TRIPLE_GFP";
   private final TupleType testTupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
@@ -38,7 +37,7 @@ public class ReservationTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  public void givenIdIsNull_whenCreate_thenThrowNullPointerException() {
+  void givenIdIsNull_whenCreate_thenThrowNullPointerException() {
     NullPointerException actualNpe =
         assertThrows(
             NullPointerException.class,
@@ -47,7 +46,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenIdIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
+  void givenIdIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
     IllegalArgumentException iae =
         assertThrows(
             IllegalArgumentException.class,
@@ -56,7 +55,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenReservationElementsIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
+  void givenReservationElementsIsEmpty_whenCreate_thenThrowIllegalArgumentException() {
     List<ReservationElement> emptyReservations = emptyList();
     IllegalArgumentException iae =
         assertThrows(
@@ -67,7 +66,7 @@ public class ReservationTest {
 
   @SneakyThrows
   @Test
-  public void givenValidJsonString_whenDeserialize_thenReturnExpectedObject() {
+  void givenValidJsonString_whenDeserialize_thenReturnExpectedObject() {
     ActivationStatus expectedStatus = ActivationStatus.UNLOCKED;
     String jsonString =
         new ReservationJsonStringBuilder()
@@ -84,7 +83,7 @@ public class ReservationTest {
   }
 
   @Test
-  public void givenJsonStringWithoutReservationId_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutReservationId_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withTupleType(TupleType.MULTIPLICATION_TRIPLE_GFP)
@@ -96,12 +95,12 @@ public class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'reservationId'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'reservationId'");
   }
 
   @Test
-  public void givenJsonStringWithoutReservations_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutReservations_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withReservationId(UUID.randomUUID().toString())
@@ -113,12 +112,12 @@ public class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'reservations'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'reservations'");
   }
 
   @Test
-  public void givenJsonStringWithoutTupleType_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutTupleType_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withReservationId(UUID.randomUUID().toString())
@@ -130,12 +129,12 @@ public class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(
-        actualJpeMie.getMessage(), startsWith("Missing required creator property 'tupleType'"));
+    assertThat(actualJpeMie.getMessage())
+        .startsWith("Missing required creator property 'tupleType'");
   }
 
   @Test
-  public void givenJsonStringWithoutStatus_whenDeserialize_thenThrowJsonParseException() {
+  void givenJsonStringWithoutStatus_whenDeserialize_thenThrowJsonParseException() {
     String incompleteData =
         new ReservationJsonStringBuilder()
             .withReservationId(UUID.randomUUID().toString())
@@ -147,7 +146,7 @@ public class ReservationTest {
         assertThrows(
             MismatchedInputException.class,
             () -> objectMapper.readValue(incompleteData, Reservation.class));
-    assertThat(actualJpeMie.getMessage(), startsWith("Missing required creator property 'status'"));
+    assertThat(actualJpeMie.getMessage()).startsWith("Missing required creator property 'status'");
   }
 
   private static class ReservationJsonStringBuilder {

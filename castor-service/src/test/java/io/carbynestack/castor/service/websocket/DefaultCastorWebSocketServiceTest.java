@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -10,8 +10,8 @@ import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.websocket.CastorWebSocketApiEndpoints.RESPONSE_QUEUE_ENDPOINT;
 import static io.carbynestack.castor.service.websocket.DefaultCastorWebSocketService.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.MultiplicationTriple;
@@ -24,18 +24,21 @@ import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.SerializationUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultCastorWebSocketServiceTest {
+@ExtendWith(MockitoExtension.class)
+class DefaultCastorWebSocketServiceTest {
 
   @Mock private TupleStore tupleStoreMock;
 
@@ -48,7 +51,7 @@ public class DefaultCastorWebSocketServiceTest {
   @InjectMocks private DefaultCastorWebSocketService castorWebSocketService;
 
   @Test
-  public void givenInvalidPayload_whenUploadTupleChunk_thenThrowCastorClientException() {
+  void givenInvalidPayload_whenUploadTupleChunk_thenThrowCastorClientException() {
     byte[] invalidPayload = new byte[0];
 
     CastorClientException actualCce =
@@ -65,7 +68,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void givenChunkHasNoTuples_whenUploadTupleChunk_thenThrowCastorClientException() {
+  void givenChunkHasNoTuples_whenUploadTupleChunk_thenThrowCastorClientException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleChunk tupleChunk = TupleChunk.of(MultiplicationTriple.class, GFP, chunkId, new byte[0]);
     byte[] payload = SerializationUtils.serialize(tupleChunk);
@@ -84,8 +87,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void
-      givenWritingChunkToDatabaseFails_whenUploadTupleChunk_thenThrowCastorServiceException() {
+  void givenWritingChunkToDatabaseFails_whenUploadTupleChunk_thenThrowCastorServiceException() {
     CastorServiceException expectedException = new CastorServiceException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
@@ -112,7 +114,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenUploadChunk_thenSendSuccess() {
+  void givenSuccessfulRequest_whenUploadChunk_thenSendSuccess() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     byte[] tupleData = RandomUtils.nextBytes(tupleType.getTupleSize());
@@ -139,7 +141,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void givenChunkWithZeroTuples_whenGenerateFragments_thenReturnEmptyList() {
+  void givenChunkWithZeroTuples_whenGenerateFragments_thenReturnEmptyList() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     TupleChunk emptyTupleChunk =
@@ -150,8 +152,7 @@ public class DefaultCastorWebSocketServiceTest {
   }
 
   @Test
-  public void
-      givenChunkWithMultipleTuples_whenGenerateFragments_thenGenerateFragmentsAccordingly() {
+  void givenChunkWithMultipleTuples_whenGenerateFragments_thenGenerateFragmentsAccordingly() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     int initialFragmentSize = 7;

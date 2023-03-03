@@ -105,6 +105,32 @@
          </licenses>
       </dependency>
       <dependency>
+         <name>Apache HttpComponents Core HTTP/1.1</name>
+         <groupId>org.apache.httpcomponents.core5</groupId>
+         <artifactId>httpcore5</artifactId>
+         <version>5.1.3</version>
+         <projectUrl>https://hc.apache.org/httpcomponents-core-5.1.x/5.1.3/httpcore5/</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
+         <name>Apache HttpComponents Core HTTP/2</name>
+         <groupId>org.apache.httpcomponents.core5</groupId>
+         <artifactId>httpcore5-h2</artifactId>
+         <version>5.1.3</version>
+         <projectUrl>https://hc.apache.org/httpcomponents-core-5.1.x/5.1.3/httpcore5-h2/</projectUrl>
+         <licenses>
+            <license>
+               <name>Apache License, Version 2.0</name>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
          <name>Apache HttpCore</name>
          <groupId>org.apache.httpcomponents</groupId>
          <artifactId>httpcore</artifactId>
@@ -121,7 +147,7 @@
          <name>Apache Log4j API</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-api</artifactId>
-         <version>2.19.0</version>
+         <version>2.20.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-api/</projectUrl>
          <licenses>
             <license>
@@ -134,7 +160,7 @@
          <name>Apache Log4j Core</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-core</artifactId>
-         <version>2.19.0</version>
+         <version>2.20.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-core/</projectUrl>
          <licenses>
             <license>
@@ -147,7 +173,7 @@
          <name>Apache Log4j JUL Adapter</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-jul</artifactId>
-         <version>2.17.2</version>
+         <version>2.20.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-jul/</projectUrl>
          <licenses>
             <license>
@@ -160,7 +186,7 @@
          <name>Apache Log4j SLF4J Binding</name>
          <groupId>org.apache.logging.log4j</groupId>
          <artifactId>log4j-slf4j-impl</artifactId>
-         <version>2.19.0</version>
+         <version>2.20.0</version>
          <projectUrl>https://logging.apache.org/log4j/2.x/log4j-slf4j-impl/</projectUrl>
          <licenses>
             <license>
@@ -472,7 +498,7 @@
          <name>Jackson datatype: jdk8</name>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-jdk8</artifactId>
-         <version>2.12.6</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jdk8</projectUrl>
          <licenses>
             <license>
@@ -485,7 +511,7 @@
          <name>Jackson datatype: JSR310</name>
          <groupId>com.fasterxml.jackson.datatype</groupId>
          <artifactId>jackson-datatype-jsr310</artifactId>
-         <version>2.12.6</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson-modules-java8/jackson-datatype-jsr310</projectUrl>
          <licenses>
             <license>
@@ -498,12 +524,12 @@
          <name>Jackson-annotations</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-annotations</artifactId>
-         <version>2.12.6</version>
-         <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
+         <version>2.14.2</version>
+         <projectUrl>https://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -511,12 +537,12 @@
          <name>Jackson-core</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-core</artifactId>
-         <version>2.12.6</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson-core</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -524,12 +550,12 @@
          <name>jackson-databind</name>
          <groupId>com.fasterxml.jackson.core</groupId>
          <artifactId>jackson-databind</artifactId>
-         <version>2.12.6.1</version>
-         <projectUrl>http://github.com/FasterXML/jackson</projectUrl>
+         <version>2.14.2</version>
+         <projectUrl>https://github.com/FasterXML/jackson</projectUrl>
          <licenses>
             <license>
                <name>The Apache Software License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             </license>
          </licenses>
       </dependency>
@@ -537,7 +563,7 @@
          <name>Jackson-module-parameter-names</name>
          <groupId>com.fasterxml.jackson.module</groupId>
          <artifactId>jackson-module-parameter-names</artifactId>
-         <version>2.12.6</version>
+         <version>2.14.2</version>
          <projectUrl>https://github.com/FasterXML/jackson-modules-java8/jackson-module-parameter-names</projectUrl>
          <licenses>
             <license>
@@ -726,7 +752,7 @@
          <name>JUL to SLF4J bridge</name>
          <groupId>org.slf4j</groupId>
          <artifactId>jul-to-slf4j</artifactId>
-         <version>1.7.36</version>
+         <version>2.0.6</version>
          <projectUrl>http://www.slf4j.org</projectUrl>
          <licenses>
             <license>
@@ -918,6 +944,19 @@
          </licenses>
       </dependency>
       <dependency>
+         <name>reload4j</name>
+         <groupId>ch.qos.reload4j</groupId>
+         <artifactId>reload4j</artifactId>
+         <version>1.2.24</version>
+         <projectUrl>https://reload4j.qos.ch</projectUrl>
+         <licenses>
+            <license>
+               <name>The Apache Software License, Version 2.0</name>
+               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            </license>
+         </licenses>
+      </dependency>
+      <dependency>
          <name>Simple XML (safe)</name>
          <groupId>com.carrotsearch.thirdparty</groupId>
          <artifactId>simple-xml-safe</artifactId>
@@ -944,15 +983,15 @@
          </licenses>
       </dependency>
       <dependency>
-         <name>SnakeYAML</name>
-         <groupId>org.yaml</groupId>
-         <artifactId>snakeyaml</artifactId>
-         <version>1.28</version>
-         <projectUrl>http://www.snakeyaml.org</projectUrl>
+         <name>SLF4J Reload4j Binding</name>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-reload4j</artifactId>
+         <version>2.0.6</version>
+         <projectUrl>http://reload4j.qos.ch</projectUrl>
          <licenses>
             <license>
-               <name>Apache License, Version 2.0</name>
-               <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+               <name>MIT License</name>
+               <url>http://www.opensource.org/licenses/mit-license.php</url>
             </license>
          </licenses>
       </dependency>
@@ -1103,7 +1142,7 @@
          <name>Spring Data Redis</name>
          <groupId>org.springframework.data</groupId>
          <artifactId>spring-data-redis</artifactId>
-         <version>2.7.7</version>
+         <version>2.7.8</version>
          <projectUrl>https://spring.io/projects/spring-data-redis</projectUrl>
          <licenses>
             <license>

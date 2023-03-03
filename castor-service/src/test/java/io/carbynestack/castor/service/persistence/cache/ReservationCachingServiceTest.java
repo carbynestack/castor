@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -11,8 +11,8 @@ import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
 import static io.carbynestack.castor.service.persistence.cache.ReservationCachingService.*;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.client.download.CastorInterVcpClient;
@@ -30,17 +30,17 @@ import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragme
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.*;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
-@RunWith(MockitoJUnitRunner.class)
-public class ReservationCachingServiceTest {
+@ExtendWith(MockitoExtension.class)
+class ReservationCachingServiceTest {
   @Mock private ConsumptionCachingService consumptionCachingServiceMock;
 
   @Mock private RedisTemplate<String, Object> redisTemplateMock;
@@ -64,24 +64,25 @@ public class ReservationCachingServiceTest {
 
   private ReservationCachingService reservationCachingService;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     when(castorCachePropertiesMock.getReservationStore()).thenReturn(testCacheName);
-    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
-    this.reservationCachingService =
-        new ReservationCachingService(
-            castorCachePropertiesMock,
-            consumptionCachingServiceMock,
-            redisTemplateMock,
-            tupleChunkFragmentStorageServiceMock,
-            castorSlaveServicePropertiesMock,
-            castorInterVcpClientOptionalMock,
-            dedicatedTransactionServiceOptionalMock);
-    this.reservationCachingService.executorService = executorServiceMock;
+    if (reservationCachingService == null) {
+      this.reservationCachingService =
+          new ReservationCachingService(
+              castorCachePropertiesMock,
+              consumptionCachingServiceMock,
+              redisTemplateMock,
+              tupleChunkFragmentStorageServiceMock,
+              castorSlaveServicePropertiesMock,
+              castorInterVcpClientOptionalMock,
+              dedicatedTransactionServiceOptionalMock);
+      this.reservationCachingService.executorService = executorServiceMock;
+    }
   }
 
   @Test
-  public void
+  void
       givenNoReservationWithGivenIdInCache_whenKeepReservation_thenStoreInCacheAndEmitConsumption() {
     long consumption = 42;
     ReservationElement reservationElementMock = mock(ReservationElement.class);
@@ -89,6 +90,7 @@ public class ReservationCachingServiceTest {
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
     Reservation reservationMock = mock(Reservation.class);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(reservationElementMock.getReservedTuples()).thenReturn(consumption);
     when(reservationMock.getReservationId()).thenReturn(reservationId);
     when(reservationMock.getTupleType()).thenReturn(tupleType);
@@ -103,11 +105,11 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
-      givenReservationWithSameIdInCache_whenKeepReservation_thenThrowCastorServiceException() {
+  void givenReservationWithSameIdInCache_whenKeepReservation_thenThrowCastorServiceException() {
     String reservationId = "reservationId";
     Reservation reservationMock = mock(Reservation.class);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(reservationMock.getReservationId()).thenReturn(reservationId);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(reservationMock);
 
@@ -124,11 +126,11 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
-      givenNoReservationWithIdInCache_whenUpdateReservation_thenThrowCastorServiceException() {
+  void givenNoReservationWithIdInCache_whenUpdateReservation_thenThrowCastorServiceException() {
     String reservationId = "reservationId";
     ActivationStatus newStatus = ActivationStatus.UNLOCKED;
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(null);
 
     CastorServiceException actualCse =
@@ -141,11 +143,12 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenUpdateReservation_thenUpdateEntityInCache() {
+  void givenSuccessfulRequest_whenUpdateReservation_thenUpdateEntityInCache() {
     String reservationId = "reservationId";
     Reservation reservationMock = mock(Reservation.class);
     ActivationStatus newStatus = ActivationStatus.UNLOCKED;
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(reservationMock.getReservationId()).thenReturn(reservationId);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(reservationMock);
 
@@ -156,8 +159,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
-      givenReservationWithIdInCache_whenGetUnlockedReservation_thenReturnExpectedReservation() {
+  void givenReservationWithIdInCache_whenGetUnlockedReservation_thenReturnExpectedReservation() {
     UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
     long tupleCount = 42;
@@ -167,6 +169,7 @@ public class ReservationCachingServiceTest {
         new Reservation(reservationId, tupleType, singletonList(existingReservationElement))
             .setStatus(ActivationStatus.UNLOCKED);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
 
     assertEquals(
@@ -175,7 +178,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenForgetReservation_thenCallDeleteOnCache() {
+  void givenSuccessfulRequest_whenForgetReservation_thenCallDeleteOnCache() {
     String reservationId = "reservationId";
 
     reservationCachingService.forgetReservation(reservationId);
@@ -184,10 +187,11 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void givenAlreadyAReservationWithGivenIdInCache_whenKeepAndApplyReservation_thenThrow() {
+  void givenAlreadyAReservationWithGivenIdInCache_whenKeepAndApplyReservation_thenThrow() {
     String reservationId = "testReservation";
     Reservation existingReservationMock = mock(Reservation.class);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(existingReservationMock.getReservationId()).thenReturn(reservationId);
     when(valueOperationsMock.get(testCachePrefix + reservationId))
         .thenReturn(existingReservationMock);
@@ -202,7 +206,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void givenNoFragmentWithReferencedStartIndex_whenKeepAndApplyReservation_thenThrow() {
+  void givenNoFragmentWithReferencedStartIndex_whenKeepAndApplyReservation_thenThrow() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long requestedStartIndex = 42;
     long requestedLength = 21;
@@ -212,6 +216,7 @@ public class ReservationCachingServiceTest {
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
     Reservation r = new Reservation(reservationId, tupleType, singletonList(re));
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentForChunkContainingIndex(
             tupleChunkId, requestedStartIndex))
         .thenReturn(Optional.empty());
@@ -226,7 +231,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenReferencedSequenceLiesWithin_whenKeepAndApplyReservation_thenSplitFragmentAccordingly() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long requestedStartIndex = 42;
@@ -247,6 +252,7 @@ public class ReservationCachingServiceTest {
             ActivationStatus.UNLOCKED,
             null);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(tupleChunkFragmentStorageServiceMock.splitAt(
             existingFragment, requestedStartIndex + requestedLength))
         .thenReturn(existingFragment);
@@ -267,7 +273,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoReservationReceivedInTime_whenGetReservationWithRetry_thenThrowCastorServiceException()
           throws ExecutionException, InterruptedException, TimeoutException {
     String reservationId = "testReservationId";
@@ -297,7 +303,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenGetReservationWithRetry_thenReturnExpectedReservation()
+  void givenSuccessfulRequest_whenGetReservationWithRetry_thenReturnExpectedReservation()
       throws ExecutionException, InterruptedException, TimeoutException {
     String reservationId = "testReservationId";
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
@@ -321,7 +327,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenDedicatedTransactionServiceNotDefined_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(false);
 
@@ -336,7 +342,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenCastorInterVcpClientIsNotDefined_whenGetOrCreateReservation_thenThrowCastorServiceException() {
     when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
     when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(false);
@@ -352,7 +358,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenUnlockedReservationWithMatchingConfigurationInCache_whenGetReservation_thenReturnCachedReservation() {
     String reservationId = "testReservationId";
     TupleType tupleType = INPUT_MASK_GFP;
@@ -360,6 +366,7 @@ public class ReservationCachingServiceTest {
     Reservation expectedReservationMock = mock(Reservation.class);
     ReservationElement reservationElementMock = mock(ReservationElement.class);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(valueOperationsMock.get(testCachePrefix + reservationId))
         .thenReturn(expectedReservationMock);
     when(expectedReservationMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
@@ -374,7 +381,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenCachedReservationForIdMismatchType_whenGetUnlockedReservation_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
     String reservationId = "testReservationId";
@@ -387,6 +394,7 @@ public class ReservationCachingServiceTest {
                 reservationId, mismatchedTupleType, singletonList(existingReservationElement))
             .setStatus(ActivationStatus.UNLOCKED);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
 
     CastorServiceException actualCse =
@@ -406,7 +414,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenCachedReservationForIdMismatchReservedCount_whenGetUnlockedReservation_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("b7b010e0-362b-401c-9560-4cf4b2a68139");
     String reservationId = "testReservationId";
@@ -417,6 +425,7 @@ public class ReservationCachingServiceTest {
         new Reservation(reservationId, tupleType, singletonList(existingReservationElement))
             .setStatus(ActivationStatus.UNLOCKED);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
 
     CastorServiceException actualCse =
@@ -436,7 +445,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoCachedReservationButCreationThrows_whenCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     CastorClientException expectedException = new CastorClientException("expected");
@@ -459,7 +468,7 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoCachedReservationActivationThrows_whenCreateReservation_thenThrowCastorServiceException() {
     String reservationId = "testReservationId";
     CastorClientException expectedException = new CastorClientException("expected");
@@ -467,6 +476,7 @@ public class ReservationCachingServiceTest {
         mock(DedicatedTransactionService.class);
     Reservation reservationMock = mock(Reservation.class);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
     when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
     when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceMock);
@@ -485,13 +495,14 @@ public class ReservationCachingServiceTest {
   }
 
   @Test
-  public void
+  void
       givenNoCachedReservationAndSuccessfulRequest_whenGetOrCreateReservation_thenReturnNewReservation() {
     String reservationId = "testReservationId";
     DedicatedTransactionService dedicatedTransactionServiceMock =
         mock(DedicatedTransactionService.class);
     Reservation expectedReservationMock = mock(Reservation.class);
 
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
     when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
     when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceMock);

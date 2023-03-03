@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 package io.carbynestack.castor.client.upload;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.client.upload.websocket.ResponseCollector;
@@ -28,17 +28,17 @@ import java.util.concurrent.TimeUnit;
 import lombok.SneakyThrows;
 import org.apache.http.Header;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-@RunWith(MockitoJUnitRunner.class)
-public class DefaultCastorUploadClientTest {
+@ExtendWith(MockitoExtension.class)
+class DefaultCastorUploadClientTest {
 
   private WebSocketClient webSocketClientMock;
   private BearerTokenProvider bearerTokenProviderMock;
@@ -52,7 +52,7 @@ public class DefaultCastorUploadClientTest {
   private DefaultCastorUploadClient castorUploadClient;
 
   @SneakyThrows
-  @Before
+  @BeforeEach
   public void setUp() {
     csHttpClientMock = mock(CsHttpClient.class);
     webSocketClientMock = mock(WebSocketClient.class);
@@ -72,7 +72,7 @@ public class DefaultCastorUploadClientTest {
   }
 
   @Test
-  public void givenServiceAddressesIsNull_whenGetBuilderInstance_thenThrowNullPointerException() {
+  void givenServiceAddressesIsNull_whenGetBuilderInstance_thenThrowNullPointerException() {
     NullPointerException actualIae =
         assertThrows(
             NullPointerException.class, () -> DefaultCastorUploadClient.builder(null).build());
@@ -81,7 +81,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenConfiguration_whenBuildClient_thenInitializeAccordingly() {
+  void givenConfiguration_whenBuildClient_thenInitializeAccordingly() {
     CastorServiceUri expectedServiceUri =
         new CastorServiceUri("https://castor.carbynestack.io:8080");
     int expectedServerHeartbeat = 100;
@@ -119,7 +119,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenHttpClientConstructionFails_whenConstruct_thenThrowCastorClientException() {
+  void givenHttpClientConstructionFails_whenConstruct_thenThrowCastorClientException() {
     CsHttpClientException expectedCause = new CsHttpClientException("totally Expected");
     DefaultCastorUploadClient.Builder uploadClientBuilderMock =
         mock(DefaultCastorUploadClient.Builder.class, RETURNS_SELF);
@@ -141,7 +141,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenWebSocketClientConstructionFails_whenConstruct_thenThrowCastorClientException() {
+  void givenWebSocketClientConstructionFails_whenConstruct_thenThrowCastorClientException() {
     NoSuchAlgorithmException expectedCause = new NoSuchAlgorithmException("totally Expected");
     DefaultCastorUploadClient.Builder uploadClientBuilderMock =
         mock(DefaultCastorUploadClient.Builder.class, RETURNS_SELF);
@@ -179,7 +179,7 @@ public class DefaultCastorUploadClientTest {
   }
 
   @Test
-  public void givenToManyTuples_whenUploadTupleChunk_thenThrowIllegalArgumentException() {
+  void givenToManyTuples_whenUploadTupleChunk_thenThrowIllegalArgumentException() {
     TupleChunk largeTupleChunk = mock(TupleChunk.class);
     when(largeTupleChunk.getNumberOfTuples())
         .thenReturn(DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES + 1);
@@ -197,7 +197,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenUploadTimesOut_whenUploadTupleChunk_thenReturnFalse() {
+  void givenUploadTimesOut_whenUploadTupleChunk_thenReturnFalse() {
     boolean expectedReturnValue = false;
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunk tupleChunk = mock(TupleChunk.class);
@@ -216,7 +216,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenThreadIsInterrupted_whenUploadTupleChunk_thenReturnFalse() {
+  void givenThreadIsInterrupted_whenUploadTupleChunk_thenReturnFalse() {
     boolean expectedReturnValue = false;
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunk tupleChunk = mock(TupleChunk.class);
@@ -235,7 +235,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenUploadTupleChunk_thenReturnTrue() {
+  void givenSuccessfulRequest_whenUploadTupleChunk_thenReturnTrue() {
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunk tupleChunk = mock(TupleChunk.class);
     when(tupleChunk.getNumberOfTuples())
@@ -253,8 +253,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void
-      givenActivationFailsForOneEndpoint_whenActivateTupleChunk_thenThrowCastorClientException() {
+  void givenActivationFailsForOneEndpoint_whenActivateTupleChunk_thenThrowCastorClientException() {
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     String bearerToken = "testBearerToken";
     when(bearerTokenProviderMock.apply(serviceUri)).thenReturn(bearerToken);
@@ -280,13 +279,13 @@ public class DefaultCastorUploadClientTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenDisconnectWebSocket_thenCallDisconnectOnEachClient() {
+  void givenSuccessfulRequest_whenDisconnectWebSocket_thenCallDisconnectOnEachClient() {
     castorUploadClient.disconnectWebSocket();
     verify(webSocketClientMock).disconnect();
   }
 
   @Test
-  public void givenConnectionAttemptTimesOut_whenConnectWebSocket_thenThrowCastorClientException() {
+  void givenConnectionAttemptTimesOut_whenConnectWebSocket_thenThrowCastorClientException() {
     when(webSocketClientMock.isConnected()).thenReturn(false);
     CastorClientException actualCce =
         assertThrows(CastorClientException.class, () -> castorUploadClient.connectWebSocket(100));
@@ -298,7 +297,7 @@ public class DefaultCastorUploadClientTest {
   }
 
   @Test
-  public void givenConnectionSuccessful_whenConnectWebSocket_thenDoNothing() {
+  void givenConnectionSuccessful_whenConnectWebSocket_thenDoNothing() {
     when(webSocketClientMock.isConnected()).thenReturn(true);
     castorUploadClient.connectWebSocket(50);
     verify(webSocketClientMock).connect();
@@ -308,7 +307,7 @@ public class DefaultCastorUploadClientTest {
 
   @SneakyThrows
   @Test
-  public void givenValidConfiguration_whenInitializeWebSocketClients_thenReturnClients() {
+  void givenValidConfiguration_whenInitializeWebSocketClients_thenReturnClients() {
     String bearerToken = "testBearerToken";
     try (MockedStatic<WebSocketClient> webSocketClientMockedStatic =
         mockStatic(WebSocketClient.class)) {

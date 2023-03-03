@@ -1,8 +1,8 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.carbynestack.castor.service.persistence.cache;
@@ -10,7 +10,8 @@ package io.carbynestack.castor.service.persistence.cache;
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.service.persistence.cache.CreateReservationSupplier.*;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.client.download.CastorInterVcpClient;
@@ -24,14 +25,14 @@ import java.util.Optional;
 import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CreateReservationSupplierTest {
+@ExtendWith(MockitoExtension.class)
+class CreateReservationSupplierTest {
   @Mock private CastorInterVcpClient castorInterVcpClientMock;
   @Mock private ReservationCachingService reservationCachingServiceMock;
   @Mock private TupleChunkFragmentStorageService tupleChunkFragmentStorageServiceMock;
@@ -42,7 +43,7 @@ public class CreateReservationSupplierTest {
 
   private CreateReservationSupplier createReservationSupplier;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     createReservationSupplier =
         new CreateReservationSupplier(
@@ -55,7 +56,7 @@ public class CreateReservationSupplierTest {
   }
 
   @Test
-  public void givenInsufficientTuples_whenGet_thenThrowCastorServiceException() {
+  void givenInsufficientTuples_whenGet_thenThrowCastorServiceException() {
     when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count - 1);
 
     CastorServiceException actualCse =
@@ -67,8 +68,7 @@ public class CreateReservationSupplierTest {
   }
 
   @Test
-  public void
-      givenProvidedChunksDoNotHaveEnoughTuplesAvailable_whenGet_thenThrowCastorServiceException() {
+  void givenProvidedChunksDoNotHaveEnoughTuplesAvailable_whenGet_thenThrowCastorServiceException() {
     when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
     when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentWithTupleType(tupleType))
         .thenReturn(Optional.empty());
@@ -83,7 +83,7 @@ public class CreateReservationSupplierTest {
   }
 
   @Test
-  public void givenSharingReservationFails_whenGet_thenThrowCastorServiceException() {
+  void givenSharingReservationFails_whenGet_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
     long startIndex = 0;
     TupleChunkFragmentEntity fragmentEntity =
@@ -101,7 +101,7 @@ public class CreateReservationSupplierTest {
   }
 
   @Test
-  public void givenSuccessfulRequest_whenGet_thenReturnExpectedReservation() {
+  void givenSuccessfulRequest_whenGet_thenReturnExpectedReservation() {
     UUID chunkId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
     long startIndex = 0;
     TupleChunkFragmentEntity fragmentEntity =

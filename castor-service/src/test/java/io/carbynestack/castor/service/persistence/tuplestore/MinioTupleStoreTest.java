@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -9,7 +9,7 @@ package io.carbynestack.castor.service.persistence.tuplestore;
 
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.service.persistence.tuplestore.MinioTupleStore.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.*;
@@ -22,15 +22,15 @@ import java.util.UUID;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-@RunWith(MockitoJUnitRunner.class)
-public class MinioTupleStoreTest {
+@ExtendWith(MockitoExtension.class)
+class MinioTupleStoreTest {
   @Mock private MinioClient minioClientMock;
   @Mock private MinioProperties minioPropertiesMock;
 
@@ -39,7 +39,7 @@ public class MinioTupleStoreTest {
   private MinioTupleStore minioTupleStore;
 
   @SneakyThrows
-  @Before
+  @BeforeEach
   public void setUp() {
     when(minioPropertiesMock.getBucket()).thenReturn(testBucketName);
     when(minioClientMock.bucketExists(BucketExistsArgs.builder().bucket(testBucketName).build()))
@@ -49,7 +49,7 @@ public class MinioTupleStoreTest {
 
   @SneakyThrows
   @Test
-  public void givenBucketDoesNotExist_whenConstruct_thenMakeBucket() {
+  void givenBucketDoesNotExist_whenConstruct_thenMakeBucket() {
     when(minioClientMock.bucketExists(BucketExistsArgs.builder().bucket(testBucketName).build()))
         .thenReturn(false);
     new MinioTupleStore(minioClientMock, minioPropertiesMock);
@@ -59,7 +59,7 @@ public class MinioTupleStoreTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenSave_thenPutChunkDataInDatabase() {
+  void givenSuccessfulRequest_whenSave_thenPutChunkDataInDatabase() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     int count = 1;
     byte[] chunkData = RandomUtils.nextBytes(INPUT_MASK_GFP.getTupleSize() * count);
@@ -80,7 +80,7 @@ public class MinioTupleStoreTest {
 
   @SneakyThrows
   @Test
-  public void givenPutObjectThrowsException_whenSave_thenThrowCastorServiceException() {
+  void givenPutObjectThrowsException_whenSave_thenThrowCastorServiceException() {
     IOException expectedException = new IOException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     int count = 1;
@@ -104,7 +104,7 @@ public class MinioTupleStoreTest {
   }
 
   @Test
-  public void
+  void
       givenIndexOfFirstTupleToReadIsNegative_whenDownloadTuples_thenThrowIllegalArgumentException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
@@ -122,7 +122,7 @@ public class MinioTupleStoreTest {
   }
 
   @Test
-  public void givenLengthToReadIsZero_whenDownloadTuples_thenThrowIllegalArgumentException() {
+  void givenLengthToReadIsZero_whenDownloadTuples_thenThrowIllegalArgumentException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     long startIndex = 0;
@@ -144,7 +144,7 @@ public class MinioTupleStoreTest {
 
   @SneakyThrows
   @Test
-  public void
+  void
       givenReadingFromDatabaseThrowsException_whenDownloadTuples_thenThrowCastorServiceException() {
     IOException expectedException = new IOException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
@@ -174,7 +174,7 @@ public class MinioTupleStoreTest {
 
   @SneakyThrows
   @Test
-  public void givenSuccessfulRequest_whenDownloadTuples_thenThrowCastorServiceException() {
+  void givenSuccessfulRequest_whenDownloadTuples_thenThrowCastorServiceException() {
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleType tupleType = INPUT_MASK_GFP;
     long startIndex = 0;
@@ -209,7 +209,7 @@ public class MinioTupleStoreTest {
 
   @SneakyThrows
   @Test
-  public void givenNoChunkWithIdInDatabase_whenDeleteTupleChunk_thenDoNothing() {
+  void givenNoChunkWithIdInDatabase_whenDeleteTupleChunk_thenDoNothing() {
     IOException expectedException = new IOException("expected");
     UUID chunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
 

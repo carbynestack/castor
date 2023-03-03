@@ -1,31 +1,31 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2023 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
- *  SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package io.carbynestack.castor.service.persistence.cache;
 
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.TupleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
 
 @Slf4j
-@RunWith(MockitoJUnitRunner.class)
-public class WaitForReservationCallableTest {
+@ExtendWith(MockitoExtension.class)
+class WaitForReservationCallableTest {
   @Mock private ReservationCachingService reservationCachingServiceMock;
 
   private final String reservationId = "reservationId";
@@ -33,7 +33,7 @@ public class WaitForReservationCallableTest {
   private final long tupleCount = 42;
 
   @Test
-  public void givenNoReservationRetrievedAndCancelled_whenCall_thenReturnNull() {
+  void givenNoReservationRetrievedAndCancelled_whenCall_thenReturnNull() {
     int retries = 1;
     WaitForReservationCallable wfrc =
         new WaitForReservationCallable(
@@ -46,7 +46,7 @@ public class WaitForReservationCallableTest {
   }
 
   @Test
-  public void givenReservationLockedInitially_whenCall_thenWaitUntilUnlockedAndReturnReservation() {
+  void givenReservationLockedInitially_whenCall_thenWaitUntilUnlockedAndReturnReservation() {
     Reservation expectedReservation = mock(Reservation.class);
     WaitForReservationCallable wfrc =
         new WaitForReservationCallable(
