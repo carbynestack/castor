@@ -1,0 +1,33 @@
+{
+  "bump-minor-pre-major": true,
+  "separate-pull-requests": true,
+  "pull-request-title-pattern": "chore: release ${component} ${version}",
+  "pull-request-header": ":package: Staging a new release",
+  "skip-snapshot": true,
+  "packages": {
+    "castor-parent": {
+      "package-name": "parent",
+      "release-type": "maven"
+    },
+    "castor-common": {
+      "package-name": "common",
+      "release-type": "maven"
+    },
+    "castor-java-client": {
+      "package-name": "java-client",
+      "release-type": "maven"
+    },
+    "castor-upload-java-client": {
+      "package-name": "upload-java-client",
+      "release-type": "maven"
+    },
+    "castor-service": {
+      "package-name": "service",
+      "release-type": "maven"
+    },
+    "castor-service/charts/castor": {
+      "package-name": "chart",
+      "release-type": "helm"
+    }
+  }
+}

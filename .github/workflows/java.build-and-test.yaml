@@ -1,0 +1,85 @@
+#
+# Copyright (c) 2021-2023 - for information on the respective copyright owner
+# see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+name: Build and test artifacts
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+    branches:
+      - 'master'
+jobs:
+  changes:
+    runs-on: ubuntu-22.04
+    permissions:
+      pull-requests: read
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      modules: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Check which modules are affected
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            parent: '(castor-parent|.github)/**'
+            common: '(castor-common|.github)/**'
+            java-client: '(castor-java-client|.github)/**'
+            upload-java-client: '(castor-upload-java-client|.github)/**'
+            service: '(castor-service|.github)/**'
+  test:
+    needs: changes
+    strategy:
+      matrix:
+        module: ${{ fromJSON(needs.changes.outputs.modules) }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Setting up Github Package Repository as Maven Repository
+        uses: s4u/maven-settings-action@v2
+        with:
+          githubServer: false
+          servers: |
+            [{
+              "id": "github",
+              "username": "${{ github.actor }}",
+              "password": "${{ secrets.GITHUB_TOKEN }}"
+            }]
+      - name: Build with Maven
+        run: ./mvnw install -pl ${GITHUB_REPOSITORY#*/}-${{ matrix.module }} -Dskip.tests --batch-mode --update-snapshots --no-transfer-progress
+      - name: Run Tests
+        run: ./mvnw verify -pl ${GITHUB_REPOSITORY#*/}-${{ matrix.module }} --activate-profiles coverage --batch-mode --no-transfer-progress
+      - name: Collect Jacoco reports
+        run: echo ::set-output name=reports::$(find . -regex '.*/target/site/jacoco/jacoco.xml' | tr '\n' ',' | sed 's/.$//')
+        id: jacoco
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ steps.jacoco.outputs.reports }}
+          name: ${{ matrix.module }}
+          flags: ${{ matrix.module }}
+  # This is required to allow for setting the test job as required in scenarios where only some
+  # tests are run, e.g., for castor-java-client but not for castor-upload-java-client.
+  test-status:
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+      - name: Tests successful
+        if: ${{ !(contains(needs.test.result, 'failure')) }}
+        run: exit 0
+      - name: Tests failed
+        if: ${{ contains(needs.test.result, 'failure') }}
+        run: exit 1
