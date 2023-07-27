@@ -4,7 +4,7 @@ description: A Helm chart for creating a Carbyne Stack Castor tuple storage and 
 name: castor
 version: 0.1.0
 keywords:
-- carbynestack
+- carbyne stack
 - castor
 home: https://carbynestack.io
 sources:

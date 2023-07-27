@@ -14,7 +14,10 @@
     <parent>
         <groupId>io.carbynestack</groupId>
         <artifactId>castor-parent</artifactId>
-        <version>0.1-SNAPSHOT-4321261594-23-40a9faa</version>
+        <version>0.1.1</version>
+        <!-- override relativePath default '../pom.xml' to resolve pom from repository
+        see https://maven.apache.org/ref/3.8.1/maven-model/maven.html#parent -->
+        <relativePath/>
     </parent>
     <repositories>
         <repository>
