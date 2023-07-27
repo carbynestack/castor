@@ -1,6 +1,6 @@
 {
   "castor-parent": "0.1.1",
-  "castor-common": "0.1.0",
+  "castor-common": "0.1.1",
   "castor-java-client": "0.1.0",
   "castor-upload-java-client": "0.1.0",
   "castor-service": "0.1.0",
