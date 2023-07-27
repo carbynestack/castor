@@ -31,7 +31,7 @@
         </repository>
     </repositories>
     <properties>
-        <castor-common.version>0.1-SNAPSHOT-4321261594-23-40a9faa</castor-common.version>
+        <castor-common.version>0.1.1</castor-common.version>
     </properties>
     <dependencies>
         <!-- internal dependencies -->
