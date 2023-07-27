@@ -2,6 +2,7 @@
 
 [![codecov](https://codecov.io/gh/carbynestack/castor/branch/master/graph/badge.svg?token=JWqyS02Uok)](https://codecov.io/gh/carbynestack/castor)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/b13366556ed545189445c9107d7fded7)](https://www.codacy.com?utm_source=github.com&utm_medium=referral&utm_content=carbynestack/castor&utm_campaign=Badge_Grade)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 [![Known Vulnerabilities](https://snyk.io/test/github/carbynestack/castor/badge.svg)](https://snyk.io/test/github/carbynestack/castor)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
@@ -10,7 +11,7 @@ Castor is an open source storage service for cryptographic material used in
 Secure Multiparty Computation, so called _tuples_, and part of the
 [Carbyne Stack](https://github.com/carbynestack) platform.
 
-> **DISCLAIMER**: Carbyne Stack Castor is *alpha* software. The software is not
+> __DISCLAIMER__: Carbyne Stack Castor is _alpha_: software. The software is not
 > ready for production use. It has neither been developed nor tested for a
 > specific use case.
 
@@ -29,7 +30,7 @@ a Castor service and how to interact with it using the provided Java clients:
 - [Castor Java Upload Client](castor-upload-java-client) - A Java client used to
   upload pre-generated tuples using Castor's WebSocket interface.
 
-> :bulb: **NOTE**\
+> :bulb: __NOTE__\
 > _Castor_ is only used to manage tuples in a Carbyne Stack
 > Virtual Cloud and does not provide any functionality for generating the tuples
 > themselves.
@@ -42,7 +43,7 @@ tuples in the castor service.
 
 ## License
 
-Carbyne Stack *Castor Tuple Store* is open-sourced under the Apache License 2.0.
+Carbyne Stack _Castor Tuple Store_ is open-sourced under the Apache License 2.0.
 See the [LICENSE](LICENSE) file for details.
 
 ### 3rd Party Licenses
