@@ -10,12 +10,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>castor-upload-java-client</artifactId>
+    <version>0.1.0</version>
     <parent>
         <groupId>io.carbynestack</groupId>
         <artifactId>castor-parent</artifactId>
-        <version>0.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
+        <version>0.1-SNAPSHOT-4321261594-23-40a9faa</version>
     </parent>
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>github</id>
+            <name>Github Packages</name>
+            <url>https://maven.pkg.github.com/carbynestack/*</url>
+        </repository>
+    </repositories>
+    <properties>
+        <castor-common.version>0.1-SNAPSHOT-4321261594-23-40a9faa</castor-common.version>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -33,7 +46,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>castor-common</artifactId>
-            <version>${project.version}</version>
+            <version>${castor-common.version}</version>
         </dependency>
         <dependency>
             <groupId>io.carbynestack</groupId>
@@ -173,7 +186,7 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <fileTemplate>${project.parent.basedir}/.github/templates/sbom.ftl</fileTemplate>
+                    <fileTemplate>${project.basedir}/../.github/templates/sbom.ftl</fileTemplate>
                 </configuration>
             </plugin>
         </plugins>

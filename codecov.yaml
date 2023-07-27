@@ -1,0 +1,19 @@
+flag_management:
+  default_rules:
+    carryforward: true
+  individual_flags:
+    - name: parent
+      paths:
+        - castor-parent/
+    - name: common
+      paths:
+        - castor-common/
+    - name: java-client
+      paths:
+        - castor-java-client/
+    - name: upload-java-client
+      paths:
+        - castor-java-client/
+    - name: service
+      paths:
+        - castor-service/
