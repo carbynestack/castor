@@ -88,10 +88,6 @@ documentation for the
 | `castor.probes.readiness.initialDelay`     | Number of seconds after the container has started before the readiness probe is initiated | `0`                                           |
 | `castor.probes.readiness.period`           | How often (in seconds) to perform the readiness probe                                     | `5`                                           |
 | `castor.probes.readiness.failureThreshold` | How often to fail the readiness probe before finally be marked as unsuccessful            | `3`                                           |
-| `redis.name`                               | Name for the redis container                                                              | `redis`                                       |
-| `redis.image.repository`                   | Redis Image name                                                                          | `redis`                                       |
-| `redis.image.tag`                          | Redis Image tag                                                                           | `latest`                                      |
-| `redis.image.pullPolicy`                   | Redis Image pull policy                                                                   | `IfNotPresent`                                |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to
 `helm install`. For example,
