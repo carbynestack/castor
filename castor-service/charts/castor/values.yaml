@@ -64,12 +64,3 @@ castor:
       period: 5
       failureThreshold: 3
   logLevel: INFO
-
-redis:
-  # helmfile overrides the variable
-  name: "redis"
-  image:
-    repository: redis
-    tag: 6.2.5
-    pullPolicy: "IfNotPresent"
-    pullSecrets: []
