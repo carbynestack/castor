@@ -63,7 +63,7 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.castor.logLevel | quote }}
             - name: RESERVATION_TIMEOUT
-              value: {{ .Values.castor.reservationTimeout }}
+              value: {{ .Values.castor.reservationTimeout | quote }}
           ports:
             - name: mgmt
               containerPort: 10100
