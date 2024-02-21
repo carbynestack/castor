@@ -64,3 +64,4 @@ castor:
       period: 5
       failureThreshold: 3
   logLevel: INFO
+  reservationTimeout: 5000
