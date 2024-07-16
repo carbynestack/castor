@@ -12,6 +12,7 @@ import io.carbynestack.castor.common.entities.TupleChunk;
 import io.carbynestack.castor.common.entities.TupleList;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.config.MinioProperties;
+import io.micrometer.core.annotation.Timed;
 import io.minio.*;
 import io.minio.errors.*;
 import java.io.ByteArrayInputStream;
@@ -65,6 +66,7 @@ public class MinioTupleStore implements TupleStore {
   }
 
   @Override
+  @Timed
   public void save(TupleChunk tupleChunk) {
     try (InputStream inputStream = new ByteArrayInputStream(tupleChunk.getTuples())) {
       minioClient.putObject(
@@ -88,6 +90,7 @@ public class MinioTupleStore implements TupleStore {
   }
 
   @Override
+  @Timed
   public <T extends Tuple<T, F>, F extends Field> TupleList<T, F> downloadTuples(
       @NonNull Class<T> tupleCls,
       @NonNull F fieldType,
@@ -119,6 +122,7 @@ public class MinioTupleStore implements TupleStore {
   }
 
   @Override
+  @Timed
   public void deleteTupleChunk(UUID id) {
     try {
       minioClient.removeObject(

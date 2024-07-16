@@ -11,6 +11,8 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.concurrent.Cancellable;
@@ -34,6 +36,7 @@ public class WaitForReservationCallable implements Callable<Reservation>, Cancel
    *     given criteria
    */
   @Override
+  @Timed
   public Reservation call() {
     this.hasStarted = true;
     while (!this.stop || Thread.currentThread().isInterrupted()) {

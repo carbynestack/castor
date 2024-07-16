@@ -41,6 +41,7 @@
         <dependency>
             <groupId>io.carbynestack</groupId>
             <artifactId>java-http-client</artifactId>
+            <version>0.1.2</version>
         </dependency>
 
         <dependency>

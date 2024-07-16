@@ -15,7 +15,10 @@ import io.carbynestack.castor.service.persistence.cache.ReservationCachingServic
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,8 +60,14 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
    */
   @Transactional
   @Override
+  @Timed
   public <T extends Tuple<T, F>, F extends Field> TupleList<T, F> getTupleList(
       Class<T> tupleCls, F field, long count, UUID requestId) {
+    // Was passiert, wenn Castor sehr Langsam ist? Hat das Auswirkungen auf die Ephemeral-Execution-Zeit?
+//    try {
+//      TimeUnit.MILLISECONDS.sleep(10);
+//      System.out.println("Slept for 500 millisecs");
+//    }catch(Exception ignored){System.out.println("Didn't sleep");}
     TupleType tupleType = TupleType.findTupleType(tupleCls, field);
     String reservationId = requestId + "_" + tupleType;
     Reservation reservation;

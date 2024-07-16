@@ -18,6 +18,8 @@ import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragme
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+
+import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,6 +49,7 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
    * @throws CastorServiceException if reservation was not shared successfully
    */
   @Override
+  @Timed
   public Reservation get() {
     List<ReservationElement> reservationElements = composeElements(tupleType, count, reservationId);
     log.debug("Reservation composed.");

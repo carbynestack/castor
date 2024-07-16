@@ -39,7 +39,7 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
  */
 @Slf4j
 public class DefaultCastorUploadClient implements CastorUploadClient {
-  public static final int MAXIMUM_NUMBER_OF_TUPLES = 100000;
+  public static final int MAXIMUM_NUMBER_OF_TUPLES = 1000000;
   public static final int DEFAULT_SERVER_HEARTBEAT = 0;
   public static final int DEFAULT_CLIENT_HEARTBEAT = 10000;
   public static final String FAILED_TO_INSTANTIATE_HTTP_CLIENT_EXCEPTION_MSG =

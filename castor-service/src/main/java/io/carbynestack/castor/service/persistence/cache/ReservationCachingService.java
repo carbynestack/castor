@@ -25,6 +25,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
+
+import io.micrometer.core.annotation.Timed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
@@ -91,6 +93,7 @@ public class ReservationCachingService {
    * @throws CastorServiceException if the cache already holds a reservation with the given ID
    */
   @Transactional
+  @Timed
   public void keepReservation(Reservation reservation) {
     log.debug("persisting reservation {}", reservation);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
@@ -117,6 +120,7 @@ public class ReservationCachingService {
    * @throws CastorServiceException if the tuples could not be reserved as requested.
    * @throws CastorServiceException if the cache already holds a reservation with the given ID
    */
+  @Timed
   public void keepAndApplyReservation(Reservation reservation) {
     log.debug("persisting reservation {}", reservation);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
@@ -165,6 +169,7 @@ public class ReservationCachingService {
    *     reservation's ID
    */
   @Transactional
+  @Timed
   public void updateReservation(String reservationId, ActivationStatus status) {
     log.debug("updating reservation {}", reservationId);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
@@ -199,6 +204,7 @@ public class ReservationCachingService {
    * @throws CastorServiceException if method is called even tho this castor service is no master
    */
   @Transactional
+  @Timed
   public Reservation createReservation(String reservationId, TupleType tupleType, long count) {
     if (!dedicatedTransactionServiceOptional.isPresent()
         || !castorInterVcpClientOptional.isPresent()) {
@@ -245,6 +251,7 @@ public class ReservationCachingService {
    *     given criteria
    */
   @Transactional(readOnly = true)
+  @Timed
   public Reservation getReservationWithRetry(
       String reservationId, TupleType tupleType, long numberOfTuples) {
     Reservation reservation = null;
@@ -279,6 +286,7 @@ public class ReservationCachingService {
    */
   @Nullable
   @Transactional(readOnly = true)
+  @Timed
   public Reservation getUnlockedReservation(String reservationId, TupleType tupleType, long count) {
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
     Reservation reservation = (Reservation) ops.get(cachePrefix + reservationId);
@@ -303,10 +311,12 @@ public class ReservationCachingService {
   }
 
   @Transactional
+  @Timed
   public void forgetReservation(String reservationId) {
     redisTemplate.delete(cachePrefix + reservationId);
   }
 
+  @Timed
   protected void applyConsumption(Reservation reservation) {
     consumptionCachingService.keepConsumption(
         System.currentTimeMillis(),

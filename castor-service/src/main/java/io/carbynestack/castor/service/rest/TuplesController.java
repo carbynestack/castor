@@ -37,7 +37,7 @@ public class TuplesController {
    *     same tuples.
    */
   @GetMapping
-  public ResponseEntity<TupleList> getTuples(
+  public ResponseEntity<byte[]> getTuples(
       @RequestParam(value = DOWNLOAD_TUPLE_TYPE_PARAMETER) String type,
       @RequestParam(value = DOWNLOAD_COUNT_PARAMETER) long count,
       @RequestParam(value = DOWNLOAD_REQUEST_ID_PARAMETER) UUID requestId) {
@@ -46,7 +46,7 @@ public class TuplesController {
     TupleType tupleType = TupleType.valueOf(type);
     return new ResponseEntity<>(
         tuplesDownloadService.getTupleList(
-            tupleType.getTupleCls(), tupleType.getField(), count, requestId),
+            tupleType.getTupleCls(), tupleType.getField(), count, requestId).toByteArray(),
         HttpStatus.OK);
   }
 }

@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.BearerTokenProvider;
 import io.carbynestack.castor.common.CastorServiceUri;
@@ -25,6 +24,8 @@ import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.httpclient.CsHttpClient;
 import io.carbynestack.httpclient.CsHttpClientException;
 import io.carbynestack.httpclient.CsResponseEntity;
+
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
@@ -99,26 +100,28 @@ class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  void givenSuccessfulRequest_whenDownloadTripleShares_thenReturnExpectedContent() {
+  void givenSuccessfulRequest_whenDownloadTripleSharesAsBytes_thenReturnExpectedContent(){
     UUID requestId = UUID.fromString("3dc08ff2-5eed-49a9-979e-3a3ac0e4a2cf");
     int expectedCount = 2;
     TupleList<MultiplicationTriple<Field.Gfp>, Field.Gfp> expectedTripleList =
-        new TupleList(MultiplicationTriple.class, GFP);
+            new TupleList(MultiplicationTriple.class, GFP);
     expectedTripleList.add(new MultiplicationTriple(GFP, testShare, testShare, testShare));
     expectedTripleList.add(new MultiplicationTriple(GFP, testShare, testShare, testShare));
-    CsResponseEntity<String, TupleList> givenResponseEntity =
-        CsResponseEntity.success(HttpStatus.SC_OK, expectedTripleList);
+    CsResponseEntity<String, byte[]> givenResponseEntity =
+            CsResponseEntity.success(HttpStatus.SC_OK, expectedTripleList.toByteArray());
+
     CastorServiceUri serviceUri = new CastorServiceUri(serviceAddress);
 
-    when(csHttpClientMock.getForEntity(
+    doReturn(givenResponseEntity)
+            .when(csHttpClientMock)
+            .getForEntity(
             serviceUri.getIntraVcpRequestTuplesUri(
-                requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount),
+                    requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount),
             Collections.emptyList(),
-            TupleList.class))
-        .thenReturn(givenResponseEntity);
+            byte[].class);
     TupleList actualTripleList =
-        castorIntraVcpClient.downloadTupleShares(
-            requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount);
+            castorIntraVcpClient.downloadTupleShares(
+                    requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount);
 
     assertEquals(expectedTripleList, actualTripleList);
   }
@@ -129,7 +132,7 @@ class DefaultCastorIntraVcpClientTest {
     UUID requestId = UUID.fromString("3dc08ff2-5eed-49a9-979e-3a3ac0e4a2cf");
     CsHttpClientException expectedCause = new CsHttpClientException("totally expected");
     URI expectedUri = new CastorServiceUri(serviceAddress).getRestServiceUri();
-    when(csHttpClientMock.getForEntity(any(), eq(Collections.emptyList()), eq(TupleList.class)))
+    when(csHttpClientMock.getForEntity(any(), eq(Collections.emptyList()), eq(byte[].class)))
         .thenThrow(expectedCause);
     CastorClientException actualCce =
         assertThrows(
