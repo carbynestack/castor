@@ -31,7 +31,6 @@ final class UnlockReservationSupplier implements Supplier<Reservation> {
    * @throws CastorServiceException if no Reservation is associated with the given reservation's ID
    */
   @Override
-  @Timed
   public Reservation get() {
     log.debug("updating reservation {}", reservation.getReservationId());
     reservation.setStatus(ActivationStatus.UNLOCKED);

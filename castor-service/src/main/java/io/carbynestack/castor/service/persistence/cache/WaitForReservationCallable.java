@@ -36,7 +36,6 @@ public class WaitForReservationCallable implements Callable<Reservation>, Cancel
    *     given criteria
    */
   @Override
-  @Timed
   public Reservation call() {
     this.hasStarted = true;
     while (!this.stop || Thread.currentThread().isInterrupted()) {

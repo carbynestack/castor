@@ -49,7 +49,6 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
    * @throws CastorServiceException if reservation was not shared successfully
    */
   @Override
-  @Timed
   public Reservation get() {
     List<ReservationElement> reservationElements = composeElements(tupleType, count, reservationId);
     log.debug("Reservation composed.");

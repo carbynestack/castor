@@ -68,7 +68,6 @@ public class MinioTupleStore implements TupleStore {
   }
 
   @Override
-  @Timed
   public void save(TupleChunk tupleChunk) {
     try (InputStream inputStream = new ByteArrayInputStream(tupleChunk.getTuples())) {
       minioClient.putObject(

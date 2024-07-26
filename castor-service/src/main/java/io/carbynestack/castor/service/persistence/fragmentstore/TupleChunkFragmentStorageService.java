@@ -60,7 +60,6 @@ public class TupleChunkFragmentStorageService {
    *     TupleChunkFragmentEntity} is already covered by another {@link TupleChunkFragmentEntity}.
    */
   @Transactional
-  @Timed
   public void keep(@NotNull List<TupleChunkFragmentEntity> fragments) throws CastorClientException {
     for (TupleChunkFragmentEntity fragment : fragments) {
       checkNoConflict(fragment.getTupleChunkId(), fragment.getStartIndex(), fragment.getEndIndex());
@@ -87,7 +86,6 @@ public class TupleChunkFragmentStorageService {
    *     the described criteria or {@link Optional#empty()}.
    */
   @Transactional
-  @Timed
   public Optional<TupleChunkFragmentEntity> findAvailableFragmentForChunkContainingIndex(
       UUID tupleChunkId, long startIndex) {
     return fragmentRepository.findAvailableFragmentForTupleChunkContainingIndex(
@@ -110,7 +108,6 @@ public class TupleChunkFragmentStorageService {
    *     the described criteria or {@link Optional#empty()}.
    */
   @Transactional
-  @Timed
   public Optional<TupleChunkFragmentEntity> findAvailableFragmentWithTupleType(
       TupleType tupleType) {
     return fragmentRepository
@@ -132,7 +129,6 @@ public class TupleChunkFragmentStorageService {
    * @return the given fragment with its reduced size
    */
   @Transactional
-  @Timed
   public TupleChunkFragmentEntity splitAt(TupleChunkFragmentEntity fragment, long index) {
     String oldFragmentState = null;
     if (log.isDebugEnabled()) {
@@ -172,7 +168,6 @@ public class TupleChunkFragmentStorageService {
    *     the split index is not within the fragment's range
    */
   @Transactional
-  @Timed
   public TupleChunkFragmentEntity splitBefore(TupleChunkFragmentEntity fragment, long index) {
     if (index <= fragment.getStartIndex() || index >= fragment.getEndIndex()) {
       return fragment;
@@ -211,7 +206,6 @@ public class TupleChunkFragmentStorageService {
    *     by a {@link TupleChunkFragmentEntity}
    */
   @Transactional(readOnly = true)
-  @Timed
   public void checkNoConflict(UUID chunkId, long startIndex, long endIndex) {
     if (fragmentRepository
         .findFirstFragmentContainingAnyTupleOfSequence(chunkId, startIndex, endIndex)
@@ -230,7 +224,6 @@ public class TupleChunkFragmentStorageService {
    * @param type T{@link TupleType} of interest.
    * @return the number of available tuples for the given type.
    */
-  @Timed
   public long getAvailableTuples(TupleType type) {
     try {
       return fragmentRepository.getAvailableTupleByType(type);
@@ -252,7 +245,6 @@ public class TupleChunkFragmentStorageService {
    * @throws CastorServiceException if not a single {@link TupleChunkFragmentEntity} was associated
    *     with the given tuple chunk id
    */
-  @Timed
   public void activateFragmentsForTupleChunk(UUID chunkId) {
     if (fragmentRepository.unlockAllForTupleChunk(chunkId) <= 0) {
       throw new CastorServiceException(NOT_A_SINGLE_FRAGMENT_FOR_CHUNK_ERROR_MSG);
@@ -265,7 +257,6 @@ public class TupleChunkFragmentStorageService {
    *
    * @param reservationId the unique identifier of the reservation.
    */
-  @Timed
   public void deleteAllForReservationId(String reservationId) {
     fragmentRepository.deleteAllByReservationId(reservationId);
   }
@@ -279,13 +270,11 @@ public class TupleChunkFragmentStorageService {
    *     the given chunk id, <code>false</code> if not.
    */
   @Transactional(readOnly = true)
-  @Timed
   public boolean isChunkReferencedByFragments(UUID tupleChunkId) {
     return fragmentRepository.existsByTupleChunkId(tupleChunkId);
   }
 
   @Transactional
-  @Timed
   public void update(TupleChunkFragmentEntity fragment) {
     fragmentRepository.save(fragment);
   }

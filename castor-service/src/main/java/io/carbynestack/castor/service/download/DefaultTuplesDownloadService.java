@@ -64,7 +64,6 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
      */
     @Transactional
     @Override
-    @Timed
     public <T extends Tuple<T, F>, F extends Field> byte[] getTupleList(
             Class<T> tupleCls, F field, long count, UUID requestId) {
         // Was passiert, wenn Castor sehr Langsam ist? Hat das Auswirkungen auf die Ephemeral-Execution-Zeit?
