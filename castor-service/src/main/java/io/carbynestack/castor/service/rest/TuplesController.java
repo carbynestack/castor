@@ -46,7 +46,7 @@ public class TuplesController {
     TupleType tupleType = TupleType.valueOf(type);
     return new ResponseEntity<>(
         tuplesDownloadService.getTupleList(
-            tupleType.getTupleCls(), tupleType.getField(), count, requestId).toByteArray(),
+            tupleType.getTupleCls(), tupleType.getField(), count, requestId),
         HttpStatus.OK);
   }
 }

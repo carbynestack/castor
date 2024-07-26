@@ -262,11 +262,11 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
 
     doReturn(true).when(interVcpClientMock).shareReservation(expectedReservation);
 
-    TupleList tupleList =
+    byte[] tupleList =
         tuplesDownloadService.getTupleList(
             tupleType.getTupleCls(), tupleType.getField(), count, requestId);
 
-    assertEquals(
+    assertArrayEquals(
         TupleList.fromStream(
             tupleType.getTupleCls(),
             tupleType.getField(),
@@ -274,7 +274,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
                 tupleData,
                 (int) (fragmentStartIndex * tupleType.getTupleSize()),
                 (int) ((fragmentStartIndex + count) * tupleType.getTupleSize())),
-            count * tupleType.getTupleSize()),
+            count * tupleType.getTupleSize()).toByteArray(),
         tupleList);
 
     // no fragments stored -> existing fragment was reserved, consumed and then deleted

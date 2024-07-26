@@ -23,6 +23,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -90,7 +92,6 @@ public class MinioTupleStore implements TupleStore {
   }
 
   @Override
-  @Timed
   public <T extends Tuple<T, F>, F extends Field> TupleList<T, F> downloadTuples(
       @NonNull Class<T> tupleCls,
       @NonNull F fieldType,
@@ -122,7 +123,35 @@ public class MinioTupleStore implements TupleStore {
   }
 
   @Override
-  @Timed
+  public <T extends Tuple<T, F>, F extends Field> InputStream downloadTuplesAsBytes(
+          @NonNull Class<T> tupleCls,
+          @NonNull F fieldType,
+          @NonNull UUID tupleChunkId,
+          long startIndex,
+          long lengthToRead) {
+    Assert.isTrue(startIndex >= 0, INVALID_INDEX_EXCEPTION_MSG);
+    Assert.isTrue(lengthToRead >= 1, INVALID_LENGTH_EXCEPTION_MSG);
+    log.debug(
+            "Starting download from S3 for key {} from byte {} to byte {} into byte array",
+            tupleChunkId,
+            startIndex,
+            startIndex + lengthToRead);
+  try{
+
+      return minioClient.getObject(
+              GetObjectArgs.builder()
+                      .bucket(minioProperties.getBucket())
+                      .object(tupleChunkId.toString())
+                      .offset(startIndex)
+                      .length(lengthToRead)
+                      .build());
+    } catch (Exception e) {
+      log.error("Exception occurred while reading tuple data from Minio.", e);
+      throw new CastorServiceException(ERROR_WHILE_READING_TUPLES_EXCEPTION_MSG, e);
+    }
+  }
+
+  @Override
   public void deleteTupleChunk(UUID id) {
     try {
       minioClient.removeObject(

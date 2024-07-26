@@ -10,7 +10,6 @@ package io.carbynestack.castor.service.download;
 import io.carbynestack.castor.common.entities.Field;
 import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.Tuple;
-import io.carbynestack.castor.common.entities.TupleList;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import java.util.UUID;
@@ -73,11 +72,11 @@ public interface TuplesDownloadService {
    * @throws CastorServiceException if communication with slaves failed
    * @throws CastorServiceException if no reservation could be made for the given configuration
    * @throws CastorServiceException if no {@link Reservation} with the given id could be obtained
-   *     within a defined timout (see {@link
-   *     CastorSlaveServiceProperties#getWaitForReservationTimeout()}).
+   *                                within a defined timout (see {@link
+   *                                CastorSlaveServiceProperties#getWaitForReservationTimeout()}).
    * @throws CastorServiceException if tuples cannot be retrieved from database
    */
   @Transactional
-  <T extends Tuple<T, F>, F extends Field> TupleList<T, F> getTupleList(
+  <T extends Tuple<T, F>, F extends Field> byte[] getTupleList(
       Class<T> tupleCls, F field, long count, UUID requestId);
 }
