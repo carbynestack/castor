@@ -9,21 +9,26 @@ package io.carbynestack.castor.service.persistence.fragmentstore;
 
 import static io.carbynestack.castor.common.entities.ActivationStatus.LOCKED;
 import static io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED;
+import static io.carbynestack.castor.common.entities.Field.GF2N;
+import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService.CONFLICT_EXCEPTION_MSG;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
+import io.carbynestack.castor.common.entities.ReservationElement;
+import io.carbynestack.castor.common.entities.TupleChunk;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.service.CastorServiceApplication;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
 import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +59,88 @@ public class TupleChunkFragmentStorageServiceIT {
   @Autowired private PersistenceTestEnvironment testEnvironment;
   @Autowired private TupleChunkFragmentRepository fragmentRepository;
   @Autowired private TupleChunkFragmentStorageService fragmentStorageService;
+  @Autowired private CastorServiceProperties castorServiceProperties;
 
   @BeforeEach
   public void setUp() {
     testEnvironment.clearAllData();
+  }
+
+  @Test
+  void testFragmentCache() {
+    UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    UUID tupleChunkId2 = UUID.randomUUID();
+    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
+    TupleType tupleType2 = TupleType.MULTIPLICATION_TRIPLE_GF2N;
+    byte[] expectedMGFPTupleData =
+        RandomUtils.nextBytes( // Value = elemsize * arity --> *2 for value + MAC
+            GFP.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GFP.getArity() * 50000 * 2);
+
+    byte[] expectedMGF2nTupleData =
+        RandomUtils.nextBytes( // Value = elemsize * arity --> *2 for value + MAC
+            GF2N.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GF2N.getArity() * 50000 * 2);
+
+    TupleChunk mGfpTupleChunk =
+        TupleChunk.of(
+            tupleType.getTupleCls(), tupleType.getField(), tupleChunkId, expectedMGFPTupleData);
+    TupleChunk mGf2nTupleChunk =
+        TupleChunk.of(
+            tupleType2.getTupleCls(), tupleType2.getField(), tupleChunkId2, expectedMGF2nTupleData);
+
+    List<TupleChunkFragmentEntity> fragmentEntities = generateFragmentsForChunk(mGfpTupleChunk);
+
+    List<TupleChunkFragmentEntity> fragmentEntities1 = generateFragmentsForChunk(mGf2nTupleChunk);
+
+    fragmentStorageService.addUniqueConstraint();
+
+    // fragmentStorageService.keep(fragmentEntities1.remove(0));
+    fragmentStorageService.keepRound(fragmentEntities1);
+
+    // heartbeatRepository.insertIntoHeartbeatTable(new String(RandomUtils.nextBytes(16)));
+
+    fragmentStorageService.keep(fragmentEntities);
+    // fragmentStorageService.keepRound(fragmentEntities);
+
+    //    fragmentStorageService.keep(generateFragmentsForChunk(
+    //            TupleChunk.of(tupleType.getTupleCls(), tupleType.getField(), UUID.randomUUID(),
+    // RandomUtils.nextBytes(
+    //            GFP.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GFP.getArity() * 50000 *
+    // 2))));
+
+    ArrayList<TupleChunkFragmentEntity> roundEntities =
+        fragmentStorageService.retrieveAndReserveRoundFragments(
+            50000, tupleType2, "3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    ArrayList<ReservationElement> reservationElements = mapToResElement(roundEntities);
+    System.out.println(reservationElements);
+  }
+
+  protected ArrayList<ReservationElement> mapToResElement(
+      ArrayList<TupleChunkFragmentEntity> frags) {
+    return frags.stream()
+        .map(
+            t ->
+                new ReservationElement(
+                    t.getTupleChunkId(),
+                    castorServiceProperties.getInitialFragmentSize(),
+                    t.getStartIndex()))
+        .collect(Collectors.toCollection(ArrayList::new));
+  }
+
+  protected List<TupleChunkFragmentEntity> generateFragmentsForChunk(TupleChunk tupleChunk) {
+    List<TupleChunkFragmentEntity> fragments = new ArrayList<>();
+    for (long i = 0;
+        i * castorServiceProperties.getInitialFragmentSize() < tupleChunk.getNumberOfTuples();
+        i++) {
+      fragments.add(
+          TupleChunkFragmentEntity.of(
+              tupleChunk.getChunkId(),
+              tupleChunk.getTupleType(),
+              i * castorServiceProperties.getInitialFragmentSize(),
+              Math.min(
+                  (i + 1) * castorServiceProperties.getInitialFragmentSize(),
+                  tupleChunk.getNumberOfTuples())));
+    }
+    return fragments;
   }
 
   @Test
@@ -104,7 +187,8 @@ public class TupleChunkFragmentStorageServiceIT {
             actualStartIndex,
             actualLength,
             UNLOCKED,
-            actualReservationId));
+            actualReservationId,
+            true));
 
     assertEquals(
         Optional.empty(),
@@ -129,7 +213,8 @@ public class TupleChunkFragmentStorageServiceIT {
             actualStartIndex,
             actualEndIndex,
             UNLOCKED,
-            actualReservationId));
+            actualReservationId,
+            true));
 
     assertEquals(
         Optional.empty(),
@@ -153,7 +238,8 @@ public class TupleChunkFragmentStorageServiceIT {
             actualStartIndex,
             actualEndIndex,
             UNLOCKED,
-            actualReservationId);
+            actualReservationId,
+            true);
 
     fragmentRepository.save(expectedFragment);
 
@@ -171,13 +257,19 @@ public class TupleChunkFragmentStorageServiceIT {
 
     TupleChunkFragmentEntity fragmentBefore =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, 0, requestedStartIndex - 1, UNLOCKED, null);
+            tupleChunkId, tupleType, 0, requestedStartIndex - 1, UNLOCKED, null, true);
     TupleChunkFragmentEntity expectedFragment =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, requestedStartIndex, requestedStartIndex + 1, UNLOCKED, null);
+            tupleChunkId,
+            tupleType,
+            requestedStartIndex,
+            requestedStartIndex + 1,
+            UNLOCKED,
+            null,
+            true);
     TupleChunkFragmentEntity fragmentAfter =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, requestedStartIndex + 1, Long.MAX_VALUE, UNLOCKED, null);
+            tupleChunkId, tupleType, requestedStartIndex + 1, Long.MAX_VALUE, UNLOCKED, null, true);
 
     fragmentRepository.save(fragmentBefore);
     fragmentRepository.save(expectedFragment);
@@ -227,7 +319,8 @@ public class TupleChunkFragmentStorageServiceIT {
             0,
             42,
             UNLOCKED,
-            actualReservationId);
+            actualReservationId,
+            true);
     fragmentRepository.save(reservedFragment);
 
     assertEquals(
@@ -246,7 +339,8 @@ public class TupleChunkFragmentStorageServiceIT {
             0,
             42,
             UNLOCKED,
-            null);
+            null,
+            true);
     fragmentRepository.save(expectedFragment);
 
     assertEquals(
@@ -266,7 +360,8 @@ public class TupleChunkFragmentStorageServiceIT {
             0,
             42,
             UNLOCKED,
-            null);
+            null,
+            true);
     TupleChunkFragmentEntity additionalFragment1 =
         TupleChunkFragmentEntity.of(
             UUID.fromString("3dc08ff2-5eed-49a9-979e-3a3ac0e4a2cf"),
@@ -274,7 +369,8 @@ public class TupleChunkFragmentStorageServiceIT {
             0,
             42,
             UNLOCKED,
-            null);
+            null,
+            true);
     TupleChunkFragmentEntity additionalFragment2 =
         TupleChunkFragmentEntity.of(
             UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad"),
@@ -282,7 +378,8 @@ public class TupleChunkFragmentStorageServiceIT {
             0,
             42,
             UNLOCKED,
-            null);
+            null,
+            true);
 
     fragmentRepository.save(additionalFragment1);
     fragmentRepository.save(expectedFragment);
@@ -303,10 +400,10 @@ public class TupleChunkFragmentStorageServiceIT {
 
     TupleChunkFragmentEntity fragmentBefore =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, 0, requestedStartIndex, UNLOCKED, null);
+            tupleChunkId, tupleType, 0, requestedStartIndex, UNLOCKED, null, true);
     TupleChunkFragmentEntity fragmentAfter =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, requestedEndIndex, Long.MAX_VALUE, UNLOCKED, null);
+            tupleChunkId, tupleType, requestedEndIndex, Long.MAX_VALUE, UNLOCKED, null, true);
     fragmentRepository.save(fragmentBefore);
     fragmentRepository.save(fragmentAfter);
 
@@ -331,7 +428,8 @@ public class TupleChunkFragmentStorageServiceIT {
             requestedStartIndex + 1,
             requestedEndIndex - 1,
             LOCKED,
-            "alreadyReserved");
+            "alreadyReserved",
+            true);
     fragmentRepository.save(conflictingFragment);
 
     CastorClientException actualCce =
@@ -348,17 +446,18 @@ public class TupleChunkFragmentStorageServiceIT {
     TupleType requestedType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     TupleChunkFragmentEntity fragmentOfDifferentType =
         TupleChunkFragmentEntity.of(
-            UUID.randomUUID(), TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, UNLOCKED, null);
+            UUID.randomUUID(), TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, UNLOCKED, null, true);
     TupleChunkFragmentEntity lockedFragment =
         TupleChunkFragmentEntity.of(
-            UUID.randomUUID(), requestedType, 0, Long.MAX_VALUE, LOCKED, null);
+            UUID.randomUUID(), requestedType, 0, Long.MAX_VALUE, LOCKED, null, true);
     TupleChunkFragmentEntity reservedFragment =
         TupleChunkFragmentEntity.of(
-            UUID.randomUUID(), requestedType, 0, Long.MAX_VALUE, UNLOCKED, "alreadyReserved");
+            UUID.randomUUID(), requestedType, 0, Long.MAX_VALUE, UNLOCKED, "alreadyReserved", true);
     TupleChunkFragmentEntity oneFragment =
-        TupleChunkFragmentEntity.of(UUID.randomUUID(), requestedType, 0, 12, UNLOCKED, null);
+        TupleChunkFragmentEntity.of(UUID.randomUUID(), requestedType, 0, 12, UNLOCKED, null, true);
     TupleChunkFragmentEntity anotherFragment =
-        TupleChunkFragmentEntity.of(UUID.randomUUID(), requestedType, 111, 141, UNLOCKED, null);
+        TupleChunkFragmentEntity.of(
+            UUID.randomUUID(), requestedType, 111, 141, UNLOCKED, null, true);
 
     fragmentRepository.save(fragmentOfDifferentType);
     fragmentRepository.save(lockedFragment);
@@ -381,13 +480,13 @@ public class TupleChunkFragmentStorageServiceIT {
 
     TupleChunkFragmentEntity fragmentForDifferentChunk =
         TupleChunkFragmentEntity.of(
-            differentChunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null);
+            differentChunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null, true);
     TupleChunkFragmentEntity oneFragment =
         TupleChunkFragmentEntity.of(
-            requestedTupleChunkId, TupleType.MULTIPLICATION_TRIPLE_GFP, 0, 12, LOCKED, null);
+            requestedTupleChunkId, TupleType.MULTIPLICATION_TRIPLE_GFP, 0, 12, LOCKED, null, true);
     TupleChunkFragmentEntity anotherFragment =
         TupleChunkFragmentEntity.of(
-            requestedTupleChunkId, TupleType.SQUARE_TUPLE_GF2N, 111, 141, LOCKED, null);
+            requestedTupleChunkId, TupleType.SQUARE_TUPLE_GF2N, 111, 141, LOCKED, null, true);
 
     fragmentForDifferentChunk = fragmentRepository.save(fragmentForDifferentChunk);
     oneFragment = fragmentRepository.save(oneFragment);
@@ -410,13 +509,13 @@ public class TupleChunkFragmentStorageServiceIT {
 
     TupleChunkFragmentEntity unreservedFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null);
+            chunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null, true);
     TupleChunkFragmentEntity oneFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, TupleType.MULTIPLICATION_TRIPLE_GFP, 0, 12, LOCKED, reservationId);
+            chunkId, TupleType.MULTIPLICATION_TRIPLE_GFP, 0, 12, LOCKED, reservationId, true);
     TupleChunkFragmentEntity anotherFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, TupleType.SQUARE_TUPLE_GF2N, 111, 141, LOCKED, reservationId);
+            chunkId, TupleType.SQUARE_TUPLE_GF2N, 111, 141, LOCKED, reservationId, true);
 
     unreservedFragment = fragmentRepository.save(unreservedFragment);
     fragmentRepository.save(oneFragment);
@@ -434,7 +533,7 @@ public class TupleChunkFragmentStorageServiceIT {
     UUID differentChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunkFragmentEntity fragmentForDifferentChunk =
         TupleChunkFragmentEntity.of(
-            differentChunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null);
+            differentChunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null, true);
 
     fragmentRepository.save(fragmentForDifferentChunk);
 
@@ -446,7 +545,13 @@ public class TupleChunkFragmentStorageServiceIT {
     UUID requestedTupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     TupleChunkFragmentEntity fragmentForDifferentChunk =
         TupleChunkFragmentEntity.of(
-            requestedTupleChunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, "reserved");
+            requestedTupleChunkId,
+            TupleType.INPUT_MASK_GFP,
+            0,
+            Long.MAX_VALUE,
+            LOCKED,
+            "reserved",
+            true);
 
     fragmentRepository.save(fragmentForDifferentChunk);
 

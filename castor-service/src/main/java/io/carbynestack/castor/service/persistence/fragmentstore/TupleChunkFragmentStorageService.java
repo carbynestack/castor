@@ -10,12 +10,9 @@ package io.carbynestack.castor.service.persistence.fragmentstore;
 import io.carbynestack.castor.common.entities.*;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
+import java.util.*;
 import javax.validation.constraints.NotNull;
-
-import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +30,8 @@ public class TupleChunkFragmentStorageService {
       "Not a single fragment associated with the given identifier.";
 
   private final TupleChunkFragmentRepository fragmentRepository;
+
+  private final CastorServiceProperties castorServiceProperties;
 
   /**
    * Creates and stores an {@link TupleChunkFragmentEntity} object with the given information in the
@@ -67,6 +66,16 @@ public class TupleChunkFragmentStorageService {
     fragmentRepository.saveAll(fragments);
   }
 
+  @Transactional
+  public void keepRound(@NotNull List<TupleChunkFragmentEntity> fragments) {
+    fragmentRepository.saveAll(fragments);
+  }
+
+  @Transactional
+  public void addUniqueConstraint() {
+    fragmentRepository.addUniqueConstraint();
+  }
+
   /**
    * Gets the {@link TupleChunkFragmentEntity} for the {@link TupleChunk} with the given id that
    * meets the following criteria:
@@ -90,6 +99,39 @@ public class TupleChunkFragmentStorageService {
       UUID tupleChunkId, long startIndex) {
     return fragmentRepository.findAvailableFragmentForTupleChunkContainingIndex(
         tupleChunkId, startIndex);
+  }
+
+  @Transactional
+  ArrayList<Integer> deleteByChunkAndStartIndex(
+      UUID tupleChunkId, ArrayList<Integer> startIndices) {
+    return fragmentRepository.deleteByChunkAndStartIndex(tupleChunkId, startIndices);
+  }
+
+  @Transactional
+  public ArrayList<TupleChunkFragmentEntity> retrieveAndReserveRoundFragments(
+      int amount, TupleType ttype, String reservationId) {
+    return fragmentRepository.retrieveAndReserveRoundFragmentsByType(
+        ttype.name(), amount / castorServiceProperties.getInitialFragmentSize(), reservationId);
+  }
+
+  public int reserveRoundFragmentsByIndices(
+      ArrayList<Long> indices, String reservationId, UUID tupleChunkId) {
+    return fragmentRepository.reserveRoundFragmentsByIndices(indices, reservationId, tupleChunkId);
+  }
+
+  @Transactional
+  public ArrayList<TupleChunkFragmentEntity> lockReservedFragments(String reservationId) {
+    return fragmentRepository.lockAndRetrieveReservedTuplesForConsumption(reservationId);
+  }
+
+  @Transactional
+  public int lockReservedFragmentsWithoutRetrieving(String reservationId) {
+    return fragmentRepository.lockTuplesWithoutRetrievingForConsumption(reservationId);
+  }
+
+  @Transactional
+  public Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragment(TupleType tupleType) {
+    return fragmentRepository.retrieveSinglePartialFragment(tupleType.name());
   }
 
   /**
@@ -141,7 +183,8 @@ public class TupleChunkFragmentStorageService {
             index,
             fragment.getEndIndex(),
             fragment.getActivationStatus(),
-            fragment.getReservationId());
+            fragment.getReservationId(),
+            false);
     fragmentRepository.save(nf);
     fragment.setEndIndex(index);
     log.debug(
@@ -183,7 +226,8 @@ public class TupleChunkFragmentStorageService {
             index,
             fragment.getEndIndex(),
             fragment.getActivationStatus(),
-            fragment.getReservationId());
+            fragment.getReservationId(),
+            false);
     fragment.setEndIndex(index);
     fragmentRepository.save(fragment);
     log.debug(
@@ -226,7 +270,7 @@ public class TupleChunkFragmentStorageService {
    */
   public long getAvailableTuples(TupleType type) {
     try {
-      return fragmentRepository.getAvailableTupleByType(type);
+      return fragmentRepository.getAvailableTuplesByType(type);
     } catch (Exception e) {
       log.debug(
           String.format(

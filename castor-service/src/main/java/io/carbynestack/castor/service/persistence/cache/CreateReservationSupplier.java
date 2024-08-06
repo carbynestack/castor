@@ -13,13 +13,13 @@ import io.carbynestack.castor.common.entities.ReservationElement;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-
-import io.micrometer.core.annotation.Timed;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,6 +39,7 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
   final TupleChunkFragmentStorageService fragmentStorageService;
   final String reservationId;
   final TupleType tupleType;
+  final CastorServiceProperties castorServiceProperties;
   final long count;
 
   /**
@@ -74,35 +75,84 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
               INSUFFICIENT_TUPLES_EXCEPTION_MSG, tupleType, availableTuples, numberOfTuples));
     }
     List<ReservationElement> reservationElements = new ArrayList<>();
-    long stillToReserve = numberOfTuples;
-    while (stillToReserve > 0) {
+    long oddToReserve = numberOfTuples % castorServiceProperties.getInitialFragmentSize();
+    long roundToReserve = numberOfTuples - oddToReserve;
+    while (oddToReserve > 0) {
       try {
         TupleChunkFragmentEntity availableFragment =
             fragmentStorageService
-                .findAvailableFragmentWithTupleType(tupleType)
+                .retrieveSinglePartialFragment(tupleType)
                 .orElseThrow(
                     () ->
                         new CastorServiceException(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG));
         long tuplesInFragment = availableFragment.getEndIndex() - availableFragment.getStartIndex();
-        if (tuplesInFragment > stillToReserve) {
+        if (tuplesInFragment > oddToReserve) {
           availableFragment =
               fragmentStorageService.splitAt(
-                  availableFragment, availableFragment.getStartIndex() + stillToReserve);
+                  availableFragment, availableFragment.getStartIndex() + oddToReserve);
         }
         availableFragment.setReservationId(reservationId);
+        availableFragment.setRound(false);
         fragmentStorageService.update(availableFragment);
-        long tuplesTaken = Math.min(tuplesInFragment, stillToReserve);
-        stillToReserve -= tuplesTaken;
-        reservationElements.add(
+        long tuplesTaken = Math.min(tuplesInFragment, oddToReserve);
+        oddToReserve -= tuplesTaken;
+        ReservationElement tempResElement =
             new ReservationElement(
                 availableFragment.getTupleChunkId(),
                 tuplesTaken,
-                availableFragment.getStartIndex()));
+                availableFragment.getStartIndex());
+        reservationElements.add(tempResElement);
       } catch (Exception e) {
         throw new CastorServiceException(FAILED_RESERVE_TUPLES_EXCEPTION_MSG, e);
       }
     }
+    if (roundToReserve > 0) {
+      ArrayList<TupleChunkFragmentEntity> roundFragments =
+          fragmentStorageService.retrieveAndReserveRoundFragments(
+              (int) roundToReserve, tupleType, reservationId);
+
+      if (roundFragments.size() * (long) castorServiceProperties.getInitialFragmentSize()
+          < roundToReserve)
+        throw new CastorServiceException(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG);
+
+      // maps all fragments returned to ReservationElements using their 'tupleChunnkId' attribute,
+      // the common fragment size and their 'startIndex' attribute
+      reservationElements.addAll(
+          roundFragments.stream()
+              .map(
+                  frag ->
+                      new ReservationElement(
+                          frag.getTupleChunkId(),
+                          castorServiceProperties.getInitialFragmentSize(),
+                          frag.getStartIndex()))
+              .collect(Collectors.toList()));
+    }
     log.debug("Composed reservation of {} {}: {}.", numberOfTuples, tupleType, reservationElements);
     return reservationElements;
   }
+
+  //  private List<TupleChunkFragmentEntity> advancedComposeElements(TupleType tupleType, long
+  // numberOfTuples) {
+  //    long availableTuples = fragmentStorageService.getAvailableTuples(tupleType);
+  //    if (availableTuples < numberOfTuples){
+  //      availableTuples = fragmentStorageService.getAvailableTuples(tupleType);
+  //      if(availableTuples >= numberOfTuples){
+  //        fragmentStorageService.addAssignedFragmentsByType(tupleType, false);
+  //      }
+  //      else{
+  //        throw new CastorServiceException(
+  //                String.format(
+  //                        INSUFFICIENT_TUPLES_EXCEPTION_MSG, tupleType, availableTuples,
+  // numberOfTuples));
+  //        }
+  //      }
+  //    long modAvailableTuples = availableTuples %
+  // castorServiceProperties.getInitialFragmentSize();
+  //    if(modAvailableTuples == 0) return fragmentStorageService.getRoundFragments((int)
+  // availableTuples, tupleType);
+  //    else{
+  //      availableTuples = availableTuples - modAvailableTuples + 1000;
+  //      return fragmentStorageService.getRoundFragments((int) availableTuples, tupleType);
+  //    }
+  //  }
 }

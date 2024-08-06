@@ -127,7 +127,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentLength,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
     String expectedReservationId = requestId + "_" + requestedTupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, requestedNoTuples, fragmentStartIndex);
@@ -171,7 +172,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentEndIndex,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
     String expectedReservationId = requestId + "_" + tupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, count, fragmentStartIndex);
@@ -185,7 +187,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentStartIndex + count,
             ActivationStatus.UNLOCKED,
-            expectedReservationId);
+            expectedReservationId,
+            true);
     TupleChunkFragmentEntity expectedNewFragment =
         TupleChunkFragmentEntity.of(
             chunkId,
@@ -193,7 +196,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex + count,
             fragmentEndIndex,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
 
     tupleChunkFragmentRepository.save(existingFragment);
 
@@ -238,7 +242,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentEndIndex,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
     String expectedReservationId = requestId + "_" + tupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, count, fragmentStartIndex);
@@ -268,13 +273,14 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
 
     assertArrayEquals(
         TupleList.fromStream(
-            tupleType.getTupleCls(),
-            tupleType.getField(),
-            new ByteArrayInputStream(
-                tupleData,
-                (int) (fragmentStartIndex * tupleType.getTupleSize()),
-                (int) ((fragmentStartIndex + count) * tupleType.getTupleSize())),
-            count * tupleType.getTupleSize()).toByteArray(),
+                tupleType.getTupleCls(),
+                tupleType.getField(),
+                new ByteArrayInputStream(
+                    tupleData,
+                    (int) (fragmentStartIndex * tupleType.getTupleSize()),
+                    (int) ((fragmentStartIndex + count) * tupleType.getTupleSize())),
+                count * tupleType.getTupleSize())
+            .toByteArray(),
         tupleList);
 
     // no fragments stored -> existing fragment was reserved, consumed and then deleted

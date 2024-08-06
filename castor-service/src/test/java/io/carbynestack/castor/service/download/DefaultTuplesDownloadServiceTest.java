@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import sun.misc.IOUtils;
 
 @ExtendWith(MockitoExtension.class)
 class DefaultTuplesDownloadServiceTest {
@@ -72,19 +71,21 @@ class DefaultTuplesDownloadServiceTest {
     when(reservationCachingServiceMock.getReservationWithRetry(
             resultingReservationId, tupleType, count))
         .thenReturn(reservationMock);
-    doThrow(expectedCause).when(tupleStoreMock).downloadTuplesAsBytes(
+    doThrow(expectedCause)
+        .when(tupleStoreMock)
+        .downloadTuplesAsBytes(
             tupleType.getTupleCls(),
             tupleType.getField(),
             chunkId,
             0,
             count * tupleType.getTupleSize());
-//    when(tupleStoreMock.downloadTuples(
-//            tupleType.getTupleCls(),
-//            tupleType.getField(),
-//            chunkId,
-//            0,
-//            count * tupleType.getTupleSize()))
-//        .thenThrow(expectedCause);
+    //    when(tupleStoreMock.downloadTuples(
+    //            tupleType.getTupleCls(),
+    //            tupleType.getField(),
+    //            chunkId,
+    //            0,
+    //            count * tupleType.getTupleSize()))
+    //        .thenThrow(expectedCause);
 
     CastorServiceException actualCse =
         assertThrows(
@@ -115,19 +116,20 @@ class DefaultTuplesDownloadServiceTest {
     long expectedTupleDownloadLength = tupleType.getTupleSize() * count;
     byte[] tupleData = RandomUtils.nextBytes((int) expectedTupleDownloadLength);
 
-   InputStream expectedTupleData = new ByteArrayInputStream(tupleData);
+    InputStream expectedTupleData = new ByteArrayInputStream(tupleData);
 
     when(castorServicePropertiesMock.isMaster()).thenReturn(true);
     when(reservationCachingServiceMock.createReservation(resultingReservationId, tupleType, count))
         .thenReturn(availableReservation);
-    doReturn(expectedTupleData).when(tupleStoreMock).downloadTuplesAsBytes(
+    doReturn(expectedTupleData)
+        .when(tupleStoreMock)
+        .downloadTuplesAsBytes(
             tupleType.getTupleCls(), tupleType.getField(), chunkId, 0, expectedTupleDownloadLength);
 
-    byte[] actualTupleData =tuplesDownloadService.getTupleList(
+    byte[] actualTupleData =
+        tuplesDownloadService.getTupleList(
             tupleType.getTupleCls(), tupleType.getField(), count, requestId);
-    assertArrayEquals(
-        tupleData, actualTupleData
-        );
+    assertArrayEquals(tupleData, actualTupleData);
 
     verify(tupleStoreMock).deleteTupleChunk(chunkId);
     verify(reservationCachingServiceMock).forgetReservation(resultingReservationId);

@@ -64,7 +64,7 @@ public class ConcurrencyIT {
     long tuplesInChunk = 100;
     fragmentStorageService.keep(
         TupleChunkFragmentEntity.of(
-            testChunkId, testTupleType, 0, tuplesInChunk, ActivationStatus.UNLOCKED, null));
+            testChunkId, testTupleType, 0, tuplesInChunk, ActivationStatus.UNLOCKED, null, true));
     fragmentStorageService.activateFragmentsForTupleChunk(testChunkId);
   }
 

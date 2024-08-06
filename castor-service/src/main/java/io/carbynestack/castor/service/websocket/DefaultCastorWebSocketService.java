@@ -45,8 +45,6 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
   private final TupleChunkFragmentStorageService fragmentStorageService;
   private final CastorServiceProperties castorServiceProperties;
 
-  @Override
-  @MessageMapping(UPLOAD_TUPLES_ENDPOINT)
   /**
    * @throws CastorClientException if the given payload cannot be cast deserialized as {@link
    *     TupleChunk}
@@ -54,6 +52,8 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
    * @throws CastorServiceException if writing the received {@link TupleChunk} to the database
    *     failed
    */
+  @Override
+  @MessageMapping(UPLOAD_TUPLES_ENDPOINT)
   public void uploadTupleChunk(SimpMessageHeaderAccessor headerAccessor, byte[] payload) {
     log.debug("Received payload...");
     TupleChunk tupleChunk;

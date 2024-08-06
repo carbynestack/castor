@@ -8,21 +8,24 @@
 package io.carbynestack.castor.service.persistence.cache;
 
 import static io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED;
+import static io.carbynestack.castor.common.entities.Field.GF2N;
+import static io.carbynestack.castor.common.entities.Field.GFP;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.google.common.collect.Lists;
 import io.carbynestack.castor.client.download.CastorInterVcpClient;
 import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.ReservationElement;
+import io.carbynestack.castor.common.entities.TupleChunk;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.download.DedicatedTransactionService;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
@@ -32,14 +35,14 @@ import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
 import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
@@ -82,7 +85,7 @@ public class ReservationCachingServiceIT {
 
   @Autowired private TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
 
-  @Autowired private TupleChunkFragmentRepository tupleChunkFragmentRepository;
+  @Autowired @SpyBean private TupleChunkFragmentRepository tupleChunkFragmentRepository;
 
   @Autowired private CastorSlaveServiceProperties castorSlaveServiceProperties;
 
@@ -90,9 +93,12 @@ public class ReservationCachingServiceIT {
 
   @Autowired private ApplicationContext applicationContext;
 
+  @Autowired private CastorServiceProperties castorServiceProperties;
+
   private ReservationCachingService reservationCachingService;
   private Cache reservationCache;
   private CastorInterVcpClient interVcpClientSpy;
+  private TupleChunkFragmentRepository fragmentRepositorySpy;
 
   private final UUID testRequestId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
   private final UUID testChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
@@ -120,9 +126,103 @@ public class ReservationCachingServiceIT {
             redisTemplate,
             tupleChunkFragmentStorageService,
             castorSlaveServiceProperties,
+            castorServiceProperties,
             Optional.of(interVcpClientSpy),
             Optional.of(dedicatedTransactionService));
     testEnvironment.clearAllData();
+  }
+
+  @Test
+  void testComposing() {
+    UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
+    UUID tupleChunkId2 = UUID.randomUUID();
+    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
+    TupleType tupleType2 = TupleType.MULTIPLICATION_TRIPLE_GF2N;
+    byte[] expectedMGFPTupleData =
+        RandomUtils.nextBytes( // Value = elemsize * arity --> *2 for value + MAC
+            GFP.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GFP.getArity() * 50000 * 2);
+
+    byte[] expectedMGF2nTupleData =
+        RandomUtils.nextBytes( // Value = elemsize * arity --> *2 for value + MAC
+            GF2N.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GF2N.getArity() * 50000 * 2);
+
+    TupleChunk mGfpTupleChunk =
+        TupleChunk.of(
+            tupleType.getTupleCls(), tupleType.getField(), tupleChunkId, expectedMGFPTupleData);
+    TupleChunk mGf2nTupleChunk =
+        TupleChunk.of(
+            tupleType2.getTupleCls(), tupleType2.getField(), tupleChunkId2, expectedMGF2nTupleData);
+
+    Answer shareReservationAnswer =
+        (Answer)
+            invocation -> {
+              reservationCachingService.keepAndApplyReservation(
+                  invocation.getArgument(0, Reservation.class));
+              return true;
+            };
+
+    doAnswer(shareReservationAnswer)
+        .when(interVcpClientSpy)
+        .shareReservation(isA(Reservation.class));
+
+    Answer mockFindFragmentAnswer =
+        (Answer)
+            invocation -> {
+              return tupleChunkFragmentRepository
+                  .mockFindAvailableFragmentForTupleChunkContainingIndex(
+                      invocation.getArgument(0, UUID.class), invocation.getArgument(1, Long.class));
+            };
+    doAnswer(mockFindFragmentAnswer)
+        .when(tupleChunkFragmentRepository)
+        .findAvailableFragmentForTupleChunkContainingIndex(isA(UUID.class), isA(Long.class));
+
+    Answer mockSave =
+        (Answer)
+            invocation -> {
+              return invocation.getArgument(0, TupleChunkFragmentEntity.class);
+            };
+    doAnswer(mockSave).when(tupleChunkFragmentRepository).save(isA(TupleChunkFragmentEntity.class));
+
+    Answer mockReserveRoundFragmentsByIndices =
+        (Answer)
+            invocation -> {
+              return tupleChunkFragmentRepository.mockReserveRoundFragmentsByIndices(
+                  invocation.getArgument(0, ArrayList.class),
+                  invocation.getArgument(1, String.class),
+                  tupleChunkId);
+            };
+    doAnswer(mockReserveRoundFragmentsByIndices)
+        .when(tupleChunkFragmentRepository)
+        .reserveRoundFragmentsByIndices(isA(ArrayList.class), isA(String.class), isA(UUID.class));
+
+    List<TupleChunkFragmentEntity> fragmentEntities = generateFragmentsForChunk(mGfpTupleChunk);
+
+    List<TupleChunkFragmentEntity> fragmentEntities1 = generateFragmentsForChunk(mGf2nTupleChunk);
+
+    tupleChunkFragmentStorageService.addUniqueConstraint();
+
+    // fragmentStorageService.keep(fragmentEntities1.remove(0));
+    tupleChunkFragmentStorageService.keepRound(fragmentEntities1);
+    tupleChunkFragmentStorageService.keepRound(fragmentEntities);
+
+    reservationCachingService.createReservation(testReservationId, testTupleType, 20015);
+  }
+
+  protected ArrayList<TupleChunkFragmentEntity> generateFragmentsForChunk(TupleChunk tupleChunk) {
+    ArrayList<TupleChunkFragmentEntity> fragments = new ArrayList<>();
+    for (long i = 0;
+        i * castorServiceProperties.getInitialFragmentSize() < tupleChunk.getNumberOfTuples();
+        i++) {
+      fragments.add(
+          TupleChunkFragmentEntity.of(
+              tupleChunk.getChunkId(),
+              tupleChunk.getTupleType(),
+              i * castorServiceProperties.getInitialFragmentSize(),
+              Math.min(
+                  (i + 1) * castorServiceProperties.getInitialFragmentSize(),
+                  tupleChunk.getNumberOfTuples())));
+    }
+    return fragments;
   }
 
   @Test
@@ -156,7 +256,7 @@ public class ReservationCachingServiceIT {
     long fragmentLength = 2 * requestedNoTuples;
     TupleChunkFragmentEntity existingFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, requestedTupleType, fragmentStartIndex, fragmentLength, UNLOCKED, null);
+            chunkId, requestedTupleType, fragmentStartIndex, fragmentLength, UNLOCKED, null, true);
     String expectedReservationId = requestId + "_" + requestedTupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, requestedNoTuples, fragmentStartIndex);
@@ -205,7 +305,7 @@ public class ReservationCachingServiceIT {
 
     TupleChunkFragmentEntity fragmentBefore =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, 0, requestedStartIndex, UNLOCKED, null);
+            tupleChunkId, tupleType, 0, requestedStartIndex, UNLOCKED, null, true);
     TupleChunkFragmentEntity fragmentPart1 =
         TupleChunkFragmentEntity.of(
             tupleChunkId,
@@ -213,7 +313,8 @@ public class ReservationCachingServiceIT {
             requestedStartIndex,
             requestedStartIndex + requestedLength - 5,
             UNLOCKED,
-            null);
+            null,
+            true);
     TupleChunkFragmentEntity fragmentContainingRest =
         TupleChunkFragmentEntity.of(
             tupleChunkId,
@@ -221,7 +322,8 @@ public class ReservationCachingServiceIT {
             requestedStartIndex + requestedLength - 5,
             Long.MAX_VALUE,
             UNLOCKED,
-            null);
+            null,
+            true);
 
     fragmentBefore = fragmentRepository.save(fragmentBefore);
     fragmentPart1 = fragmentRepository.save(fragmentPart1);

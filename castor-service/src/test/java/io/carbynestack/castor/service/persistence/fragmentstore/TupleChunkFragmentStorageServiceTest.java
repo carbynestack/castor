@@ -163,12 +163,15 @@ class TupleChunkFragmentStorageServiceTest {
     long startIndex = 0;
     long endIndex = 12;
     TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, false);
     long splitIndex = 7;
     TupleChunkFragmentEntity expectedAlteredFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, splitIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, splitIndex, ActivationStatus.LOCKED, null, false);
     TupleChunkFragmentEntity expectedNewFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, splitIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, splitIndex, endIndex, ActivationStatus.LOCKED, null, false);
 
     when(tupleChunkFragmentRepositoryMock.save(any()))
         .thenAnswer(
@@ -190,7 +193,8 @@ class TupleChunkFragmentStorageServiceTest {
     long startIndex = 0;
     long endIndex = 12;
     TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, false);
     long illegalSplitIndex = endIndex;
 
     assertEquals(
@@ -207,12 +211,15 @@ class TupleChunkFragmentStorageServiceTest {
     long startIndex = 0;
     long endIndex = 12;
     TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, false);
     long splitIndex = 7;
     TupleChunkFragmentEntity expectedNewFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, splitIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, splitIndex, endIndex, ActivationStatus.LOCKED, null, false);
     TupleChunkFragmentEntity expectedAlteredFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, splitIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, splitIndex, ActivationStatus.LOCKED, null, false);
 
     when(tupleChunkFragmentRepositoryMock.save(any()))
         .thenAnswer(
@@ -270,7 +277,7 @@ class TupleChunkFragmentStorageServiceTest {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     AopInvocationException expectedException = new AopInvocationException("expected");
 
-    when(tupleChunkFragmentRepositoryMock.getAvailableTupleByType(tupleType))
+    when(tupleChunkFragmentRepositoryMock.getAvailableTuplesByType(tupleType))
         .thenThrow(expectedException);
 
     assertEquals(0, tupleChunkFragmentStorageService.getAvailableTuples(tupleType));
@@ -281,7 +288,7 @@ class TupleChunkFragmentStorageServiceTest {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long availableTuples = 42;
 
-    when(tupleChunkFragmentRepositoryMock.getAvailableTupleByType(tupleType))
+    when(tupleChunkFragmentRepositoryMock.getAvailableTuplesByType(tupleType))
         .thenReturn(availableTuples);
 
     assertEquals(availableTuples, tupleChunkFragmentStorageService.getAvailableTuples(tupleType));
