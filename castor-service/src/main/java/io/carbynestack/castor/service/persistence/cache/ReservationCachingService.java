@@ -248,7 +248,7 @@ public class ReservationCachingService {
                       tupleType,
                       castorServiceProperties,
                       count));
-
+      keepReservation(reservation);
       if (tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId)
           != reservation.getReservations().size()) {
         throw new CastorServiceException(
@@ -344,8 +344,7 @@ public class ReservationCachingService {
               ? count / castorServiceProperties.getInitialFragmentSize()
               : count / castorServiceProperties.getInitialFragmentSize() + 1;
       int lockedFragments =
-          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId)
-              * 1000;
+          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId);
       if (lockedFragments == 0) return null;
       if (reservation.getTupleType() != tupleType
           || reservation.getReservations().stream()
