@@ -10,6 +10,7 @@ package io.carbynestack.castor.service.persistence.fragmentstore;
 import static io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity.*;
 
 import io.carbynestack.castor.common.entities.ActivationStatus;
+import io.carbynestack.castor.common.entities.TupleMetric;
 import io.carbynestack.castor.common.entities.TupleType;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -134,15 +135,28 @@ public interface TupleChunkFragmentRepository
               + " FROM "
               + CLASS_NAME
               + " WHERE "
-              //              + ACTIVATION_STATUS_FIELD
-              //              + "=io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED "
-              //              + "AND "
               + RESERVATION_ID_FIELD
               + " IS NULL "
               + "AND "
               + TUPLE_TYPE_FIELD
               + "=:tupleType")
   long getAvailableTuplesByType(@Param("tupleType") TupleType type);
+
+  @Query(
+      value =
+          "SELECT new io.carbynestack.castor.common.TupleMetric(tuple_type, SUM("
+              + END_INDEX_FIELD
+              + " - "
+              + START_INDEX_FIELD
+              + "), 0) FROM "
+              + CLASS_NAME
+              + " WHERE "
+              + RESERVATION_ID_FIELD
+              + " IS NULL AND "
+              + TUPLE_TYPE_FIELD
+              + " =:tuple_type GROUP BY "
+              + TUPLE_TYPE_FIELD)
+  ArrayList<TupleMetric> getTupleMetrics();
 
   @Transactional
   @Modifying

@@ -16,6 +16,7 @@ import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,7 @@ class TupleChunkFragmentStorageServiceTest {
   @Mock private TupleChunkFragmentRepository tupleChunkFragmentRepositoryMock;
 
   @InjectMocks private TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
+  @Mock private CastorServiceProperties castorServicePropertiesMock;
 
   @Test
   void givenNoConflictingFragments_whenKeep_thenPersist() {
@@ -276,9 +278,10 @@ class TupleChunkFragmentStorageServiceTest {
   void givenRepositoryThrowsException_whenGetAvailableTuples_thenReturnZero() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     AopInvocationException expectedException = new AopInvocationException("expected");
-
-    when(tupleChunkFragmentRepositoryMock.getAvailableTuplesByType(tupleType))
-        .thenThrow(expectedException);
+    lenient().doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
+    doThrow(expectedException)
+        .when(tupleChunkFragmentRepositoryMock)
+        .getAvailableTuplesByType(tupleType);
 
     assertEquals(0, tupleChunkFragmentStorageService.getAvailableTuples(tupleType));
   }
@@ -287,9 +290,10 @@ class TupleChunkFragmentStorageServiceTest {
   void givenSuccessfulRequest_whenGetAvailableTuples_thenReturnExpectedResult() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long availableTuples = 42;
-
-    when(tupleChunkFragmentRepositoryMock.getAvailableTuplesByType(tupleType))
-        .thenReturn(availableTuples);
+    lenient().doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
+    doReturn(availableTuples)
+        .when(tupleChunkFragmentRepositoryMock)
+        .getAvailableTuplesByType(tupleType);
 
     assertEquals(availableTuples, tupleChunkFragmentStorageService.getAvailableTuples(tupleType));
   }

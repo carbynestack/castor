@@ -365,6 +365,28 @@ public class ReservationCachingService {
   }
 
   @Transactional
+  public Reservation retrieveReservation(String reservationId, TupleType tupleType, long count) {
+    ValueOperations<String, Object> ops = redisTemplate.opsForValue();
+    Reservation reservation = (Reservation) ops.get(cachePrefix + reservationId);
+    if (reservation != null) {
+      if (reservation.getTupleType() != tupleType
+          || reservation.getReservations().stream()
+                  .mapToLong(ReservationElement::getReservedTuples)
+                  .sum()
+              != count) {
+        throw new CastorServiceException(
+            String.format(
+                RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,
+                reservationId,
+                tupleType,
+                count,
+                reservation));
+      }
+    }
+    return reservation;
+  }
+
+  @Transactional
   public void forgetReservation(String reservationId) {
     redisTemplate.delete(cachePrefix + reservationId);
   }

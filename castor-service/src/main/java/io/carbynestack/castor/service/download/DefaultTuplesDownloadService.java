@@ -80,6 +80,11 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     } else {
       reservation =
           reservationCachingService.getReservationWithRetry(reservationId, tupleType, count);
+      int reservedFragments =
+          fragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId);
+      if (reservedFragments < reservation.getReservations().size()) {
+        throw new CastorServiceException(FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG);
+      }
     }
     byte[] result = consumeReservation(tupleCls, field, reservation);
     deleteReservedFragments(reservation);

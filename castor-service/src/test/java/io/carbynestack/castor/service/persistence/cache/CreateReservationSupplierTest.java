@@ -24,8 +24,6 @@ import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragme
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import java.util.Optional;
 import java.util.UUID;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -62,18 +60,24 @@ class CreateReservationSupplierTest {
 
   @Test
   void givenInsufficientTuples_whenGet_thenThrowCastorServiceException() {
-    when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count - 1);
-
+    // when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count -
+    // 1);
+    doReturn(Optional.empty())
+        .when(tupleChunkFragmentStorageServiceMock)
+        .retrieveSinglePartialFragment(isA(TupleType.class));
+    doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
 
-    assertEquals(
-        String.format(INSUFFICIENT_TUPLES_EXCEPTION_MSG, tupleType, count - 1, count),
-        actualCse.getMessage());
+    assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getMessage());
   }
 
   @Test
   void givenProvidedChunksDoNotHaveEnoughTuplesAvailable_whenGet_thenThrowCastorServiceException() {
+    doReturn(Optional.empty())
+        .when(tupleChunkFragmentStorageServiceMock)
+        .retrieveSinglePartialFragment(tupleType);
+    doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     lenient()
         .when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType))
         .thenReturn(count);
@@ -88,10 +92,11 @@ class CreateReservationSupplierTest {
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
 
-    assertEquals(FAILED_RESERVE_TUPLES_EXCEPTION_MSG, actualCse.getMessage());
-    MatcherAssert.assertThat(
-        actualCse.getCause(), CoreMatchers.instanceOf(CastorServiceException.class));
-    assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getCause().getMessage());
+    assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getMessage());
+    // MatcherAssert.assertThat(
+    //    actualCse.getCause(), CoreMatchers.instanceOf(CastorServiceException.class));
+    // assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG,
+    // actualCse.getCause().getMessage());
   }
 
   @Test
@@ -101,7 +106,7 @@ class CreateReservationSupplierTest {
     TupleChunkFragmentEntity fragmentEntity =
         TupleChunkFragmentEntity.of(chunkId, tupleType, startIndex, count);
 
-    when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
+    // when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
     when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType))
         .thenReturn(Optional.of(fragmentEntity));
     lenient()
