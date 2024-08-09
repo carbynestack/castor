@@ -31,6 +31,7 @@ import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragme
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.*;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -179,7 +180,7 @@ class ReservationCachingServiceTest {
 
     doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(String.class));
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
     when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
 
@@ -242,6 +243,7 @@ class ReservationCachingServiceTest {
   }
 
   @Test
+  @SneakyThrows
   void
       givenReferencedSequenceLiesWithin_whenKeepAndApplyReservation_thenSplitFragmentAccordingly() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
@@ -384,11 +386,12 @@ class ReservationCachingServiceTest {
     // when(expectedReservationMock.getStatus()).thenReturn(ActivationStatus.UNLOCKED);
     when(expectedReservationMock.getTupleType()).thenReturn(tupleType);
     when(reservationElementMock.getReservedTuples()).thenReturn(count);
+    when(reservationElementMock.getTupleChunkId()).thenReturn(UUID.randomUUID());
     when(expectedReservationMock.getReservations())
         .thenReturn(singletonList(reservationElementMock));
     doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(String.class));
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
 
     assertEquals(
         expectedReservationMock,
@@ -413,7 +416,7 @@ class ReservationCachingServiceTest {
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
     doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(String.class));
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
 
     CastorServiceException actualCse =
         assertThrows(
@@ -448,7 +451,7 @@ class ReservationCachingServiceTest {
     when(valueOperationsMock.get(testCachePrefix + reservationId)).thenReturn(existingReservation);
     doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(String.class));
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
 
     CastorServiceException actualCse =
         assertThrows(

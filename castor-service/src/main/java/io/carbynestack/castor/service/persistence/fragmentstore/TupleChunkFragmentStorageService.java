@@ -33,6 +33,11 @@ public class TupleChunkFragmentStorageService {
 
   private final CastorServiceProperties castorServiceProperties;
 
+  @Transactional
+  public void setUserLevelLockTimeout(int milliseconds) {
+    fragmentRepository.setUserLevelLockTimeout("test", milliseconds);
+  }
+
   /**
    * Creates and stores an {@link TupleChunkFragmentEntity} object with the given information in the
    * database
@@ -102,9 +107,8 @@ public class TupleChunkFragmentStorageService {
   }
 
   @Transactional
-  ArrayList<Integer> deleteByChunkAndStartIndex(
-      UUID tupleChunkId, ArrayList<Integer> startIndices) {
-    return fragmentRepository.deleteByChunkAndStartIndex(tupleChunkId, startIndices);
+  int deleteByChunkAndStartIndex(String reservationId) {
+    return fragmentRepository.mockGetAllByReservationId(reservationId);
   }
 
   @Transactional
@@ -125,8 +129,8 @@ public class TupleChunkFragmentStorageService {
   }
 
   @Transactional
-  public int lockReservedFragmentsWithoutRetrieving(String reservationId) {
-    return fragmentRepository.lockTuplesWithoutRetrievingForConsumption(reservationId);
+  public int lockReservedFragmentsWithoutRetrieving(UUID tupleChunkId, long startIdx) {
+    return fragmentRepository.lockTuplesWithoutRetrievingForConsumption(tupleChunkId, startIdx);
   }
 
   @Transactional

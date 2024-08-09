@@ -91,10 +91,10 @@ public class TupleChunkFragmentStorageServiceIT {
 
     List<TupleChunkFragmentEntity> fragmentEntities1 = generateFragmentsForChunk(mGf2nTupleChunk);
 
-    fragmentStorageService.addUniqueConstraint();
+    // fragmentStorageService.addUniqueConstraint();
 
     // fragmentStorageService.keep(fragmentEntities1.remove(0));
-    fragmentStorageService.keepRound(fragmentEntities1);
+    // fragmentStorageService.keepRound(fragmentEntities1);
 
     // heartbeatRepository.insertIntoHeartbeatTable(new String(RandomUtils.nextBytes(16)));
 

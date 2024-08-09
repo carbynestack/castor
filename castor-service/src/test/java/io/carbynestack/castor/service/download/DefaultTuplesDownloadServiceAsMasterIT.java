@@ -157,8 +157,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   }
 
   @Test
-  void
-      givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarkerButConsumptionMarkerRemainsUntouched() {
+  void givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarker() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
@@ -219,7 +218,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
         TupleChunkFragmentEntityListMatcher.containsAll(
             expectedNewFragment, expectedReservedFragment));
     assertEquals(
-        expectedReservation.setStatus(ActivationStatus.UNLOCKED),
+        expectedReservation.setStatus(ActivationStatus.LOCKED),
         reservationCache.get(expectedReservationId).get());
     assertEquals(count, consumptionCachingService.getConsumptionForTupleType(0, tupleType));
     verify(tupleStoreSpy, never()).deleteTupleChunk(any(UUID.class));

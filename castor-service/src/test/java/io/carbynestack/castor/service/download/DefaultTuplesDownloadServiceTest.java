@@ -71,6 +71,11 @@ class DefaultTuplesDownloadServiceTest {
     when(reservationCachingServiceMock.getReservationWithRetry(
             resultingReservationId, tupleType, count))
         .thenReturn(reservationMock);
+    lenient()
+        .doReturn(1)
+        .when(tupleChunkFragmentStorageServiceMock)
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
+    // lenient().doReturn(1).when(tupleChunkFragmentStorageServiceMock).lock(chunkId, 0L);
     doThrow(expectedCause)
         .when(tupleStoreMock)
         .downloadTuplesAsBytes(
@@ -79,13 +84,6 @@ class DefaultTuplesDownloadServiceTest {
             chunkId,
             0,
             count * tupleType.getTupleSize());
-    //    when(tupleStoreMock.downloadTuples(
-    //            tupleType.getTupleCls(),
-    //            tupleType.getField(),
-    //            chunkId,
-    //            0,
-    //            count * tupleType.getTupleSize()))
-    //        .thenThrow(expectedCause);
 
     CastorServiceException actualCse =
         assertThrows(

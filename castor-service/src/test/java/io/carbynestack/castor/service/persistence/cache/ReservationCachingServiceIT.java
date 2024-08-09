@@ -36,6 +36,7 @@ import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
 import java.util.*;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -161,9 +162,10 @@ public class ReservationCachingServiceIT {
               return true;
             };
 
-    doAnswer(shareReservationAnswer)
-        .when(interVcpClientSpy)
-        .shareReservation(isA(Reservation.class));
+    doReturn(true).when(interVcpClientSpy).shareReservation(isA(Reservation.class));
+    //    doAnswer(shareReservationAnswer)
+    //        .when(interVcpClientSpy)
+    //        .shareReservation(isA(Reservation.class));
 
     Answer mockFindFragmentAnswer =
         (Answer)
@@ -181,7 +183,7 @@ public class ReservationCachingServiceIT {
             invocation -> {
               return invocation.getArgument(0, TupleChunkFragmentEntity.class);
             };
-    doAnswer(mockSave).when(tupleChunkFragmentRepository).save(isA(TupleChunkFragmentEntity.class));
+    // doAnswer(mockSave).when(tupleChunkFragmentRepository).save(isA(TupleChunkFragmentEntity.class));
 
     Answer mockReserveRoundFragmentsByIndices =
         (Answer)
@@ -195,17 +197,52 @@ public class ReservationCachingServiceIT {
         .when(tupleChunkFragmentRepository)
         .reserveRoundFragmentsByIndices(isA(ArrayList.class), isA(String.class), isA(UUID.class));
 
+    Answer mockReserveRoundTuples =
+        (Answer)
+            invocation -> {
+              return tupleChunkFragmentRepository.mockRetrieveAndReserveRoundFragmentsByType(
+                  invocation.getArgument(0, String.class),
+                  invocation.getArgument(1, Integer.class),
+                  invocation.getArgument(2, String.class));
+            };
+    lenient()
+        .doAnswer(mockReserveRoundTuples)
+        .when(tupleChunkFragmentRepository)
+        .retrieveAndReserveRoundFragmentsByType(isA(String.class), anyInt(), isA(String.class));
+
+    Answer mockRetrieveSinglePartialFragment =
+        (Answer)
+            invocation -> {
+              return tupleChunkFragmentRepository.mockRetrieveSinglePartialFragment(
+                  invocation.getArgument(0, String.class));
+            };
+    lenient()
+        .doAnswer(mockRetrieveSinglePartialFragment)
+        .when(tupleChunkFragmentRepository)
+        .retrieveSinglePartialFragment(isA(String.class));
+    // doReturn(21).when(tupleChunkFragmentRepository).lockTuplesWithoutRetrievingForConsumption(isA(String.class), isA(UUID.class), anyLong());
+
+    // Answer mockGetFragments = (Answer) invocation -> { return
+    // tupleChunkFragmentRepository.mockGetAllByReservationId(invocation.getArgument(0,
+    // String.class));};
+    // doAnswer(mockGetFragments).when(tupleChunkFragmentRepository).deleteByChunkAndStartIndex(any(), any());
     List<TupleChunkFragmentEntity> fragmentEntities = generateFragmentsForChunk(mGfpTupleChunk);
 
     List<TupleChunkFragmentEntity> fragmentEntities1 = generateFragmentsForChunk(mGf2nTupleChunk);
 
-    tupleChunkFragmentStorageService.addUniqueConstraint();
+    // tupleChunkFragmentStorageService.addUniqueConstraint();
 
     // fragmentStorageService.keep(fragmentEntities1.remove(0));
     tupleChunkFragmentStorageService.keepRound(fragmentEntities1);
     tupleChunkFragmentStorageService.keepRound(fragmentEntities);
 
-    reservationCachingService.createReservation(testReservationId, testTupleType, 20015);
+    Reservation res =
+        reservationCachingService.createReservation(testReservationId, testTupleType, 20015);
+    ReservationElement firstElem = res.getReservations().get(0);
+    int test =
+        tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+            tupleChunkId, firstElem.getStartIndex());
+    assertEquals(test, res.getReservations().size());
   }
 
   protected ArrayList<TupleChunkFragmentEntity> generateFragmentsForChunk(TupleChunk tupleChunk) {
@@ -293,6 +330,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
+  @SneakyThrows
   void whenReferencedSequenceIsSplitInFragments_whenApplyReservation_thenApplyAccordingly() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long requestedStartIndex = 42;

@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -123,29 +124,57 @@ public class ReservationCachingService {
    * @throws CastorServiceException if the tuples could not be reserved as requested.
    * @throws CastorServiceException if the cache already holds a reservation with the given ID
    */
-  public void keepAndApplyReservation(Reservation reservation) {
+  @Transactional
+  public void keepAndApplyReservation(Reservation reservation) throws InterruptedException {
     log.debug("persisting reservation {}", reservation);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
-    int firstRoundFragment = 0;
     if (ops.get(cachePrefix + reservation.getReservationId()) == null) {
+      log.debug("Apply reservation {}", reservation);
+      storeReservationInDB(reservation);
       ops.set(cachePrefix + reservation.getReservationId(), reservation);
       log.debug("put in database at {}", cachePrefix + reservation.getReservationId());
-      log.debug("Apply reservation {}", reservation);
-      for (ReservationElement re : reservation.getReservations()) {
-        if (re.getReservedTuples() == castorServiceProperties.getInitialFragmentSize()) break;
-        firstRoundFragment++;
-        log.debug("Processing fragmented reservation element {}", re);
-        long startIndex = re.getStartIndex();
-        long endIndex = startIndex + re.getReservedTuples();
-        while (startIndex < endIndex) {
-          TupleChunkFragmentEntity fragment =
-              tupleChunkFragmentStorageService
-                  .findAvailableFragmentForChunkContainingIndex(re.getTupleChunkId(), startIndex)
-                  .orElseThrow(
-                      () ->
-                          new CastorServiceException(
-                              String.format(
-                                  RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation)));
+      applyConsumption(reservation);
+      log.debug("consumption emitted");
+    } else {
+      System.err.println("reservation conflict");
+      throw new CastorServiceException(
+          String.format(RESERVATION_CONFLICT_EXCEPTION_MSG, reservation.getReservationId()));
+    }
+  }
+
+  /**
+   * @param reservation The reserved fragments
+   * @throws InterruptedException : If the fragments can not be reserved
+   */
+  @Transactional()
+  public void storeReservationInDB(@NotNull Reservation reservation) throws InterruptedException {
+    int firstRoundFragment = 0;
+    for (ReservationElement re : reservation.getReservations()) {
+      if (re.getReservedTuples() == castorServiceProperties.getInitialFragmentSize()) break;
+      firstRoundFragment++;
+      log.debug("Processing fragmented reservation element {}", re);
+      long startIndex = re.getStartIndex();
+      long endIndex = startIndex + re.getReservedTuples();
+      while (startIndex < endIndex) {
+        try {
+
+          TupleChunkFragmentEntity fragment = null;
+          int singleRetryMicrosecs = 6000;
+          while (fragment == null) {
+            fragment =
+                tupleChunkFragmentStorageService
+                    .findAvailableFragmentForChunkContainingIndex(re.getTupleChunkId(), startIndex)
+                    .orElse(null);
+            if (fragment == null) {
+              singleRetryMicrosecs -= 2000;
+              TimeUnit.MICROSECONDS.sleep(2000);
+              if (singleRetryMicrosecs <= 0) {
+                System.out.println("Tuples not yet activated");
+                throw new CastorServiceException(
+                    String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation));
+              }
+            }
+          }
           if (fragment.getStartIndex() < startIndex) {
             fragment = tupleChunkFragmentStorageService.splitBefore(fragment, startIndex);
           }
@@ -155,34 +184,70 @@ public class ReservationCachingService {
           fragment.setReservationId(reservation.getReservationId());
           tupleChunkFragmentStorageService.update(fragment);
           startIndex = fragment.getEndIndex();
+
+        } catch (Exception e) {
+          System.err.println(
+              "Reservation of single fragment failed; probably locking issue; res:"
+                  + reservation.getReservationId()
+                  + " tchunk:"
+                  + re.getTupleChunkId());
+          throw e;
         }
       }
-      if (firstRoundFragment < reservation.getReservations().size()) {
-        HashMap<UUID, ArrayList<Long>> mappedReservations = new HashMap<>();
-        List<ReservationElement> roundReservationElements =
-            reservation
-                .getReservations()
-                .subList(firstRoundFragment, reservation.getReservations().size());
-        roundReservationElements.forEach(
-            resElem -> {
-              mappedReservations.computeIfAbsent(resElem.getTupleChunkId(), k -> new ArrayList<>());
-              mappedReservations.get(resElem.getTupleChunkId()).add(resElem.getStartIndex());
-            });
-        int actuallyReserved = 0;
-        for (UUID tChunkId : mappedReservations.keySet()) {
-          actuallyReserved +=
-              tupleChunkFragmentStorageService.reserveRoundFragmentsByIndices(
-                  mappedReservations.get(tChunkId), reservation.getReservationId(), tChunkId);
+    }
+    if (firstRoundFragment < reservation.getReservations().size()) {
+
+      HashMap<UUID, ArrayList<Long>> mappedReservations = new HashMap<>();
+      List<ReservationElement> roundReservationElements =
+          reservation
+              .getReservations()
+              .subList(firstRoundFragment, reservation.getReservations().size());
+      roundReservationElements.forEach(
+          resElem -> {
+            mappedReservations.computeIfAbsent(resElem.getTupleChunkId(), k -> new ArrayList<>());
+            mappedReservations.get(resElem.getTupleChunkId()).add(resElem.getStartIndex());
+          });
+
+      for (UUID tChunkId : mappedReservations.keySet()) {
+        int retryMillisecs = 1500;
+        while (true) {
+          try {
+            int actuallyReservedFragments =
+                tupleChunkFragmentStorageService.reserveRoundFragmentsByIndices(
+                    mappedReservations.get(tChunkId), reservation.getReservationId(), tChunkId);
+            if (actuallyReservedFragments == 0) {
+              retryMillisecs -= 30;
+              if (retryMillisecs <= 0) {
+                System.err.println(
+                    "Reservation returned false result. expected: "
+                        + roundReservationElements.size()
+                        + "; actual: "
+                        + actuallyReservedFragments);
+                throw new CastorServiceException(
+                    String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation));
+              }
+              TimeUnit.MILLISECONDS.sleep(30);
+            } else if (actuallyReservedFragments != mappedReservations.get(tChunkId).size()) {
+              System.err.println(
+                  "Fragments locked up in an unexpected way in the fragmentstore; expected:"
+                      + mappedReservations.get(tChunkId)
+                      + "; actual: "
+                      + actuallyReservedFragments
+                      + "; tchunkId: "
+                      + tChunkId.toString());
+              throw new CastorServiceException(
+                  "Reserving fragments failed due to unexpected locks in fragment table.");
+            } else {
+              break;
+            }
+          } catch (Exception e) {
+            System.err.println(
+                "Reserving round fragments failed; probably locking issue; tchunk: "
+                    + tChunkId.toString());
+            throw new CastorServiceException("SHARING FAILED", e.getCause());
+          }
         }
-        if (actuallyReserved != roundReservationElements.size())
-          throw new CastorServiceException(
-              String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation));
       }
-      applyConsumption(reservation);
-      log.debug("consumption emitted");
-    } else {
-      throw new CastorServiceException(
-          String.format(RESERVATION_CONFLICT_EXCEPTION_MSG, reservation.getReservationId()));
     }
   }
 
@@ -249,8 +314,11 @@ public class ReservationCachingService {
                       castorServiceProperties,
                       count));
       keepReservation(reservation);
-      if (tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId)
-          != reservation.getReservations().size()) {
+      ReservationElement firstElement = reservation.getReservations().get(0);
+      int retrievedFragmentsReservation =
+          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+              firstElement.getTupleChunkId(), firstElement.getStartIndex());
+      if (retrievedFragmentsReservation != reservation.getReservations().size()) {
         throw new CastorServiceException(
             String.format(
                 FAILED_LOCKING_RESERVATION_EXCEPTION_FORMAT, reservation.getReservationId()));
@@ -343,15 +411,16 @@ public class ReservationCachingService {
           count % castorServiceProperties.getInitialFragmentSize() == 0
               ? count / castorServiceProperties.getInitialFragmentSize()
               : count / castorServiceProperties.getInitialFragmentSize() + 1;
+      ReservationElement firstElement = reservation.getReservations().get(0);
       int lockedFragments =
-          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId);
-      if (lockedFragments == 0) return null;
+          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+              firstElement.getTupleChunkId(), firstElement.getStartIndex());
+      if (lockedFragments != expectedLockedFragments) return null;
       if (reservation.getTupleType() != tupleType
           || reservation.getReservations().stream()
                   .mapToLong(ReservationElement::getReservedTuples)
                   .sum()
-              != count
-          || lockedFragments < expectedLockedFragments) {
+              != count) {
         throw new CastorServiceException(
             String.format(
                 RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,

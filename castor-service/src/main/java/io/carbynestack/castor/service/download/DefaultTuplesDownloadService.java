@@ -44,6 +44,7 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     this.fragmentStorageService = fragmentStorageService;
     this.reservationCachingService = reservationCachingService;
     this.castorServiceProperties = castorServiceProperties;
+    // this.fragmentStorageService.setUserLevelLockTimeout(3000);
   }
 
   /**
@@ -80,9 +81,13 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     } else {
       reservation =
           reservationCachingService.getReservationWithRetry(reservationId, tupleType, count);
+      ReservationElement firstElement = reservation.getReservations().get(0);
       int reservedFragments =
-          fragmentStorageService.lockReservedFragmentsWithoutRetrieving(reservationId);
+          fragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+              firstElement.getTupleChunkId(), firstElement.getStartIndex());
       if (reservedFragments < reservation.getReservations().size()) {
+        System.err.println(
+            "Expected: " + reservation.getReservations().size() + " actual: " + reservedFragments);
         throw new CastorServiceException(FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG);
       }
     }
