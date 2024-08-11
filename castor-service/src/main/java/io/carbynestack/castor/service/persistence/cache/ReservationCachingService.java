@@ -129,10 +129,17 @@ public class ReservationCachingService {
     log.debug("persisting reservation {}", reservation);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
     if (ops.get(cachePrefix + reservation.getReservationId()) == null) {
+      //      TransactionSynchronizationManager.registerSynchronization(new
+      // TransactionSynchronization() {
+      //        @Override
+      //        public void afterCommit(){
+      //          log.debug("put in database at {}", cachePrefix + reservation.getReservationId());
+      //
+      //        }
+      //      });
       log.debug("Apply reservation {}", reservation);
       storeReservationInDB(reservation);
       ops.set(cachePrefix + reservation.getReservationId(), reservation);
-      log.debug("put in database at {}", cachePrefix + reservation.getReservationId());
       applyConsumption(reservation);
       log.debug("consumption emitted");
     } else {
@@ -317,7 +324,7 @@ public class ReservationCachingService {
       ReservationElement firstElement = reservation.getReservations().get(0);
       int retrievedFragmentsReservation =
           tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
-              firstElement.getTupleChunkId(), firstElement.getStartIndex());
+              firstElement.getTupleChunkId(), firstElement.getStartIndex(), reservationId);
       if (retrievedFragmentsReservation != reservation.getReservations().size()) {
         throw new CastorServiceException(
             String.format(
@@ -414,7 +421,7 @@ public class ReservationCachingService {
       ReservationElement firstElement = reservation.getReservations().get(0);
       int lockedFragments =
           tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
-              firstElement.getTupleChunkId(), firstElement.getStartIndex());
+              firstElement.getTupleChunkId(), firstElement.getStartIndex(), reservationId);
       if (lockedFragments != expectedLockedFragments) return null;
       if (reservation.getTupleType() != tupleType
           || reservation.getReservations().stream()

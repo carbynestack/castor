@@ -87,7 +87,7 @@ class CreateReservationSupplierTest {
     lenient()
         .doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
 
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
@@ -112,7 +112,7 @@ class CreateReservationSupplierTest {
     lenient()
         .doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
 
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
@@ -146,7 +146,7 @@ class CreateReservationSupplierTest {
     lenient()
         .doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
 
     assertEquals(expectedReservation, createReservationSupplier.get());
 

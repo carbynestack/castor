@@ -241,7 +241,7 @@ public class ReservationCachingServiceIT {
     ReservationElement firstElem = res.getReservations().get(0);
     int test =
         tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
-            tupleChunkId, firstElem.getStartIndex());
+            tupleChunkId, firstElem.getStartIndex(), testReservationId);
     assertEquals(test, res.getReservations().size());
   }
 

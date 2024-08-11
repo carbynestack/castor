@@ -84,7 +84,7 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
       ReservationElement firstElement = reservation.getReservations().get(0);
       int reservedFragments =
           fragmentStorageService.lockReservedFragmentsWithoutRetrieving(
-              firstElement.getTupleChunkId(), firstElement.getStartIndex());
+              firstElement.getTupleChunkId(), firstElement.getStartIndex(), reservationId);
       if (reservedFragments < reservation.getReservations().size()) {
         System.err.println(
             "Expected: " + reservation.getReservations().size() + " actual: " + reservedFragments);

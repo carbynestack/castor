@@ -74,7 +74,7 @@ class DefaultTuplesDownloadServiceTest {
     lenient()
         .doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong());
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
     // lenient().doReturn(1).when(tupleChunkFragmentStorageServiceMock).lock(chunkId, 0L);
     doThrow(expectedCause)
         .when(tupleStoreMock)

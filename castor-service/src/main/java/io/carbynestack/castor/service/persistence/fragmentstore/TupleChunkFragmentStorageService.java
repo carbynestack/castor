@@ -129,8 +129,15 @@ public class TupleChunkFragmentStorageService {
   }
 
   @Transactional
-  public int lockReservedFragmentsWithoutRetrieving(UUID tupleChunkId, long startIdx) {
-    return fragmentRepository.lockTuplesWithoutRetrievingForConsumption(tupleChunkId, startIdx);
+  public int lockReservedFragmentsWithoutRetrieving(
+      UUID tupleChunkId, long startIdx, String reservationId) {
+    String deletedId =
+        fragmentRepository.lockFirstTupleReturningReservatioId(tupleChunkId, startIdx);
+    if (deletedId.equals(reservationId))
+      return 1 + fragmentRepository.lockRemainingTuplesWithoutRetrieving(reservationId);
+    else
+      throw new CastorServiceException(
+          "Reserved Tuples got contended. Conflicting reservation: " + deletedId);
   }
 
   @Transactional

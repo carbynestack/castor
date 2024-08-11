@@ -224,12 +224,6 @@ public interface TupleChunkFragmentRepository
               + " SET "
               + RESERVATION_ID_COLUMN
               + " = :reservationId WHERE "
-              + FRAGMENT_ID_COLUMN
-              + " IN (SELECT "
-              + FRAGMENT_ID_COLUMN
-              + " FROM "
-              + TABLE_NAME
-              + " WHERE "
               + START_INDEX_COLUMN
               + " IN :indices AND "
               + IS_ROUND_COLUMN
@@ -239,7 +233,7 @@ public interface TupleChunkFragmentRepository
               + ACTIVATION_STATUS_COLUMN
               + " = 'UNLOCKED' AND "
               + TUPLE_CHUNK_ID_COLUMN
-              + " = :tupleChunkId FOR UPDATE)",
+              + " = :tupleChunkId",
       nativeQuery = true)
   int reserveRoundFragmentsByIndices(
       @Param("indices") ArrayList<Long> indices,
@@ -360,25 +354,26 @@ public interface TupleChunkFragmentRepository
       @Param("reservationId") String reservationId);
 
   @Transactional
-  @Modifying
   @Query(
       value =
           "DELETE FROM "
               + TABLE_NAME
               + " WHERE "
-              + RESERVATION_ID_COLUMN
-              + " = (SELECT "
-              + RESERVATION_ID_COLUMN
-              + " FROM "
-              + TABLE_NAME
-              + " WHERE "
               + TUPLE_CHUNK_ID_COLUMN
               + " = :tupleChunkId AND "
               + START_INDEX_COLUMN
-              + " = :startIdx FOR UPDATE LIMIT 1)",
+              + " = :startIdx RETURNING "
+              + RESERVATION_ID_COLUMN,
       nativeQuery = true)
-  int lockTuplesWithoutRetrievingForConsumption(
+  String lockFirstTupleReturningReservatioId(
       @Param("tupleChunkId") UUID tupleChunkId, @Param("startIdx") long startIdx);
+
+  @Transactional
+  @Modifying
+  @Query(
+      value = "DELETE FROM " + TABLE_NAME + " WHERE " + RESERVATION_ID_COLUMN + " = :reservationId",
+      nativeQuery = true)
+  int lockRemainingTuplesWithoutRetrieving(@Param("reservationId") String reservationId);
 
   @Transactional
   @Query(
