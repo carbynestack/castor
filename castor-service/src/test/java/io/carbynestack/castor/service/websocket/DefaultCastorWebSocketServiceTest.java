@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.MultiplicationTriple;
 import io.carbynestack.castor.common.entities.TupleChunk;
 import io.carbynestack.castor.common.entities.TupleType;
@@ -132,7 +133,13 @@ class DefaultCastorWebSocketServiceTest {
         .keep(
             Collections.singletonList(
                 TupleChunkFragmentEntity.of(
-                    chunkId, tupleType, 0, tupleChunk.getNumberOfTuples())));
+                    chunkId,
+                    tupleType,
+                    0,
+                    tupleChunk.getNumberOfTuples(),
+                    ActivationStatus.LOCKED,
+                    null,
+                    false)));
 
     verify(messagingTemplateMock, times(1))
         .convertAndSend(
@@ -146,6 +153,7 @@ class DefaultCastorWebSocketServiceTest {
     TupleType tupleType = INPUT_MASK_GFP;
     TupleChunk emptyTupleChunk =
         TupleChunk.of(tupleType.getTupleCls(), tupleType.getField(), chunkId, new byte[0]);
+    // doReturn(1000).when(servicePropertiesMock).getInitialFragmentSize();
 
     assertEquals(
         castorWebSocketService.generateFragmentsForChunk(emptyTupleChunk), Collections.emptyList());
@@ -163,10 +171,17 @@ class DefaultCastorWebSocketServiceTest {
     List<TupleChunkFragmentEntity> expectedFragments =
         Arrays.asList(
             TupleChunkFragmentEntity.of(chunkId, tupleType, 0, initialFragmentSize),
-            TupleChunkFragmentEntity.of(chunkId, tupleType, initialFragmentSize, numberOfTuples));
+            TupleChunkFragmentEntity.of(
+                chunkId,
+                tupleType,
+                initialFragmentSize,
+                numberOfTuples,
+                ActivationStatus.LOCKED,
+                null,
+                false));
 
     when(servicePropertiesMock.getInitialFragmentSize()).thenReturn(initialFragmentSize);
 
-    assertEquals(castorWebSocketService.generateFragmentsForChunk(tupleChunk), expectedFragments);
+    assertEquals(expectedFragments, castorWebSocketService.generateFragmentsForChunk(tupleChunk));
   }
 }

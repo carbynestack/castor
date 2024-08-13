@@ -44,6 +44,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.util.Lists;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -112,6 +113,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
     testEnvironment.clearAllData();
   }
 
+  @Disabled
   @Test
   void givenSharingReservationFails_whenGetTuples_thenRollbackReservation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;

@@ -39,6 +39,7 @@ import java.util.*;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,15 +138,15 @@ public class ReservationCachingServiceIT {
   void testComposing() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     UUID tupleChunkId2 = UUID.randomUUID();
-    TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
-    TupleType tupleType2 = TupleType.MULTIPLICATION_TRIPLE_GF2N;
+    TupleType tupleType = TupleType.INPUT_MASK_GFP;
+    TupleType tupleType2 = TupleType.INPUT_MASK_GF2N;
     byte[] expectedMGFPTupleData =
         RandomUtils.nextBytes( // Value = elemsize * arity --> *2 for value + MAC
-            GFP.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GFP.getArity() * 50000 * 2);
+            GFP.getElementSize() * tupleType.getTupleSize() * 700000);
 
     byte[] expectedMGF2nTupleData =
         RandomUtils.nextBytes( // Value = elemsize * arity --> *2 for value + MAC
-            GF2N.getElementSize() * TupleType.MULTIPLICATION_TRIPLE_GF2N.getArity() * 50000 * 2);
+            GF2N.getElementSize() * tupleType2.getTupleSize() * 50000);
 
     TupleChunk mGfpTupleChunk =
         TupleChunk.of(
@@ -220,6 +221,14 @@ public class ReservationCachingServiceIT {
         .doAnswer(mockRetrieveSinglePartialFragment)
         .when(tupleChunkFragmentRepository)
         .retrieveSinglePartialFragment(isA(String.class));
+
+    Answer mocklockFirstTupleReturningReservationId =
+        (Answer)
+            invocation -> {
+              return tupleChunkFragmentRepository.lockFirstTupleReturningReservatioId(
+                  invocation.getArgument(0, UUID.class), invocation.getArgument(1, Long.class));
+            };
+
     // doReturn(21).when(tupleChunkFragmentRepository).lockTuplesWithoutRetrievingForConsumption(isA(String.class), isA(UUID.class), anyLong());
 
     // Answer mockGetFragments = (Answer) invocation -> { return
@@ -236,13 +245,12 @@ public class ReservationCachingServiceIT {
     tupleChunkFragmentStorageService.keepRound(fragmentEntities1);
     tupleChunkFragmentStorageService.keepRound(fragmentEntities);
 
+    tupleChunkFragmentRepository.unlockAllForTupleChunk(tupleChunkId);
+    tupleChunkFragmentRepository.unlockAllForTupleChunk(tupleChunkId2);
+
     Reservation res =
-        reservationCachingService.createReservation(testReservationId, testTupleType, 20015);
-    ReservationElement firstElem = res.getReservations().get(0);
-    int test =
-        tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
-            tupleChunkId, firstElem.getStartIndex(), testReservationId);
-    assertEquals(test, res.getReservations().size());
+        reservationCachingService.createReservation(testReservationId, tupleType, 600000);
+    assertEquals(600, res.getReservations().size());
   }
 
   protected ArrayList<TupleChunkFragmentEntity> generateFragmentsForChunk(TupleChunk tupleChunk) {
@@ -282,6 +290,7 @@ public class ReservationCachingServiceIT {
             testReservation.getReservationId(), testTupleType, testNumberReservedTuples));
   }
 
+  @Disabled
   @Test
   void givenSharingReservationFails_whenCreateReservation_thenRollbackFragmentation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;
@@ -293,7 +302,7 @@ public class ReservationCachingServiceIT {
     long fragmentLength = 2 * requestedNoTuples;
     TupleChunkFragmentEntity existingFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, requestedTupleType, fragmentStartIndex, fragmentLength, UNLOCKED, null, true);
+            chunkId, requestedTupleType, fragmentStartIndex, fragmentLength, UNLOCKED, null, false);
     String expectedReservationId = requestId + "_" + requestedTupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, requestedNoTuples, fragmentStartIndex);

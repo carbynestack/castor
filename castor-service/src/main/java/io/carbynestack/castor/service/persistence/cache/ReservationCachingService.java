@@ -56,6 +56,9 @@ public class ReservationCachingService {
   public static final String FAILED_LOCKING_RESERVATION_EXCEPTION_FORMAT =
       "Acquiring an exclusive lock on reservation %s failed.";
 
+  public static final String SHARING_RESERVATION_FAILED_EXCEPTION_MSG =
+      "Sharing reservation with slave services failed.";
+
   private final ConsumptionCachingService consumptionCachingService;
   private final RedisTemplate<String, Object> redisTemplate;
   private final TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
@@ -321,6 +324,9 @@ public class ReservationCachingService {
                       castorServiceProperties,
                       count));
       keepReservation(reservation);
+      if (!castorInterVcpClientOptional.get().shareReservation(reservation)) {
+        throw new CastorServiceException(SHARING_RESERVATION_FAILED_EXCEPTION_MSG);
+      }
       ReservationElement firstElement = reservation.getReservations().get(0);
       int retrievedFragmentsReservation =
           tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(

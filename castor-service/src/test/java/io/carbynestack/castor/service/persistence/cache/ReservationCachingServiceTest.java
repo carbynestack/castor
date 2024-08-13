@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -64,6 +65,8 @@ class ReservationCachingServiceTest {
   @Mock private ExecutorService executorServiceMock;
 
   @Mock private CastorServiceProperties castorServicePropertiesMock;
+
+  @Spy private CastorInterVcpClient castorInterVcpClientSpy;
 
   private final String testCacheName = "testCache";
   private final String testCachePrefix = CacheKeyPrefix.simple().compute(testCacheName);

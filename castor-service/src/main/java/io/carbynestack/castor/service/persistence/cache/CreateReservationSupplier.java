@@ -54,9 +54,6 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
     List<ReservationElement> reservationElements = composeElements(tupleType, count, reservationId);
     log.debug("Reservation composed.");
     Reservation reservation = new Reservation(reservationId, tupleType, reservationElements);
-    if (!castorInterVcpClient.shareReservation(reservation)) {
-      throw new CastorServiceException(SHARING_RESERVATION_FAILED_EXCEPTION_MSG);
-    }
     log.debug("Reservation successfully shared with all slaves.");
     return reservation;
   }

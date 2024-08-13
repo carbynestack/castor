@@ -133,7 +133,7 @@ public class TupleChunkFragmentStorageService {
       UUID tupleChunkId, long startIdx, String reservationId) {
     String deletedId =
         fragmentRepository.lockFirstTupleReturningReservatioId(tupleChunkId, startIdx);
-    if (deletedId.equals(reservationId))
+    if (deletedId != null && deletedId.equals(reservationId))
       return 1 + fragmentRepository.lockRemainingTuplesWithoutRetrieving(reservationId);
     else
       throw new CastorServiceException(
