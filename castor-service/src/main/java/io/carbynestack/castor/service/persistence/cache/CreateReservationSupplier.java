@@ -68,18 +68,23 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
     List<ReservationElement> reservationElements = new ArrayList<>();
     long oddToReserve = numberOfTuples % castorServiceProperties.getInitialFragmentSize();
     long roundToReserve = numberOfTuples - oddToReserve;
+    List<ReservationElement> roundElements = null;
     if (roundToReserve > 0) {
       ArrayList<TupleChunkFragmentEntity> roundFragments =
           fragmentStorageService.retrieveAndReserveRoundFragments(
               (int) roundToReserve, tupleType, reservationId);
 
+      // if the fragments are split up there might be enough tuples in the non-round fragments.
+      // -- especially with inputmasks
       if (roundFragments.size() * (long) castorServiceProperties.getInitialFragmentSize()
           < roundToReserve)
-        throw new CastorServiceException(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG);
+        oddToReserve +=
+            roundToReserve
+                - roundFragments.size() * (long) castorServiceProperties.getInitialFragmentSize();
 
       // maps all fragments returned to ReservationElements using their 'tupleChunnkId' attribute,
       // the common fragment size and their 'startIndex' attribute
-      reservationElements.addAll(
+      roundElements =
           roundFragments.stream()
               .map(
                   frag ->
@@ -87,12 +92,13 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
                           frag.getTupleChunkId(),
                           castorServiceProperties.getInitialFragmentSize(),
                           frag.getStartIndex()))
-              .collect(Collectors.toList()));
+              .collect(Collectors.toList());
     }
     while (oddToReserve > 0) {
       TupleChunkFragmentEntity availableFragment =
           fragmentStorageService
-              .retrieveSinglePartialFragment(tupleType)
+              .retrieveSinglePartialFragment(
+                  tupleType, oddToReserve < castorServiceProperties.getInitialFragmentSize())
               .orElseThrow(
                   () -> new CastorServiceException(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG));
       long tuplesInFragment = availableFragment.getEndIndex() - availableFragment.getStartIndex();
@@ -111,6 +117,7 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
               availableFragment.getTupleChunkId(), tuplesTaken, availableFragment.getStartIndex());
       reservationElements.add(tempResElement);
     }
+    if (roundElements != null) reservationElements.addAll(roundElements);
 
     log.debug("Composed reservation of {} {}: {}.", numberOfTuples, tupleType, reservationElements);
     return reservationElements;

@@ -65,7 +65,7 @@ class CreateReservationSupplierTest {
     // 1);
     doReturn(Optional.empty())
         .when(tupleChunkFragmentStorageServiceMock)
-        .retrieveSinglePartialFragment(isA(TupleType.class));
+        .retrieveSinglePartialFragment(isA(TupleType.class), isA(boolean.class));
     doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
@@ -77,7 +77,7 @@ class CreateReservationSupplierTest {
   void givenProvidedChunksDoNotHaveEnoughTuplesAvailable_whenGet_thenThrowCastorServiceException() {
     doReturn(Optional.empty())
         .when(tupleChunkFragmentStorageServiceMock)
-        .retrieveSinglePartialFragment(tupleType);
+        .retrieveSinglePartialFragment(tupleType, true);
     doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     lenient()
         .when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType))
@@ -109,7 +109,7 @@ class CreateReservationSupplierTest {
         TupleChunkFragmentEntity.of(chunkId, tupleType, startIndex, count);
 
     // when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
-    when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType))
+    when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType, true))
         .thenReturn(Optional.of(fragmentEntity));
     lenient()
         .doReturn(1)
@@ -140,7 +140,7 @@ class CreateReservationSupplierTest {
     lenient()
         .doReturn(Optional.of(fragmentEntity))
         .when(tupleChunkFragmentStorageServiceMock)
-        .retrieveSinglePartialFragment(tupleType);
+        .retrieveSinglePartialFragment(tupleType, true);
     lenient()
         .when(tupleChunkFragmentStorageServiceMock.splitAt(fragmentEntity, count))
         .thenReturn(fragmentEntity);

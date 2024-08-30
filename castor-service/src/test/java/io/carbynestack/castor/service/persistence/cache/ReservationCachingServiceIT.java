@@ -220,7 +220,7 @@ public class ReservationCachingServiceIT {
     lenient()
         .doAnswer(mockRetrieveSinglePartialFragment)
         .when(tupleChunkFragmentRepository)
-        .retrieveSinglePartialFragment(isA(String.class));
+        .retrieveSinglePartialFragmentPreferSmall(isA(String.class));
 
     Answer mocklockFirstTupleReturningReservationId =
         (Answer)

@@ -141,8 +141,11 @@ public class TupleChunkFragmentStorageService {
   }
 
   @Transactional
-  public Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragment(TupleType tupleType) {
-    return fragmentRepository.retrieveSinglePartialFragment(tupleType.name());
+  public Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragment(
+      TupleType tupleType, boolean preferSmall) {
+    if (preferSmall)
+      return fragmentRepository.retrieveSinglePartialFragmentPreferSmall(tupleType.name());
+    else return fragmentRepository.retrieveSinglePartialFragmentPreferBig(tupleType.name());
   }
 
   /**

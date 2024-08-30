@@ -192,6 +192,7 @@ public class ReservationCachingService {
             fragment = tupleChunkFragmentStorageService.splitAt(fragment, endIndex);
           }
           fragment.setReservationId(reservation.getReservationId());
+          fragment.setRound(false);
           tupleChunkFragmentStorageService.update(fragment);
           startIndex = fragment.getEndIndex();
 

@@ -285,9 +285,35 @@ public interface TupleChunkFragmentRepository
               + RESERVATION_ID_COLUMN
               + " is NULL ORDER BY "
               + IS_ROUND_COLUMN
-              + " FOR UPDATE SKIP LOCKED LIMIT 1",
+              + ", "
+              + START_INDEX_COLUMN
+              + " - "
+              + END_INDEX_COLUMN
+              + " ASC FOR UPDATE SKIP LOCKED LIMIT 1",
       nativeQuery = true)
-  Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragment(
+  Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragmentPreferSmall(
+      @Param("tupleType") String tupleType);
+
+  @Transactional
+  @Query(
+      value =
+          "SELECT * FROM "
+              + TABLE_NAME
+              + " WHERE "
+              + TUPLE_TYPE_COLUMN
+              + " = :tupleType AND "
+              + ACTIVATION_STATUS_COLUMN
+              + " = 'UNLOCKED' AND "
+              + RESERVATION_ID_COLUMN
+              + " is NULL ORDER BY "
+              + IS_ROUND_COLUMN
+              + ", "
+              + START_INDEX_COLUMN
+              + " - "
+              + END_INDEX_COLUMN
+              + " DESC FOR UPDATE SKIP LOCKED LIMIT 1",
+      nativeQuery = true)
+  Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragmentPreferBig(
       @Param("tupleType") String tupleType);
 
   @Transactional
