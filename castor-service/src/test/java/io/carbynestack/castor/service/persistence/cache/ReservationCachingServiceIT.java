@@ -225,7 +225,7 @@ public class ReservationCachingServiceIT {
     Answer mocklockFirstTupleReturningReservationId =
         (Answer)
             invocation -> {
-              return tupleChunkFragmentRepository.lockFirstTupleReturningReservatioId(
+              return tupleChunkFragmentRepository.lockFirstFragmentReturningReservationId(
                   invocation.getArgument(0, UUID.class), invocation.getArgument(1, Long.class));
             };
 

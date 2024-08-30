@@ -388,10 +388,12 @@ public interface TupleChunkFragmentRepository
               + TUPLE_CHUNK_ID_COLUMN
               + " = :tupleChunkId AND "
               + START_INDEX_COLUMN
-              + " = :startIdx RETURNING "
+              + " <= :startIdx AND "
+              + END_INDEX_COLUMN
+              + " > :startIdx RETURNING "
               + RESERVATION_ID_COLUMN,
       nativeQuery = true)
-  String lockFirstTupleReturningReservatioId(
+  String lockFirstFragmentReturningReservationId(
       @Param("tupleChunkId") UUID tupleChunkId, @Param("startIdx") long startIdx);
 
   @Transactional

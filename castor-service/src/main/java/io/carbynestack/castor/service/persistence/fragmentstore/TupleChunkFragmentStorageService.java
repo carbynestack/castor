@@ -132,7 +132,7 @@ public class TupleChunkFragmentStorageService {
   public int lockReservedFragmentsWithoutRetrieving(
       UUID tupleChunkId, long startIdx, String reservationId) {
     String deletedId =
-        fragmentRepository.lockFirstTupleReturningReservatioId(tupleChunkId, startIdx);
+        fragmentRepository.lockFirstFragmentReturningReservationId(tupleChunkId, startIdx);
     if (deletedId != null && deletedId.equals(reservationId))
       return 1 + fragmentRepository.lockRemainingTuplesWithoutRetrieving(reservationId);
     else
