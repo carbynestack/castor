@@ -35,6 +35,8 @@ import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Objects;
@@ -292,17 +294,25 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
         tuplesDownloadService.getTupleList(
             tupleType.getTupleCls(), tupleType.getField(), count, requestId);
 
-    assertArrayEquals(
+    TupleList actualTupleList =
         TupleList.fromStream(
-                tupleType.getTupleCls(),
-                tupleType.getField(),
-                new ByteArrayInputStream(
-                    tupleData,
-                    (int) (fragmentStartIndex * tupleType.getTupleSize()),
-                    (int) ((fragmentStartIndex + count) * tupleType.getTupleSize())),
-                count * tupleType.getTupleSize())
-            .toByteArray(),
-        tupleList);
+            tupleType.getTupleCls(),
+            tupleType.getField(),
+            new ByteArrayInputStream(
+                tupleData,
+                (int) (fragmentStartIndex * tupleType.getTupleSize()),
+                (int) ((fragmentStartIndex + count) * tupleType.getTupleSize())),
+            count * tupleType.getTupleSize());
+    ByteArrayOutputStream actualTupleData = new ByteArrayOutputStream();
+    actualTupleList.forEach(
+        tuple -> {
+          try {
+            ((Tuple<?, ?>) tuple).writeTo(actualTupleData);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
+    assertArrayEquals(actualTupleData.toByteArray(), tupleList);
 
     // no fragments stored -> existing fragment was reserved, consumed and then deleted
     assertFalse(tupleChunkFragmentRepository.findAll().iterator().hasNext());

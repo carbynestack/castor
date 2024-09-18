@@ -70,19 +70,6 @@ public class TupleList<T extends Tuple<T, F>, F extends Field> extends ArrayList
     }
   }
 
-  public byte[] toByteArray(){
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    this.forEach(
-            tuple -> {
-              try {
-                tuple.writeTo(outputStream);
-              } catch (IOException exception) {
-                rethrow(exception);
-              }
-            });
-    return outputStream.toByteArray();
-  }
-
   /**
    * Converts a {@link TupleList} to {@link TupleChunk}
    *

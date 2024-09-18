@@ -24,9 +24,9 @@ import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.httpclient.CsHttpClient;
 import io.carbynestack.httpclient.CsHttpClientException;
 import io.carbynestack.httpclient.CsResponseEntity;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -100,28 +100,38 @@ class DefaultCastorIntraVcpClientTest {
 
   @SneakyThrows
   @Test
-  void givenSuccessfulRequest_whenDownloadTripleSharesAsBytes_thenReturnExpectedContent(){
+  void givenSuccessfulRequest_whenDownloadTripleSharesAsBytes_thenReturnExpectedContent() {
     UUID requestId = UUID.fromString("3dc08ff2-5eed-49a9-979e-3a3ac0e4a2cf");
     int expectedCount = 2;
     TupleList<MultiplicationTriple<Field.Gfp>, Field.Gfp> expectedTripleList =
-            new TupleList(MultiplicationTriple.class, GFP);
+        new TupleList(MultiplicationTriple.class, GFP);
+
     expectedTripleList.add(new MultiplicationTriple(GFP, testShare, testShare, testShare));
     expectedTripleList.add(new MultiplicationTriple(GFP, testShare, testShare, testShare));
+    ByteArrayOutputStream tripeListAsBytes = new ByteArrayOutputStream();
+    expectedTripleList.forEach(
+        tuple -> {
+          try {
+            tuple.writeTo(tripeListAsBytes);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
     CsResponseEntity<String, byte[]> givenResponseEntity =
-            CsResponseEntity.success(HttpStatus.SC_OK, expectedTripleList.toByteArray());
+        CsResponseEntity.success(HttpStatus.SC_OK, tripeListAsBytes.toByteArray());
 
     CastorServiceUri serviceUri = new CastorServiceUri(serviceAddress);
 
     doReturn(givenResponseEntity)
-            .when(csHttpClientMock)
-            .getForEntity(
+        .when(csHttpClientMock)
+        .getForEntity(
             serviceUri.getIntraVcpRequestTuplesUri(
-                    requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount),
+                requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount),
             Collections.emptyList(),
             byte[].class);
     TupleList actualTripleList =
-            castorIntraVcpClient.downloadTupleShares(
-                    requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount);
+        castorIntraVcpClient.downloadTupleShares(
+            requestId, TupleType.MULTIPLICATION_TRIPLE_GFP, expectedCount);
 
     assertEquals(expectedTripleList, actualTripleList);
   }
