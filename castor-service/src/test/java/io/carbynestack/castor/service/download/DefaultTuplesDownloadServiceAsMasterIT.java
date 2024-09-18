@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -35,9 +35,14 @@ import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
@@ -113,7 +118,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
   }
 
   @Test
-  void givenSharingReservationFails_whenGetTuples_thenRollbackReservation() {
+  void givenSharingReservationFails_whenGetTuples_thenDoNotRollbackReservation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;
     long requestedNoTuples = 12;
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
@@ -127,8 +132,21 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentLength,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            false);
+
     String expectedReservationId = requestId + "_" + requestedTupleType;
+
+    TupleChunkFragmentEntity resultingSplitFragment =
+        spy(
+            TupleChunkFragmentEntity.of(
+                chunkId,
+                requestedTupleType,
+                requestedNoTuples,
+                fragmentLength,
+                ActivationStatus.UNLOCKED,
+                null,
+                false));
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, requestedNoTuples, fragmentStartIndex);
     Reservation expectedReservation =
@@ -136,7 +154,10 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             expectedReservationId, requestedTupleType, singletonList(expectedReservationElement));
 
     tupleChunkFragmentRepository.save(existingFragment);
+    // needs to be set like this because 'id' is a generated sequential value
+    when(resultingSplitFragment.getId()).thenReturn(existingFragment.getId() + 1);
     doReturn(false).when(interVcpClientMock).shareReservation(expectedReservation);
+    existingFragment.setReservationId(expectedReservationId);
 
     CastorServiceException actualCSE =
         assertThrows(
@@ -147,17 +168,20 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
                     requestedTupleType.getField(),
                     requestedNoTuples,
                     requestId));
-
+    existingFragment.setEndIndex(requestedNoTuples);
     assertEquals(SHARING_RESERVATION_FAILED_EXCEPTION_MSG, actualCSE.getMessage());
 
-    assertEquals(singletonList(existingFragment), tupleChunkFragmentRepository.findAll());
-    assertEquals(0, consumptionCachingService.getConsumptionForTupleType(0, requestedTupleType));
-    assertNull(reservationCache.get(expectedReservationId));
+    assertTrue(
+        Arrays.asList(resultingSplitFragment, existingFragment)
+            .containsAll(
+                StreamSupport.stream(tupleChunkFragmentRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList())));
+    assertEquals(12, consumptionCachingService.getConsumptionForTupleType(0, requestedTupleType));
+    assertEquals(reservationCache.get(expectedReservationId).get(), expectedReservation);
   }
 
   @Test
-  void
-      givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarkerButConsumptionMarkerRemainsUntouched() {
+  void givenRetrievingTuplesFails_whenGetTuples_thenKeepReservationAndReservationMarker() {
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
     UUID chunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
@@ -171,7 +195,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentEndIndex,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
     String expectedReservationId = requestId + "_" + tupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, count, fragmentStartIndex);
@@ -185,7 +210,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentStartIndex + count,
             ActivationStatus.UNLOCKED,
-            expectedReservationId);
+            expectedReservationId,
+            true);
     TupleChunkFragmentEntity expectedNewFragment =
         TupleChunkFragmentEntity.of(
             chunkId,
@@ -193,7 +219,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex + count,
             fragmentEndIndex,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
 
     tupleChunkFragmentRepository.save(existingFragment);
 
@@ -215,7 +242,7 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
         TupleChunkFragmentEntityListMatcher.containsAll(
             expectedNewFragment, expectedReservedFragment));
     assertEquals(
-        expectedReservation.setStatus(ActivationStatus.UNLOCKED),
+        expectedReservation.setStatus(ActivationStatus.LOCKED),
         reservationCache.get(expectedReservationId).get());
     assertEquals(count, consumptionCachingService.getConsumptionForTupleType(0, tupleType));
     verify(tupleStoreSpy, never()).deleteTupleChunk(any(UUID.class));
@@ -238,7 +265,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentStartIndex,
             fragmentEndIndex,
             ActivationStatus.UNLOCKED,
-            null);
+            null,
+            true);
     String expectedReservationId = requestId + "_" + tupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, count, fragmentStartIndex);
@@ -262,11 +290,11 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
 
     doReturn(true).when(interVcpClientMock).shareReservation(expectedReservation);
 
-    TupleList tupleList =
+    byte[] tupleList =
         tuplesDownloadService.getTupleList(
             tupleType.getTupleCls(), tupleType.getField(), count, requestId);
 
-    assertEquals(
+    TupleList actualTupleList =
         TupleList.fromStream(
             tupleType.getTupleCls(),
             tupleType.getField(),
@@ -274,8 +302,17 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
                 tupleData,
                 (int) (fragmentStartIndex * tupleType.getTupleSize()),
                 (int) ((fragmentStartIndex + count) * tupleType.getTupleSize())),
-            count * tupleType.getTupleSize()),
-        tupleList);
+            count * tupleType.getTupleSize());
+    ByteArrayOutputStream actualTupleData = new ByteArrayOutputStream();
+    actualTupleList.forEach(
+        tuple -> {
+          try {
+            ((Tuple<?, ?>) tuple).writeTo(actualTupleData);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
+        });
+    assertArrayEquals(actualTupleData.toByteArray(), tupleList);
 
     // no fragments stored -> existing fragment was reserved, consumed and then deleted
     assertFalse(tupleChunkFragmentRepository.findAll().iterator().hasNext());

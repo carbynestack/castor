@@ -38,11 +38,11 @@ class WaitForReservationCallableTest {
     WaitForReservationCallable wfrc =
         new WaitForReservationCallable(
             reservationId, tupleType, tupleCount, reservationCachingServiceMock, 0);
-    when(reservationCachingServiceMock.getUnlockedReservation(reservationId, tupleType, tupleCount))
+    when(reservationCachingServiceMock.retrieveReservation(reservationId, tupleType, tupleCount))
         .thenAnswer(RunWhenAccessedAnswer.of(retries, wfrc::cancel, null));
     assertNull(wfrc.call());
     verify(reservationCachingServiceMock, times(1))
-        .getUnlockedReservation(reservationId, tupleType, tupleCount);
+        .retrieveReservation(reservationId, tupleType, tupleCount);
   }
 
   @Test
@@ -51,12 +51,12 @@ class WaitForReservationCallableTest {
     WaitForReservationCallable wfrc =
         new WaitForReservationCallable(
             reservationId, tupleType, tupleCount, reservationCachingServiceMock, 0);
-    when(reservationCachingServiceMock.getUnlockedReservation(reservationId, tupleType, tupleCount))
+    when(reservationCachingServiceMock.retrieveReservation(reservationId, tupleType, tupleCount))
         .thenReturn(null)
         .thenReturn(expectedReservation);
     assertEquals(expectedReservation, wfrc.call());
     verify(reservationCachingServiceMock, times(2))
-        .getUnlockedReservation(reservationId, tupleType, tupleCount);
+        .retrieveReservation(reservationId, tupleType, tupleCount);
   }
 
   @RequiredArgsConstructor(staticName = "of")

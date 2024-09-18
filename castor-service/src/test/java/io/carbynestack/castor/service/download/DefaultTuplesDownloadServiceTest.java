@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -10,8 +10,7 @@ package io.carbynestack.castor.service.download;
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.service.download.DefaultTuplesDownloadService.FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG;
 import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import io.carbynestack.castor.common.entities.*;
@@ -21,6 +20,7 @@ import io.carbynestack.castor.service.persistence.cache.ReservationCachingServic
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.UUID;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.RandomUtils;
@@ -71,13 +71,17 @@ class DefaultTuplesDownloadServiceTest {
     when(reservationCachingServiceMock.getReservationWithRetry(
             resultingReservationId, tupleType, count))
         .thenReturn(reservationMock);
-    when(tupleStoreMock.downloadTuples(
+    doReturn(1)
+        .when(tupleChunkFragmentStorageServiceMock)
+        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
+    doThrow(expectedCause)
+        .when(tupleStoreMock)
+        .downloadTuplesAsBytes(
             tupleType.getTupleCls(),
             tupleType.getField(),
             chunkId,
             0,
-            count * tupleType.getTupleSize()))
-        .thenThrow(expectedCause);
+            count * tupleType.getTupleSize());
 
     CastorServiceException actualCse =
         assertThrows(
@@ -107,24 +111,21 @@ class DefaultTuplesDownloadServiceTest {
             .setStatus(ActivationStatus.UNLOCKED);
     long expectedTupleDownloadLength = tupleType.getTupleSize() * count;
     byte[] tupleData = RandomUtils.nextBytes((int) expectedTupleDownloadLength);
-    TupleList expectedTupleList =
-        TupleList.fromStream(
-            tupleType.getTupleCls(),
-            tupleType.getField(),
-            new ByteArrayInputStream(tupleData),
-            tupleData.length);
+
+    InputStream expectedTupleData = new ByteArrayInputStream(tupleData);
 
     when(castorServicePropertiesMock.isMaster()).thenReturn(true);
     when(reservationCachingServiceMock.createReservation(resultingReservationId, tupleType, count))
         .thenReturn(availableReservation);
-    when(tupleStoreMock.downloadTuples(
-            tupleType.getTupleCls(), tupleType.getField(), chunkId, 0, expectedTupleDownloadLength))
-        .thenReturn(expectedTupleList);
+    doReturn(expectedTupleData)
+        .when(tupleStoreMock)
+        .downloadTuplesAsBytes(
+            tupleType.getTupleCls(), tupleType.getField(), chunkId, 0, expectedTupleDownloadLength);
 
-    assertEquals(
-        expectedTupleList,
+    byte[] actualTupleData =
         tuplesDownloadService.getTupleList(
-            tupleType.getTupleCls(), tupleType.getField(), count, requestId));
+            tupleType.getTupleCls(), tupleType.getField(), count, requestId);
+    assertArrayEquals(tupleData, actualTupleData);
 
     verify(tupleStoreMock).deleteTupleChunk(chunkId);
     verify(reservationCachingServiceMock).forgetReservation(resultingReservationId);

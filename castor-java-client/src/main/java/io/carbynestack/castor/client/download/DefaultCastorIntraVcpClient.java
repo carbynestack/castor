@@ -20,6 +20,10 @@ import io.carbynestack.httpclient.CsHttpClient;
 import io.carbynestack.httpclient.CsHttpClientException;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 import lombok.Value;
@@ -91,12 +95,17 @@ public class DefaultCastorIntraVcpClient implements CastorIntraVcpClient {
   @Override
   public TupleList downloadTupleShares(UUID requestId, TupleType tupleType, long count) {
     try {
-      return csHttpClient
-          .getForEntity(
-              serviceUri.getIntraVcpRequestTuplesUri(requestId, tupleType, count),
-              getHeaders(serviceUri),
-              TupleList.class)
-          .get();
+      byte[] shares = csHttpClient
+              .getForEntity(
+                      serviceUri.getIntraVcpRequestTuplesUri(requestId, tupleType, count),
+                      getHeaders(serviceUri),
+                      byte[].class)
+              .get();
+      long length = tupleType.getTupleSize() * count;
+      return TupleList.fromStream(tupleType.getTupleCls(),
+              tupleType.getField(),
+              new ByteArrayInputStream(shares),
+              length);
     } catch (CsHttpClientException chce) {
       throw new CastorClientException(
           String.format(
@@ -104,6 +113,8 @@ public class DefaultCastorIntraVcpClient implements CastorIntraVcpClient {
               serviceUri.getRestServiceUri(),
               chce.getMessage()),
           chce);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
     }
   }
 

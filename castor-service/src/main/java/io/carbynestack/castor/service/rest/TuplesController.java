@@ -37,7 +37,7 @@ public class TuplesController {
    *     same tuples.
    */
   @GetMapping
-  public ResponseEntity<TupleList> getTuples(
+  public ResponseEntity<byte[]> getTuples(
       @RequestParam(value = DOWNLOAD_TUPLE_TYPE_PARAMETER) String type,
       @RequestParam(value = DOWNLOAD_COUNT_PARAMETER) long count,
       @RequestParam(value = DOWNLOAD_REQUEST_ID_PARAMETER) UUID requestId) {

@@ -27,7 +27,8 @@ public class ReservationRestController {
   private final ReservationCachingService reservationCachingService;
 
   @PostMapping
-  public ResponseEntity<String> reserveTuples(@RequestBody Reservation reservation) {
+  public ResponseEntity<String> reserveTuples(@RequestBody Reservation reservation)
+      throws InterruptedException {
     reservation.setStatus(ActivationStatus.LOCKED);
     reservationCachingService.keepAndApplyReservation(reservation);
     return new ResponseEntity<>(HttpStatus.CREATED);

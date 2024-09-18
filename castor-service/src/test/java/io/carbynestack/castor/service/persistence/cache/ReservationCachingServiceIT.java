@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -11,8 +11,7 @@ import static io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.*;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
 import com.google.common.collect.Lists;
@@ -23,6 +22,7 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.download.DedicatedTransactionService;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
@@ -32,14 +32,14 @@ import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
 import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
@@ -82,7 +82,7 @@ public class ReservationCachingServiceIT {
 
   @Autowired private TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
 
-  @Autowired private TupleChunkFragmentRepository tupleChunkFragmentRepository;
+  @Autowired @SpyBean private TupleChunkFragmentRepository tupleChunkFragmentRepository;
 
   @Autowired private CastorSlaveServiceProperties castorSlaveServiceProperties;
 
@@ -90,9 +90,12 @@ public class ReservationCachingServiceIT {
 
   @Autowired private ApplicationContext applicationContext;
 
+  @Autowired private CastorServiceProperties castorServiceProperties;
+
   private ReservationCachingService reservationCachingService;
   private Cache reservationCache;
   private CastorInterVcpClient interVcpClientSpy;
+  private TupleChunkFragmentRepository fragmentRepositorySpy;
 
   private final UUID testRequestId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
   private final UUID testChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
@@ -120,6 +123,7 @@ public class ReservationCachingServiceIT {
             redisTemplate,
             tupleChunkFragmentStorageService,
             castorSlaveServiceProperties,
+            castorServiceProperties,
             Optional.of(interVcpClientSpy),
             Optional.of(dedicatedTransactionService));
     testEnvironment.clearAllData();
@@ -146,7 +150,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
-  void givenSharingReservationFails_whenCreateReservation_thenRollbackFragmentation() {
+  void givenSharingReservationFails_whenCreateReservation_thenKeepFragmentation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;
     long requestedNoTuples = 12;
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
@@ -156,7 +160,7 @@ public class ReservationCachingServiceIT {
     long fragmentLength = 2 * requestedNoTuples;
     TupleChunkFragmentEntity existingFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, requestedTupleType, fragmentStartIndex, fragmentLength, UNLOCKED, null);
+            chunkId, requestedTupleType, fragmentStartIndex, fragmentLength, UNLOCKED, null, false);
     String expectedReservationId = requestId + "_" + requestedTupleType;
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, requestedNoTuples, fragmentStartIndex);
@@ -165,6 +169,20 @@ public class ReservationCachingServiceIT {
             expectedReservationId, requestedTupleType, singletonList(expectedReservationElement));
     CastorServiceException expectedException =
         new CastorServiceException("sharing Reservation failed");
+
+    TupleChunkFragmentEntity resultingReservedFragment =
+        TupleChunkFragmentEntity.of(
+            chunkId,
+            requestedTupleType,
+            fragmentStartIndex,
+            requestedNoTuples,
+            UNLOCKED,
+            resultingReservationId,
+            false);
+
+    TupleChunkFragmentEntity resultingUnreservedFragment =
+        TupleChunkFragmentEntity.of(
+            chunkId, requestedTupleType, requestedNoTuples, fragmentLength, UNLOCKED, null, false);
 
     tupleChunkFragmentRepository.save(existingFragment);
 
@@ -178,8 +196,29 @@ public class ReservationCachingServiceIT {
                     resultingReservationId, testTupleType, requestedNoTuples));
 
     assertEquals(expectedException, actualCSE);
-
-    assertEquals(singletonList(existingFragment), tupleChunkFragmentRepository.findAll());
+    AtomicLong firstId = new AtomicLong();
+    tupleChunkFragmentRepository
+        .findAll()
+        .forEach(
+            x -> {
+              if (x != null
+                  && x.getReservationId() != null
+                  && resultingReservationId.equals(x.getReservationId())) {
+                if (x.getId() != firstId.get()) {
+                  firstId.set(x.getId());
+                  assertEquals(resultingReservedFragment.getReservationId(), x.getReservationId());
+                  assertEquals(resultingReservedFragment.getStartIndex(), x.getStartIndex());
+                  assertEquals(resultingReservedFragment.getEndIndex(), x.getEndIndex());
+                } else if (x.getId() == firstId.get() + 1) {
+                  assertEquals(
+                      resultingUnreservedFragment.getReservationId(), x.getReservationId());
+                  assertEquals(resultingUnreservedFragment.getStartIndex(), x.getStartIndex());
+                  assertEquals(resultingUnreservedFragment.getEndIndex(), x.getEndIndex());
+                } else {
+                  fail();
+                }
+              }
+            });
   }
 
   @Test
@@ -193,6 +232,7 @@ public class ReservationCachingServiceIT {
   }
 
   @Test
+  @SneakyThrows
   void whenReferencedSequenceIsSplitInFragments_whenApplyReservation_thenApplyAccordingly() {
     UUID tupleChunkId = UUID.fromString("3fd7eaf7-cda3-4384-8d86-2c43450cbe63");
     long requestedStartIndex = 42;
@@ -205,7 +245,7 @@ public class ReservationCachingServiceIT {
 
     TupleChunkFragmentEntity fragmentBefore =
         TupleChunkFragmentEntity.of(
-            tupleChunkId, tupleType, 0, requestedStartIndex, UNLOCKED, null);
+            tupleChunkId, tupleType, 0, requestedStartIndex, UNLOCKED, null, false);
     TupleChunkFragmentEntity fragmentPart1 =
         TupleChunkFragmentEntity.of(
             tupleChunkId,
@@ -213,7 +253,8 @@ public class ReservationCachingServiceIT {
             requestedStartIndex,
             requestedStartIndex + requestedLength - 5,
             UNLOCKED,
-            null);
+            null,
+            false);
     TupleChunkFragmentEntity fragmentContainingRest =
         TupleChunkFragmentEntity.of(
             tupleChunkId,
@@ -221,7 +262,8 @@ public class ReservationCachingServiceIT {
             requestedStartIndex + requestedLength - 5,
             Long.MAX_VALUE,
             UNLOCKED,
-            null);
+            null,
+            false);
 
     fragmentBefore = fragmentRepository.save(fragmentBefore);
     fragmentPart1 = fragmentRepository.save(fragmentPart1);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -19,12 +19,11 @@ import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.ReservationElement;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import java.util.Optional;
 import java.util.UUID;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +36,8 @@ class CreateReservationSupplierTest {
   @Mock private ReservationCachingService reservationCachingServiceMock;
   @Mock private TupleChunkFragmentStorageService tupleChunkFragmentStorageServiceMock;
 
+  @Mock private CastorServiceProperties castorServicePropertiesMock;
+
   private final TupleType tupleType = INPUT_MASK_GFP;
   private final String reservationId = "80fbba1b-3da8-4b1e-8a2c-cebd65229fad" + tupleType;
   private final long count = 42;
@@ -45,59 +46,43 @@ class CreateReservationSupplierTest {
 
   @BeforeEach
   public void setUp() {
+    lenient().doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     createReservationSupplier =
         new CreateReservationSupplier(
-            castorInterVcpClientMock,
-            reservationCachingServiceMock,
             tupleChunkFragmentStorageServiceMock,
             reservationId,
             tupleType,
+            castorServicePropertiesMock,
             count);
   }
 
   @Test
   void givenInsufficientTuples_whenGet_thenThrowCastorServiceException() {
-    when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count - 1);
-
+    // when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count -
+    // 1);
+    doReturn(Optional.empty())
+        .when(tupleChunkFragmentStorageServiceMock)
+        .retrieveSinglePartialFragment(isA(TupleType.class), isA(boolean.class));
+    doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
 
-    assertEquals(
-        String.format(INSUFFICIENT_TUPLES_EXCEPTION_MSG, tupleType, count - 1, count),
-        actualCse.getMessage());
+    assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getMessage());
   }
 
   @Test
   void givenProvidedChunksDoNotHaveEnoughTuplesAvailable_whenGet_thenThrowCastorServiceException() {
-    when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
-    when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentWithTupleType(tupleType))
+    doReturn(Optional.empty())
+        .when(tupleChunkFragmentStorageServiceMock)
+        .retrieveSinglePartialFragment(tupleType, true);
+    doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
+    when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType, true))
         .thenReturn(Optional.empty());
 
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
 
-    assertEquals(FAILED_RESERVE_TUPLES_EXCEPTION_MSG, actualCse.getMessage());
-    MatcherAssert.assertThat(
-        actualCse.getCause(), CoreMatchers.instanceOf(CastorServiceException.class));
-    assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getCause().getMessage());
-  }
-
-  @Test
-  void givenSharingReservationFails_whenGet_thenThrowCastorServiceException() {
-    UUID chunkId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
-    long startIndex = 0;
-    TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(chunkId, tupleType, startIndex, count);
-
-    when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
-    when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentWithTupleType(tupleType))
-        .thenReturn(Optional.of(fragmentEntity));
-
-    CastorServiceException actualCse =
-        assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
-
-    assertEquals(SHARING_RESERVATION_FAILED_EXCEPTION_MSG, actualCse.getMessage());
-    verify(tupleChunkFragmentStorageServiceMock, times(1)).update(fragmentEntity);
+    assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getMessage());
   }
 
   @Test
@@ -111,17 +96,16 @@ class CreateReservationSupplierTest {
     Reservation expectedReservation =
         new Reservation(reservationId, tupleType, singletonList(expectedReservationElement));
 
-    when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
-    when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentWithTupleType(tupleType))
-        .thenReturn(Optional.of(fragmentEntity));
+    doReturn(Optional.of(fragmentEntity))
+        .when(tupleChunkFragmentStorageServiceMock)
+        .retrieveSinglePartialFragment(tupleType, true);
     when(tupleChunkFragmentStorageServiceMock.splitAt(fragmentEntity, count))
         .thenReturn(fragmentEntity);
-    when(castorInterVcpClientMock.shareReservation(expectedReservation)).thenReturn(true);
 
     assertEquals(expectedReservation, createReservationSupplier.get());
 
     verify(tupleChunkFragmentStorageServiceMock, times(1)).splitAt(fragmentEntity, count);
     verify(tupleChunkFragmentStorageServiceMock, times(1)).update(fragmentEntity);
-    verify(castorInterVcpClientMock, times(1)).shareReservation(expectedReservation);
+    // verify(castorInterVcpClientMock, times(1)).shareReservation(expectedReservation);
   }
 }

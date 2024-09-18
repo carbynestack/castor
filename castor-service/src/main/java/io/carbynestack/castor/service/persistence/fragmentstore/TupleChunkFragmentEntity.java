@@ -62,6 +62,11 @@ public class TupleChunkFragmentEntity implements Serializable {
   static final String FRAGMENT_LENGTH_COLUMN = "fragment_length";
   static final String ACTIVATION_STATUS_COLUMN = "activation_status";
   static final String RESERVATION_ID_COLUMN = "reservation_id";
+  static final String VIEW_NAME = "distributed_fragments";
+  static final String POD_HASH_FIELD = "pod_hash";
+  static final String POD_HASH = System.getenv("HOSTNAME");
+  static final String TUPLECHUNK_STARTINDEX_INDEX_NAME = "chunk_startidx_idx";
+  static final String IS_ROUND_COLUMN = "is_round";
 
   @Transient public static final String STATUS_COLUMN = "status";
 
@@ -118,6 +123,10 @@ public class TupleChunkFragmentEntity implements Serializable {
   @Column(name = RESERVATION_ID_COLUMN)
   private String reservationId;
 
+  @Setter
+  @Column(name = IS_ROUND_COLUMN, columnDefinition = "BOOLEAN DEFAULT true")
+  private boolean isRound;
+
   /** To be used by deserialization only */
   protected TupleChunkFragmentEntity() {
     this.tupleChunkId = null;
@@ -132,13 +141,15 @@ public class TupleChunkFragmentEntity implements Serializable {
       long startIndex,
       long endIndex,
       ActivationStatus activationStatus,
-      String reservationId) {
+      String reservationId,
+      boolean isRound) {
     this.tupleChunkId = tupleChunkId;
     this.tupleType = tupleType;
     this.startIndex = startIndex;
     this.endIndex = endIndex;
     this.activationStatus = activationStatus;
     this.reservationId = reservationId;
+    this.isRound = isRound;
   }
 
   /**
@@ -173,7 +184,7 @@ public class TupleChunkFragmentEntity implements Serializable {
    */
   public static TupleChunkFragmentEntity of(
       UUID tupleChunkId, TupleType tupleType, long startIndex, long endIndex) {
-    return of(tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null);
+    return of(tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, true);
   }
 
   /**
@@ -192,6 +203,7 @@ public class TupleChunkFragmentEntity implements Serializable {
    *     consumption ({@link ActivationStatus#UNLOCKED}) or not ({@link ActivationStatus#LOCKED}).
    * @param reservationId The unique reservation identifier for the operation the new {@link
    *     TupleChunkFragmentEntity} is assigned to. Setting to <code>null</code> indi
+   * @param isRound
    * @return a new {@link TupleChunkFragmentEntity} created with the given configuration
    */
   public static TupleChunkFragmentEntity of(
@@ -200,16 +212,19 @@ public class TupleChunkFragmentEntity implements Serializable {
       long startIndex,
       long endIndex,
       ActivationStatus activationStatus,
-      String reservationId) {
+      String reservationId,
+      boolean isRound) {
     Assert.notNull(tupleChunkId, ID_MUST_NOT_BE_NULL_EXCEPTION_MSG);
     Assert.notNull(tupleType, TUPLE_TYPE_MUST_NOT_BE_NULL_EXCEPTION_MSG);
     verifyStartIndex(startIndex);
     verifyEndIndex(startIndex, endIndex);
     return new TupleChunkFragmentEntity(
-        tupleChunkId, tupleType, startIndex, endIndex, activationStatus, reservationId);
+        tupleChunkId, tupleType, startIndex, endIndex, activationStatus, reservationId, isRound);
   }
 
-  /** @throws IllegalArgumentException if startIndex < 0. */
+  /**
+   * @throws IllegalArgumentException if startIndex < 0.
+   */
   private static void verifyStartIndex(long startIndex) {
     if (startIndex < 0) {
       throw new IllegalArgumentException(
@@ -217,7 +232,9 @@ public class TupleChunkFragmentEntity implements Serializable {
     }
   }
 
-  /** @throws IllegalArgumentException if endIndex < startIndex. */
+  /**
+   * @throws IllegalArgumentException if endIndex < startIndex.
+   */
   private static void verifyEndIndex(long startIndex, long endIndex) {
     if (endIndex < startIndex) {
       throw new IllegalArgumentException(

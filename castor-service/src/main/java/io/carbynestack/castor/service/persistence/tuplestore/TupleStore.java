@@ -12,6 +12,8 @@ import io.carbynestack.castor.common.entities.Tuple;
 import io.carbynestack.castor.common.entities.TupleChunk;
 import io.carbynestack.castor.common.entities.TupleList;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+
+import java.io.InputStream;
 import java.util.UUID;
 
 public interface TupleStore {
@@ -42,6 +44,22 @@ public interface TupleStore {
    */
   <T extends Tuple<T, F>, F extends Field> TupleList<T, F> downloadTuples(
       Class<T> tupleCls, F fieldType, UUID tupleChunkId, long startIndex, long lengthToRead);
+
+  /**
+   * Downloads Tuples of Type T and Field F from a chunk in the store and returns them as a byte Array.
+   *
+   * @param tupleCls     Class of tuples that sould be downloaded
+   * @param fieldType    The filedType of the requested tuples
+   * @param tupleChunkId Identifies, from which chunk to download
+   * @param startIndex   the index of the first byte to read (inclusive)
+   * @param lengthToRead the number of bytes to read from the referenced chunk
+   * @return all multiplication triples in the specified range
+   * @throws CastorServiceException   if some error occurs while reading data stream from store
+   * @throws IllegalArgumentException if given index of first requested tuple is negative.
+   * @throws IllegalArgumentException if less than one tuple is requested.
+   */
+  <T extends Tuple<T, F>, F extends Field> InputStream downloadTuplesAsBytes(
+          Class<T> tupleCls, F fieldType, UUID tupleChunkId, long startIndex, long lengthToRead);
 
   /**
    * Deletes an object from the store

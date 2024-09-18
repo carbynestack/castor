@@ -13,6 +13,8 @@ import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
 import java.util.function.Supplier;
+
+import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

@@ -39,7 +39,7 @@ public class WaitForReservationCallable implements Callable<Reservation>, Cancel
     while (!this.stop || Thread.currentThread().isInterrupted()) {
       try {
         Reservation reservation =
-            reservationCachingService.getUnlockedReservation(
+            reservationCachingService.retrieveReservation(
                 this.reservationId, tupleType, numberOfTuples);
         if (reservation != null) {
           return reservation;

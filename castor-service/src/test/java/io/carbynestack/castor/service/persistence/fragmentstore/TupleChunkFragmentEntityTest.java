@@ -96,7 +96,7 @@ class TupleChunkFragmentEntityTest {
 
     TupleChunkFragmentEntity fragment =
         TupleChunkFragmentEntity.of(
-            chunkId, tupleType, startIndex, endIndex, activationStatus, reservationId);
+            chunkId, tupleType, startIndex, endIndex, activationStatus, reservationId, true);
 
     assertEquals(chunkId, fragment.getTupleChunkId());
     assertEquals(tupleType, fragment.getTupleType());

@@ -8,6 +8,7 @@ package io.carbynestack.castor.service.websocket;
 
 import static io.carbynestack.castor.common.rest.CastorRestApiEndpoints.UPLOAD_TUPLES_ENDPOINT;
 
+import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.TupleChunk;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
@@ -45,8 +46,6 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
   private final TupleChunkFragmentStorageService fragmentStorageService;
   private final CastorServiceProperties castorServiceProperties;
 
-  @Override
-  @MessageMapping(UPLOAD_TUPLES_ENDPOINT)
   /**
    * @throws CastorClientException if the given payload cannot be cast deserialized as {@link
    *     TupleChunk}
@@ -54,6 +53,8 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
    * @throws CastorServiceException if writing the received {@link TupleChunk} to the database
    *     failed
    */
+  @Override
+  @MessageMapping(UPLOAD_TUPLES_ENDPOINT)
   public void uploadTupleChunk(SimpMessageHeaderAccessor headerAccessor, byte[] payload) {
     log.debug("Received payload...");
     TupleChunk tupleChunk;
@@ -95,18 +96,29 @@ public class DefaultCastorWebSocketService implements CastorWebSocketService {
    */
   protected List<TupleChunkFragmentEntity> generateFragmentsForChunk(TupleChunk tupleChunk) {
     List<TupleChunkFragmentEntity> fragments = new ArrayList<>();
-    for (long i = 0;
-        i * castorServiceProperties.getInitialFragmentSize() < tupleChunk.getNumberOfTuples();
+    if (tupleChunk.getNumberOfTuples() <= 0) return fragments;
+    long i = 0;
+    for (;
+        i * castorServiceProperties.getInitialFragmentSize()
+            < tupleChunk.getNumberOfTuples() - castorServiceProperties.getInitialFragmentSize();
         i++) {
       fragments.add(
           TupleChunkFragmentEntity.of(
               tupleChunk.getChunkId(),
               tupleChunk.getTupleType(),
               i * castorServiceProperties.getInitialFragmentSize(),
-              Math.min(
-                  (i + 1) * castorServiceProperties.getInitialFragmentSize(),
-                  tupleChunk.getNumberOfTuples())));
+              (i + 1) * castorServiceProperties.getInitialFragmentSize()));
     }
+    fragments.add(
+        TupleChunkFragmentEntity.of(
+            tupleChunk.getChunkId(),
+            tupleChunk.getTupleType(),
+            i * castorServiceProperties.getInitialFragmentSize(),
+            tupleChunk.getNumberOfTuples(),
+            ActivationStatus.LOCKED,
+            null,
+            tupleChunk.getNumberOfTuples() % castorServiceProperties.getInitialFragmentSize()
+                == 0));
     return fragments;
   }
 

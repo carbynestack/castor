@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -11,6 +11,7 @@ import static io.carbynestack.castor.service.persistence.fragmentstore.TupleChun
 
 import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.TupleType;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.LockModeType;
@@ -42,9 +43,6 @@ public interface TupleChunkFragmentRepository
               + TUPLE_CHUNK_ID_FIELD
               + "=:tupleChunkId "
               + "AND "
-              + ACTIVATION_STATUS_FIELD
-              + "='UNLOCKED' "
-              + "AND "
               + RESERVATION_ID_FIELD
               + " IS NULL "
               + "AND "
@@ -53,6 +51,9 @@ public interface TupleChunkFragmentRepository
               + "AND "
               + END_INDEX_FIELD
               + ">:startIndex"
+              + " AND "
+              + ACTIVATION_STATUS_FIELD
+              + "='UNLOCKED' "
               + " ORDER BY "
               + START_INDEX_FIELD
               + " DESC")
@@ -90,15 +91,13 @@ public interface TupleChunkFragmentRepository
               + " FROM "
               + CLASS_NAME
               + " WHERE "
-              + ACTIVATION_STATUS_FIELD
-              + "=io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED "
-              + "AND "
               + RESERVATION_ID_FIELD
-              + " IS NULL "
-              + "AND "
+              + " IS NULL AND "
+              + ACTIVATION_STATUS_FIELD
+              + "=io.carbynestack.castor.common.entities.ActivationStatus.UNLOCKED AND "
               + TUPLE_TYPE_FIELD
               + "=:tupleType")
-  long getAvailableTupleByType(@Param("tupleType") TupleType type);
+  long getAvailableTuplesByType(@Param("tupleType") TupleType type);
 
   @Transactional
   @Modifying
@@ -113,6 +112,155 @@ public interface TupleChunkFragmentRepository
               + " = :tupleChunkId",
       nativeQuery = true)
   int unlockAllForTupleChunk(@Param("tupleChunkId") UUID tupleChunkId);
+
+  @Transactional
+  @Query(
+      value =
+          " UPDATE "
+              + TABLE_NAME
+              + " SET "
+              + RESERVATION_ID_COLUMN
+              + " = :reservationId"
+              + " WHERE "
+              + FRAGMENT_ID_COLUMN
+              + " IN (SELECT "
+              + FRAGMENT_ID_COLUMN
+              + " FROM "
+              + TABLE_NAME
+              + " WHERE "
+              + TUPLE_TYPE_COLUMN
+              + " = :tupleType AND "
+              + RESERVATION_ID_COLUMN
+              + " is NULL AND "
+              + ACTIVATION_STATUS_COLUMN
+              + " = 'UNLOCKED' AND "
+              + IS_ROUND_COLUMN
+              + " FOR UPDATE SKIP LOCKED LIMIT :amount) RETURNING *",
+      nativeQuery = true)
+  ArrayList<TupleChunkFragmentEntity> retrieveAndReserveRoundFragmentsByType(
+      @Param("tupleType") String tupleType,
+      @Param("amount") int amount,
+      @Param("reservationId") String reservationId);
+
+  @Transactional
+  @Modifying
+  @Query(
+      value =
+          "UPDATE "
+              + TABLE_NAME
+              + " SET "
+              + RESERVATION_ID_COLUMN
+              + " = :reservationId WHERE "
+              + START_INDEX_COLUMN
+              + " IN :indices AND "
+              + IS_ROUND_COLUMN
+              + " AND "
+              + RESERVATION_ID_COLUMN
+              + " is NULL AND "
+              + ACTIVATION_STATUS_COLUMN
+              + " = 'UNLOCKED' AND "
+              + TUPLE_CHUNK_ID_COLUMN
+              + " = :tupleChunkId",
+      nativeQuery = true)
+  int reserveRoundFragmentsByIndices(
+      @Param("indices") ArrayList<Long> indices,
+      @Param("reservationId") String reservationId,
+      @Param("tupleChunkId") UUID tupleChunkId);
+
+  @Transactional
+  @Query(
+      value =
+          "SELECT * FROM "
+              + TABLE_NAME
+              + " WHERE "
+              + TUPLE_TYPE_COLUMN
+              + " = :tupleType AND "
+              + ACTIVATION_STATUS_COLUMN
+              + " = 'UNLOCKED' AND "
+              + RESERVATION_ID_COLUMN
+              + " is NULL ORDER BY "
+              + IS_ROUND_COLUMN
+              + ", "
+              + START_INDEX_COLUMN
+              + " - "
+              + END_INDEX_COLUMN
+              + " ASC FOR UPDATE SKIP LOCKED LIMIT 1",
+      nativeQuery = true)
+  Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragmentPreferSmall(
+      @Param("tupleType") String tupleType);
+
+  @Transactional
+  @Query(
+      value =
+          "SELECT * FROM "
+              + TABLE_NAME
+              + " WHERE "
+              + TUPLE_TYPE_COLUMN
+              + " = :tupleType AND "
+              + ACTIVATION_STATUS_COLUMN
+              + " = 'UNLOCKED' AND "
+              + RESERVATION_ID_COLUMN
+              + " is NULL ORDER BY "
+              + IS_ROUND_COLUMN
+              + ", "
+              + START_INDEX_COLUMN
+              + " - "
+              + END_INDEX_COLUMN
+              + " DESC FOR UPDATE SKIP LOCKED LIMIT 1",
+      nativeQuery = true)
+  Optional<TupleChunkFragmentEntity> retrieveSinglePartialFragmentPreferBig(
+      @Param("tupleType") String tupleType);
+
+  @Transactional
+  @Query(
+      value =
+          " UPDATE "
+              + TABLE_NAME
+              + " SET "
+              + RESERVATION_ID_COLUMN
+              + " = :reservationId"
+              + " WHERE "
+              + FRAGMENT_ID_COLUMN
+              + " IN (SELECT "
+              + FRAGMENT_ID_COLUMN
+              + " FROM "
+              + TABLE_NAME
+              + " WHERE "
+              + TUPLE_TYPE_COLUMN
+              + " = :tupleType AND "
+              + IS_ROUND_COLUMN
+              + " AND "
+              + RESERVATION_ID_COLUMN
+              + " is NULL FOR UPDATE SKIP LOCKED LIMIT :amount) RETURNING *",
+      nativeQuery = true)
+  ArrayList<TupleChunkFragmentEntity> test(
+      @Param("tupleType") String tupleType,
+      @Param("amount") int amount,
+      @Param("reservationId") String reservationId);
+
+  @Transactional
+  @Query(
+      value =
+          "DELETE FROM "
+              + TABLE_NAME
+              + " WHERE "
+              + TUPLE_CHUNK_ID_COLUMN
+              + " = :tupleChunkId AND "
+              + START_INDEX_COLUMN
+              + " <= :startIdx AND "
+              + END_INDEX_COLUMN
+              + " > :startIdx RETURNING "
+              + RESERVATION_ID_COLUMN,
+      nativeQuery = true)
+  String lockFirstFragmentReturningReservationId(
+      @Param("tupleChunkId") UUID tupleChunkId, @Param("startIdx") long startIdx);
+
+  @Transactional
+  @Modifying
+  @Query(
+      value = "DELETE FROM " + TABLE_NAME + " WHERE " + RESERVATION_ID_COLUMN + " = :reservationId",
+      nativeQuery = true)
+  int lockRemainingTuplesWithoutRetrieving(@Param("reservationId") String reservationId);
 
   @Transactional
   void deleteAllByReservationId(String reservationId);

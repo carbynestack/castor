@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -20,12 +20,13 @@ import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.download.DedicatedTransactionService;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.cache.CacheKeyPrefix;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -52,6 +53,12 @@ public class ReservationCachingService {
   public static final String FAILED_CREATE_RESERVATION_EXCEPTION_MSG =
       "Creating the reservation failed.";
 
+  public static final String FAILED_LOCKING_RESERVATION_EXCEPTION_FORMAT =
+      "Acquiring an exclusive lock on reservation %s failed.";
+
+  public static final String SHARING_RESERVATION_FAILED_EXCEPTION_MSG =
+      "Sharing reservation with slave services failed.";
+
   private final ConsumptionCachingService consumptionCachingService;
   private final RedisTemplate<String, Object> redisTemplate;
   private final TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
@@ -59,6 +66,7 @@ public class ReservationCachingService {
   private final CastorSlaveServiceProperties slaveServiceProperties;
   private final Optional<CastorInterVcpClient> castorInterVcpClientOptional;
   private final Optional<DedicatedTransactionService> dedicatedTransactionServiceOptional;
+  private final CastorServiceProperties castorServiceProperties;
 
   protected ExecutorService executorService = Executors.newCachedThreadPool();
 
@@ -69,6 +77,7 @@ public class ReservationCachingService {
       RedisTemplate<String, Object> redisTemplate,
       TupleChunkFragmentStorageService tupleChunkFragmentStorageService,
       CastorSlaveServiceProperties slaveServiceProperties,
+      CastorServiceProperties castorServiceProperties,
       Optional<CastorInterVcpClient> castorInterVcpClientOptional,
       Optional<DedicatedTransactionService> dedicatedTransactionServiceOptional) {
     this.consumptionCachingService = consumptionCachingService;
@@ -78,6 +87,7 @@ public class ReservationCachingService {
     this.slaveServiceProperties = slaveServiceProperties;
     this.castorInterVcpClientOptional = castorInterVcpClientOptional;
     this.dedicatedTransactionServiceOptional = dedicatedTransactionServiceOptional;
+    this.castorServiceProperties = castorServiceProperties;
   }
 
   /**
@@ -117,26 +127,62 @@ public class ReservationCachingService {
    * @throws CastorServiceException if the tuples could not be reserved as requested.
    * @throws CastorServiceException if the cache already holds a reservation with the given ID
    */
-  public void keepAndApplyReservation(Reservation reservation) {
+  @Transactional
+  public void keepAndApplyReservation(Reservation reservation) throws InterruptedException {
     log.debug("persisting reservation {}", reservation);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
     if (ops.get(cachePrefix + reservation.getReservationId()) == null) {
-      ops.set(cachePrefix + reservation.getReservationId(), reservation);
-      log.debug("put in database at {}", cachePrefix + reservation.getReservationId());
       log.debug("Apply reservation {}", reservation);
-      for (ReservationElement re : reservation.getReservations()) {
-        log.debug("Processing reservation element {}", re);
-        long startIndex = re.getStartIndex();
-        long endIndex = startIndex + re.getReservedTuples();
-        while (startIndex < endIndex) {
-          TupleChunkFragmentEntity fragment =
-              tupleChunkFragmentStorageService
-                  .findAvailableFragmentForChunkContainingIndex(re.getTupleChunkId(), startIndex)
-                  .orElseThrow(
-                      () ->
-                          new CastorServiceException(
-                              String.format(
-                                  RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation)));
+      storeReservationInDB(reservation);
+      ops.set(cachePrefix + reservation.getReservationId(), reservation);
+      applyConsumption(reservation);
+      log.debug("consumption emitted");
+    } else {
+      System.err.println("reservation conflict");
+      throw new CastorServiceException(
+          String.format(RESERVATION_CONFLICT_EXCEPTION_MSG, reservation.getReservationId()));
+    }
+  }
+
+  /**
+   * Maps the reservation elements to tuplefragments and saves them accordingly in batches to the
+   * RDBMS. This function assumes that all 'non-round' fragments are saved before 'round' fragments
+   * for faster processing.
+   *
+   * @param reservation The reserved fragments
+   * @throws InterruptedException : If the fragments can not be reserved
+   */
+  @Transactional()
+  public void storeReservationInDB(@NotNull Reservation reservation) throws InterruptedException {
+    int firstRoundFragment = 0;
+    for (ReservationElement re : reservation.getReservations()) {
+      if (re.getReservedTuples() == castorServiceProperties.getInitialFragmentSize()) break;
+      firstRoundFragment++;
+      log.debug("Processing fragmented reservation element {}", re);
+      long startIndex = re.getStartIndex();
+      long endIndex = startIndex + re.getReservedTuples();
+      while (startIndex < endIndex) {
+        try {
+
+          TupleChunkFragmentEntity fragment = null;
+          // the timeout functionality is needed because the fragments might not be unlocked at that
+          // point in time
+          int singleRetryMicrosecs = 6000;
+          while (fragment == null) {
+            fragment =
+                tupleChunkFragmentStorageService
+                    .findAvailableFragmentForChunkContainingIndex(re.getTupleChunkId(), startIndex)
+                    .orElse(null);
+            if (fragment == null) {
+              singleRetryMicrosecs -= 2000;
+              TimeUnit.MICROSECONDS.sleep(2000);
+              if (singleRetryMicrosecs <= 0) {
+                System.out.println("Tuples not yet activated");
+                throw new CastorServiceException(
+                    String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation));
+              }
+            }
+          }
           if (fragment.getStartIndex() < startIndex) {
             fragment = tupleChunkFragmentStorageService.splitBefore(fragment, startIndex);
           }
@@ -144,15 +190,73 @@ public class ReservationCachingService {
             fragment = tupleChunkFragmentStorageService.splitAt(fragment, endIndex);
           }
           fragment.setReservationId(reservation.getReservationId());
+          fragment.setRound(false);
           tupleChunkFragmentStorageService.update(fragment);
           startIndex = fragment.getEndIndex();
+
+        } catch (Exception e) {
+          System.err.println(
+              "Reservation of single fragment failed; probably locking issue; res:"
+                  + reservation.getReservationId()
+                  + " tchunk:"
+                  + re.getTupleChunkId());
+          throw e;
         }
       }
-      applyConsumption(reservation);
-      log.debug("consumption emitted");
-    } else {
-      throw new CastorServiceException(
-          String.format(RESERVATION_CONFLICT_EXCEPTION_MSG, reservation.getReservationId()));
+    }
+    if (firstRoundFragment < reservation.getReservations().size()) {
+
+      HashMap<UUID, ArrayList<Long>> mappedReservations = new HashMap<>();
+      List<ReservationElement> roundReservationElements =
+          reservation
+              .getReservations()
+              .subList(firstRoundFragment, reservation.getReservations().size());
+      roundReservationElements.forEach(
+          resElem -> {
+            mappedReservations.computeIfAbsent(resElem.getTupleChunkId(), k -> new ArrayList<>());
+            mappedReservations.get(resElem.getTupleChunkId()).add(resElem.getStartIndex());
+          });
+
+      for (UUID tChunkId : mappedReservations.keySet()) {
+        int retryMillisecs = 1500;
+        while (true) {
+          try {
+            int actuallyReservedFragments =
+                tupleChunkFragmentStorageService.reserveRoundFragmentsByIndices(
+                    mappedReservations.get(tChunkId), reservation.getReservationId(), tChunkId);
+            if (actuallyReservedFragments == 0) {
+              retryMillisecs -= 30;
+              if (retryMillisecs <= 0) {
+                System.err.println(
+                    "Reservation returned false result. expected: "
+                        + roundReservationElements.size()
+                        + "; actual: "
+                        + actuallyReservedFragments);
+                throw new CastorServiceException(
+                    String.format(RESERVATION_CANNOT_BE_SATISFIED_EXCEPTION_FORMAT, reservation));
+              }
+              TimeUnit.MILLISECONDS.sleep(30);
+            } else if (actuallyReservedFragments != mappedReservations.get(tChunkId).size()) {
+              System.err.println(
+                  "Fragments locked up in an unexpected way in the fragmentstore; expected:"
+                      + mappedReservations.get(tChunkId)
+                      + "; actual: "
+                      + actuallyReservedFragments
+                      + "; tchunkId: "
+                      + tChunkId.toString());
+              throw new CastorServiceException(
+                  "Reserving fragments failed due to unexpected locks in fragment table.");
+            } else {
+              break;
+            }
+          } catch (Exception e) {
+            System.err.println(
+                "Reserving round fragments failed; probably locking issue; tchunk: "
+                    + tChunkId.toString());
+            throw new CastorServiceException("SHARING FAILED", e.getCause());
+          }
+        }
+      }
     }
   }
 
@@ -211,19 +315,24 @@ public class ReservationCachingService {
               .get()
               .runAsNewTransaction(
                   new CreateReservationSupplier(
-                      castorInterVcpClientOptional.get(),
-                      this,
                       tupleChunkFragmentStorageService,
                       reservationId,
                       tupleType,
+                      castorServiceProperties,
                       count));
       keepReservation(reservation);
-      reservation =
-          dedicatedTransactionServiceOptional
-              .get()
-              .runAsNewTransaction(
-                  new UnlockReservationSupplier(
-                      castorInterVcpClientOptional.get(), this, reservation));
+      if (!castorInterVcpClientOptional.get().shareReservation(reservation)) {
+        throw new CastorServiceException(SHARING_RESERVATION_FAILED_EXCEPTION_MSG);
+      }
+      ReservationElement firstElement = reservation.getReservations().get(0);
+      int retrievedFragmentsReservation =
+          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+              firstElement.getTupleChunkId(), firstElement.getStartIndex(), reservationId);
+      if (retrievedFragmentsReservation != reservation.getReservations().size()) {
+        throw new CastorServiceException(
+            String.format(
+                FAILED_LOCKING_RESERVATION_EXCEPTION_FORMAT, reservation.getReservationId()));
+      }
     } catch (CastorClientException cce) {
       throw new CastorServiceException(FAILED_CREATE_RESERVATION_EXCEPTION_MSG, cce);
     }
@@ -286,6 +395,60 @@ public class ReservationCachingService {
       if (reservation.getStatus() == ActivationStatus.LOCKED) {
         reservation = null;
       } else if (reservation.getTupleType() != tupleType
+          || reservation.getReservations().stream()
+                  .mapToLong(ReservationElement::getReservedTuples)
+                  .sum()
+              != count) {
+        throw new CastorServiceException(
+            String.format(
+                RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,
+                reservationId,
+                tupleType,
+                count,
+                reservation));
+      }
+    }
+    return reservation;
+  }
+
+  @Transactional
+  public Reservation lockAndRetrieveReservation(
+      String reservationId, TupleType tupleType, long count) {
+    ValueOperations<String, Object> ops = redisTemplate.opsForValue();
+    Reservation reservation = (Reservation) ops.get(cachePrefix + reservationId);
+    if (reservation != null) {
+      long expectedLockedFragments =
+          count % castorServiceProperties.getInitialFragmentSize() == 0
+              ? count / castorServiceProperties.getInitialFragmentSize()
+              : count / castorServiceProperties.getInitialFragmentSize() + 1;
+      ReservationElement firstElement = reservation.getReservations().get(0);
+      int lockedFragments =
+          tupleChunkFragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+              firstElement.getTupleChunkId(), firstElement.getStartIndex(), reservationId);
+      if (lockedFragments != expectedLockedFragments) return null;
+      if (reservation.getTupleType() != tupleType
+          || reservation.getReservations().stream()
+                  .mapToLong(ReservationElement::getReservedTuples)
+                  .sum()
+              != count) {
+        throw new CastorServiceException(
+            String.format(
+                RESERVATION_DOES_NOT_MATCH_SPECIFICATION_EXCEPTION_MSG,
+                reservationId,
+                tupleType,
+                count,
+                reservation));
+      }
+    }
+    return reservation;
+  }
+
+  @Transactional
+  public Reservation retrieveReservation(String reservationId, TupleType tupleType, long count) {
+    ValueOperations<String, Object> ops = redisTemplate.opsForValue();
+    Reservation reservation = (Reservation) ops.get(cachePrefix + reservationId);
+    if (reservation != null) {
+      if (reservation.getTupleType() != tupleType
           || reservation.getReservations().stream()
                   .mapToLong(ReservationElement::getReservedTuples)
                   .sum()

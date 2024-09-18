@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -14,9 +14,11 @@ import io.carbynestack.castor.service.config.CastorSlaveServiceProperties;
 import io.carbynestack.castor.service.persistence.cache.ReservationCachingService;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.persistence.tuplestore.TupleStore;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,7 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     this.fragmentStorageService = fragmentStorageService;
     this.reservationCachingService = reservationCachingService;
     this.castorServiceProperties = castorServiceProperties;
+    // this.fragmentStorageService.setUserLevelLockTimeout(3000);
   }
 
   /**
@@ -57,14 +60,14 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
    */
   @Transactional
   @Override
-  public <T extends Tuple<T, F>, F extends Field> TupleList<T, F> getTupleList(
+  public <T extends Tuple<T, F>, F extends Field> byte[] getTupleList(
       Class<T> tupleCls, F field, long count, UUID requestId) {
     TupleType tupleType = TupleType.findTupleType(tupleCls, field);
     String reservationId = requestId + "_" + tupleType;
     Reservation reservation;
     if (castorServiceProperties.isMaster()) {
       reservation =
-          reservationCachingService.getUnlockedReservation(reservationId, tupleType, count);
+          reservationCachingService.lockAndRetrieveReservation(reservationId, tupleType, count);
       if (reservation == null) {
         reservation = reservationCachingService.createReservation(reservationId, tupleType, count);
         log.debug("Reservation successfully activated on all slaves.");
@@ -72,42 +75,63 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
     } else {
       reservation =
           reservationCachingService.getReservationWithRetry(reservationId, tupleType, count);
+      ReservationElement firstElement = reservation.getReservations().get(0);
+      int reservedFragments =
+          fragmentStorageService.lockReservedFragmentsWithoutRetrieving(
+              firstElement.getTupleChunkId(), firstElement.getStartIndex(), reservationId);
+      if (reservedFragments < reservation.getReservations().size()) {
+        System.err.println(
+            "Expected: " + reservation.getReservations().size() + " actual: " + reservedFragments);
+        throw new CastorServiceException(FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG);
+      }
     }
-    TupleList<T, F> result = consumeReservation(tupleCls, field, reservation);
+    byte[] result = consumeReservation(tupleCls, field, reservation);
     deleteReservedFragments(reservation);
     reservationCachingService.forgetReservation(reservationId);
     return result;
   }
 
-  /** @throws CastorServiceException if tuples cannot be retrieved from database */
-  private <T extends Tuple<T, F>, F extends Field> TupleList<T, F> consumeReservation(
+  /**
+   * @throws CastorServiceException if tuples cannot be retrieved from database
+   */
+  private <T extends Tuple<T, F>, F extends Field> byte[] consumeReservation(
       Class<T> tupleCls, F field, Reservation reservation) {
-    TupleList<T, F> tuples = new TupleList<>(tupleCls, field);
-    tuples.addAll(
-        reservation.getReservations().stream()
-            .flatMap(
-                reservationElement -> downloadTuples(tupleCls, field, reservationElement).stream())
-            .collect(Collectors.toList()));
-    return tuples;
+
+    try (ByteArrayOutputStream tupleBytes = new ByteArrayOutputStream()) {
+
+      for (ReservationElement reservationElement : reservation.getReservations()) {
+        try (InputStream tplData = downloadTuples(tupleCls, field, reservationElement)) {
+          tupleBytes.write(tplData);
+        }
+      }
+
+      return tupleBytes.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  /** @throws CastorServiceException if tuples cannot be retrieved from database */
-  private <T extends Tuple<T, F>, F extends Field> TupleList<T, F> downloadTuples(
+  /**
+   * @throws CastorServiceException if tuples cannot be retrieved from database
+   */
+  private <T extends Tuple<T, F>, F extends Field> InputStream downloadTuples(
       Class<T> tupleCls, F field, ReservationElement reservationElement) {
     UUID tupleChunkId = reservationElement.getTupleChunkId();
     TupleType tupleType = TupleType.findTupleType(tupleCls, field);
     final long offset = reservationElement.getStartIndex() * tupleType.getTupleSize();
     final long length = reservationElement.getReservedTuples() * tupleType.getTupleSize();
     try {
-      return tupleStore.downloadTuples(tupleCls, field, tupleChunkId, offset, length);
+      return tupleStore.downloadTuplesAsBytes(tupleCls, field, tupleChunkId, offset, length);
     } catch (Exception e) {
       throw new CastorServiceException(FAILED_RETRIEVING_TUPLES_EXCEPTION_MSG, e);
     }
   }
 
-  /** @throws CastorServiceException if metadata cannot be updated */
+  /**
+   * @throws CastorServiceException if metadata cannot be updated
+   */
   private void deleteReservedFragments(Reservation reservation) {
-    fragmentStorageService.deleteAllForReservationId(reservation.getReservationId());
+    // fragmentStorageService.deleteAllForReservationId(reservation.getReservationId());
     for (ReservationElement reservationElement : reservation.getReservations()) {
       if (!fragmentStorageService.isChunkReferencedByFragments(
           reservationElement.getTupleChunkId())) {

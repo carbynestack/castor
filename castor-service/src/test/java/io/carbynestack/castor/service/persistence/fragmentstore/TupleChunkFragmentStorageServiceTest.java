@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -16,6 +16,7 @@ import io.carbynestack.castor.common.entities.ActivationStatus;
 import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.common.exceptions.CastorClientException;
 import io.carbynestack.castor.common.exceptions.CastorServiceException;
+import io.carbynestack.castor.service.config.CastorServiceProperties;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +34,7 @@ class TupleChunkFragmentStorageServiceTest {
   @Mock private TupleChunkFragmentRepository tupleChunkFragmentRepositoryMock;
 
   @InjectMocks private TupleChunkFragmentStorageService tupleChunkFragmentStorageService;
+  @Mock private CastorServiceProperties castorServicePropertiesMock;
 
   @Test
   void givenNoConflictingFragments_whenKeep_thenPersist() {
@@ -163,12 +165,15 @@ class TupleChunkFragmentStorageServiceTest {
     long startIndex = 0;
     long endIndex = 12;
     TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, false);
     long splitIndex = 7;
     TupleChunkFragmentEntity expectedAlteredFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, splitIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, splitIndex, ActivationStatus.LOCKED, null, false);
     TupleChunkFragmentEntity expectedNewFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, splitIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, splitIndex, endIndex, ActivationStatus.LOCKED, null, false);
 
     when(tupleChunkFragmentRepositoryMock.save(any()))
         .thenAnswer(
@@ -190,7 +195,8 @@ class TupleChunkFragmentStorageServiceTest {
     long startIndex = 0;
     long endIndex = 12;
     TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, false);
     long illegalSplitIndex = endIndex;
 
     assertEquals(
@@ -207,12 +213,15 @@ class TupleChunkFragmentStorageServiceTest {
     long startIndex = 0;
     long endIndex = 12;
     TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, endIndex, ActivationStatus.LOCKED, null, false);
     long splitIndex = 7;
     TupleChunkFragmentEntity expectedNewFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, splitIndex, endIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, splitIndex, endIndex, ActivationStatus.LOCKED, null, false);
     TupleChunkFragmentEntity expectedAlteredFragment =
-        TupleChunkFragmentEntity.of(tupleChunkId, tupleType, startIndex, splitIndex);
+        TupleChunkFragmentEntity.of(
+            tupleChunkId, tupleType, startIndex, splitIndex, ActivationStatus.LOCKED, null, false);
 
     when(tupleChunkFragmentRepositoryMock.save(any()))
         .thenAnswer(
@@ -269,9 +278,10 @@ class TupleChunkFragmentStorageServiceTest {
   void givenRepositoryThrowsException_whenGetAvailableTuples_thenReturnZero() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     AopInvocationException expectedException = new AopInvocationException("expected");
-
-    when(tupleChunkFragmentRepositoryMock.getAvailableTupleByType(tupleType))
-        .thenThrow(expectedException);
+    lenient().doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
+    doThrow(expectedException)
+        .when(tupleChunkFragmentRepositoryMock)
+        .getAvailableTuplesByType(tupleType);
 
     assertEquals(0, tupleChunkFragmentStorageService.getAvailableTuples(tupleType));
   }
@@ -280,9 +290,10 @@ class TupleChunkFragmentStorageServiceTest {
   void givenSuccessfulRequest_whenGetAvailableTuples_thenReturnExpectedResult() {
     TupleType tupleType = TupleType.MULTIPLICATION_TRIPLE_GFP;
     long availableTuples = 42;
-
-    when(tupleChunkFragmentRepositoryMock.getAvailableTupleByType(tupleType))
-        .thenReturn(availableTuples);
+    lenient().doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
+    doReturn(availableTuples)
+        .when(tupleChunkFragmentRepositoryMock)
+        .getAvailableTuplesByType(tupleType);
 
     assertEquals(availableTuples, tupleChunkFragmentStorageService.getAvailableTuples(tupleType));
   }
@@ -316,15 +327,6 @@ class TupleChunkFragmentStorageServiceTest {
     } catch (Exception e) {
       fail("Method not expected to throw exception");
     }
-  }
-
-  @Test
-  void givenSuccessfulRequest_whenDeleteAllForReservationId_thenDoNothing() {
-    String reservationId = "reservationId";
-
-    tupleChunkFragmentStorageService.deleteAllForReservationId(reservationId);
-
-    verify(tupleChunkFragmentRepositoryMock, times(1)).deleteAllByReservationId(reservationId);
   }
 
   @Test
