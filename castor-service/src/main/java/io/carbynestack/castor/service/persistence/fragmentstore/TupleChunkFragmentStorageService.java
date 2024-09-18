@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -32,11 +32,6 @@ public class TupleChunkFragmentStorageService {
   private final TupleChunkFragmentRepository fragmentRepository;
 
   private final CastorServiceProperties castorServiceProperties;
-
-  @Transactional
-  public void setUserLevelLockTimeout(int milliseconds) {
-    fragmentRepository.setUserLevelLockTimeout("test", milliseconds);
-  }
 
   /**
    * Creates and stores an {@link TupleChunkFragmentEntity} object with the given information in the
@@ -71,16 +66,6 @@ public class TupleChunkFragmentStorageService {
     fragmentRepository.saveAll(fragments);
   }
 
-  @Transactional
-  public void keepRound(@NotNull List<TupleChunkFragmentEntity> fragments) {
-    fragmentRepository.saveAll(fragments);
-  }
-
-  @Transactional
-  public void addUniqueConstraint() {
-    fragmentRepository.addUniqueConstraint();
-  }
-
   /**
    * Gets the {@link TupleChunkFragmentEntity} for the {@link TupleChunk} with the given id that
    * meets the following criteria:
@@ -107,11 +92,6 @@ public class TupleChunkFragmentStorageService {
   }
 
   @Transactional
-  int deleteByChunkAndStartIndex(String reservationId) {
-    return fragmentRepository.mockGetAllByReservationId(reservationId);
-  }
-
-  @Transactional
   public ArrayList<TupleChunkFragmentEntity> retrieveAndReserveRoundFragments(
       int amount, TupleType ttype, String reservationId) {
     return fragmentRepository.retrieveAndReserveRoundFragmentsByType(
@@ -121,11 +101,6 @@ public class TupleChunkFragmentStorageService {
   public int reserveRoundFragmentsByIndices(
       ArrayList<Long> indices, String reservationId, UUID tupleChunkId) {
     return fragmentRepository.reserveRoundFragmentsByIndices(indices, reservationId, tupleChunkId);
-  }
-
-  @Transactional
-  public ArrayList<TupleChunkFragmentEntity> lockReservedFragments(String reservationId) {
-    return fragmentRepository.lockAndRetrieveReservedTuplesForConsumption(reservationId);
   }
 
   @Transactional
@@ -307,16 +282,6 @@ public class TupleChunkFragmentStorageService {
     if (fragmentRepository.unlockAllForTupleChunk(chunkId) <= 0) {
       throw new CastorServiceException(NOT_A_SINGLE_FRAGMENT_FOR_CHUNK_ERROR_MSG);
     }
-  }
-
-  /**
-   * Removes all {@link TupleChunkFragmentEntity fragments} associated with the given reservation
-   * id.
-   *
-   * @param reservationId the unique identifier of the reservation.
-   */
-  public void deleteAllForReservationId(String reservationId) {
-    fragmentRepository.deleteAllByReservationId(reservationId);
   }
 
   /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -9,6 +9,7 @@ package io.carbynestack.castor.service.persistence.cache;
 
 import static io.carbynestack.castor.common.entities.TupleType.INPUT_MASK_GFP;
 import static io.carbynestack.castor.common.entities.TupleType.MULTIPLICATION_TRIPLE_GFP;
+import static io.carbynestack.castor.service.persistence.cache.CreateReservationSupplier.SHARING_RESERVATION_FAILED_EXCEPTION_MSG;
 import static io.carbynestack.castor.service.persistence.cache.ReservationCachingService.*;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -495,7 +496,7 @@ class ReservationCachingServiceTest {
     assertEquals(expectedException, actualCse.getCause());
   }
 
-  @Disabled
+  @Disabled // Disabled as unlocking is at least temporarily not implemented
   @Test
   void
       givenNoCachedReservationActivationThrows_whenCreateReservation_thenThrowCastorServiceException() {
@@ -513,6 +514,8 @@ class ReservationCachingServiceTest {
         .thenReturn(reservationMock);
     when(dedicatedTransactionServiceMock.runAsNewTransaction(any(UnlockReservationSupplier.class)))
         .thenThrow(expectedException);
+    when(castorInterVcpClientOptionalMock.get()).thenReturn(castorInterVcpClientSpy);
+    when(castorInterVcpClientSpy.shareReservation(any())).thenReturn(true);
 
     CastorServiceException actualCse =
         assertThrows(
@@ -523,7 +526,6 @@ class ReservationCachingServiceTest {
     assertEquals(expectedException, actualCse.getCause());
   }
 
-  @Disabled
   @Test
   void
       givenNoCachedReservationAndSuccessfulRequest_whenGetOrCreateReservation_thenReturnNewReservation() {
@@ -531,6 +533,7 @@ class ReservationCachingServiceTest {
     DedicatedTransactionService dedicatedTransactionServiceMock =
         mock(DedicatedTransactionService.class);
     Reservation expectedReservationMock = mock(Reservation.class);
+    ReservationElement firstElementMock = mock(ReservationElement.class);
 
     when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
     when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
@@ -538,11 +541,52 @@ class ReservationCachingServiceTest {
     when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceMock);
     when(dedicatedTransactionServiceMock.runAsNewTransaction(any(CreateReservationSupplier.class)))
         .thenReturn(expectedReservationMock);
-    when(dedicatedTransactionServiceMock.runAsNewTransaction(any(UnlockReservationSupplier.class)))
-        .thenReturn(expectedReservationMock);
+    when(castorInterVcpClientOptionalMock.get()).thenReturn(castorInterVcpClientSpy);
+    when(castorInterVcpClientSpy.shareReservation(isA(Reservation.class))).thenReturn(true);
+    when(firstElementMock.getStartIndex()).thenReturn(0L);
+    when(firstElementMock.getReservedTuples()).thenReturn(42L);
+    when(expectedReservationMock.getReservations()).thenReturn(singletonList(firstElementMock));
+
+    doReturn(1)
+        .when(tupleChunkFragmentStorageServiceMock)
+        .lockReservedFragmentsWithoutRetrieving(any(), any(Long.class), any());
 
     assertEquals(
         expectedReservationMock,
         reservationCachingService.createReservation(reservationId, INPUT_MASK_GFP, 42));
+  }
+
+  @Test
+  void givenSharingReservationFails_whenGet_thenThrowCastorServiceException() {
+    UUID chunkId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
+    long startIndex = 0;
+    TupleType tupleType = MULTIPLICATION_TRIPLE_GFP;
+    TupleChunkFragmentEntity fragmentEntity =
+        TupleChunkFragmentEntity.of(chunkId, tupleType, startIndex, 42);
+    DedicatedTransactionService dedicatedTransactionServiceSpy =
+        spy(DedicatedTransactionService.class);
+    Reservation reservationMock = mock(Reservation.class);
+
+    // when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
+    when(castorInterVcpClientOptionalMock.isPresent()).thenReturn(true);
+    when(dedicatedTransactionServiceOptionalMock.isPresent()).thenReturn(true);
+    when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType, true))
+        .thenReturn(Optional.of(fragmentEntity));
+    // when(castorInterVcpClientSpy.shareReservation(any(Reservation.class))).thenReturn(false);
+    when(dedicatedTransactionServiceOptionalMock.get()).thenReturn(dedicatedTransactionServiceSpy);
+    // when(dedicatedTransactionServiceMock.runAsNewTransaction(isA(CreateReservationSupplier.class)))
+    //        .thenReturn(reservationMock);
+    when(redisTemplateMock.opsForValue()).thenReturn(valueOperationsMock);
+    when(castorInterVcpClientOptionalMock.get()).thenReturn(castorInterVcpClientSpy);
+    when(castorInterVcpClientSpy.shareReservation(isA(Reservation.class))).thenReturn(false);
+    when(valueOperationsMock.get(any())).thenReturn(null);
+
+    CastorServiceException actualCse =
+        assertThrows(
+            CastorServiceException.class,
+            () -> reservationCachingService.createReservation("testReservation", tupleType, 42));
+
+    assertEquals(SHARING_RESERVATION_FAILED_EXCEPTION_MSG, actualCse.getMessage());
+    verify(tupleChunkFragmentStorageServiceMock, times(1)).update(fragmentEntity);
   }
 }

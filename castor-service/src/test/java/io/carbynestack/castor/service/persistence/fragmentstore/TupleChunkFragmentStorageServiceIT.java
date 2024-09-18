@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -509,7 +509,7 @@ public class TupleChunkFragmentStorageServiceIT {
 
     TupleChunkFragmentEntity unreservedFragment =
         TupleChunkFragmentEntity.of(
-            chunkId, TupleType.INPUT_MASK_GFP, 0, Long.MAX_VALUE, LOCKED, null, true);
+            chunkId, TupleType.INPUT_MASK_GFP, 150, Long.MAX_VALUE, LOCKED, null, true);
     TupleChunkFragmentEntity oneFragment =
         TupleChunkFragmentEntity.of(
             chunkId, TupleType.MULTIPLICATION_TRIPLE_GFP, 0, 12, LOCKED, reservationId, true);
@@ -521,7 +521,7 @@ public class TupleChunkFragmentStorageServiceIT {
     fragmentRepository.save(oneFragment);
     fragmentRepository.save(anotherFragment);
 
-    fragmentStorageService.deleteAllForReservationId(reservationId);
+    fragmentStorageService.lockReservedFragmentsWithoutRetrieving(chunkId, 0, reservationId);
 
     assertEquals(1, fragmentRepository.count());
     assertEquals(singletonList(unreservedFragment), fragmentRepository.findAll());

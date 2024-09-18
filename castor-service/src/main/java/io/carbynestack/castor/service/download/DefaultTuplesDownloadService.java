@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -62,12 +62,6 @@ public class DefaultTuplesDownloadService implements TuplesDownloadService {
   @Override
   public <T extends Tuple<T, F>, F extends Field> byte[] getTupleList(
       Class<T> tupleCls, F field, long count, UUID requestId) {
-    // Was passiert, wenn Castor sehr Langsam ist? Hat das Auswirkungen auf die
-    // Ephemeral-Execution-Zeit?
-    //    try {
-    //      TimeUnit.MILLISECONDS.sleep(10);
-    //      System.out.println("Slept for 500 millisecs");
-    //    }catch(Exception ignored){System.out.println("Didn't sleep");}
     TupleType tupleType = TupleType.findTupleType(tupleCls, field);
     String reservationId = requestId + "_" + tupleType;
     Reservation reservation;

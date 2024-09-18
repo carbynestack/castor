@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -132,14 +132,6 @@ public class ReservationCachingService {
     log.debug("persisting reservation {}", reservation);
     ValueOperations<String, Object> ops = redisTemplate.opsForValue();
     if (ops.get(cachePrefix + reservation.getReservationId()) == null) {
-      //      TransactionSynchronizationManager.registerSynchronization(new
-      // TransactionSynchronization() {
-      //        @Override
-      //        public void afterCommit(){
-      //          log.debug("put in database at {}", cachePrefix + reservation.getReservationId());
-      //
-      //        }
-      //      });
       log.debug("Apply reservation {}", reservation);
       storeReservationInDB(reservation);
       ops.set(cachePrefix + reservation.getReservationId(), reservation);
@@ -153,6 +145,10 @@ public class ReservationCachingService {
   }
 
   /**
+   * Maps the reservation elements to tuplefragments and saves them accordingly in batches to the
+   * RDBMS. This function assumes that all 'non-round' fragments are saved before 'round' fragments
+   * for faster processing.
+   *
    * @param reservation The reserved fragments
    * @throws InterruptedException : If the fragments can not be reserved
    */
@@ -169,6 +165,8 @@ public class ReservationCachingService {
         try {
 
           TupleChunkFragmentEntity fragment = null;
+          // the timeout functionality is needed because the fragments might not be unlocked at that
+          // point in time
           int singleRetryMicrosecs = 6000;
           while (fragment == null) {
             fragment =
@@ -317,8 +315,6 @@ public class ReservationCachingService {
               .get()
               .runAsNewTransaction(
                   new CreateReservationSupplier(
-                      castorInterVcpClientOptional.get(),
-                      this,
                       tupleChunkFragmentStorageService,
                       reservationId,
                       tupleType,

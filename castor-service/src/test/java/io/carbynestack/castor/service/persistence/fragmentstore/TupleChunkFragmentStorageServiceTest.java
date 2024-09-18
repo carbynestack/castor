@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -327,15 +327,6 @@ class TupleChunkFragmentStorageServiceTest {
     } catch (Exception e) {
       fail("Method not expected to throw exception");
     }
-  }
-
-  @Test
-  void givenSuccessfulRequest_whenDeleteAllForReservationId_thenDoNothing() {
-    String reservationId = "reservationId";
-
-    tupleChunkFragmentStorageService.deleteAllForReservationId(reservationId);
-
-    verify(tupleChunkFragmentRepositoryMock, times(1)).deleteAllByReservationId(reservationId);
   }
 
   @Test

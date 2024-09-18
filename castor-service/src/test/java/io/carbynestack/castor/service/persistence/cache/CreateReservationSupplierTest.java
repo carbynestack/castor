@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -25,7 +25,6 @@ import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragme
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -50,8 +49,6 @@ class CreateReservationSupplierTest {
     lenient().doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
     createReservationSupplier =
         new CreateReservationSupplier(
-            castorInterVcpClientMock,
-            reservationCachingServiceMock,
             tupleChunkFragmentStorageServiceMock,
             reservationId,
             tupleType,
@@ -79,48 +76,13 @@ class CreateReservationSupplierTest {
         .when(tupleChunkFragmentStorageServiceMock)
         .retrieveSinglePartialFragment(tupleType, true);
     doReturn(1000).when(castorServicePropertiesMock).getInitialFragmentSize();
-    lenient()
-        .when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType))
-        .thenReturn(count);
-    lenient()
-        .when(tupleChunkFragmentStorageServiceMock.findAvailableFragmentWithTupleType(tupleType))
+    when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType, true))
         .thenReturn(Optional.empty());
-    lenient()
-        .doReturn(1)
-        .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
 
     CastorServiceException actualCse =
         assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
 
     assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG, actualCse.getMessage());
-    // MatcherAssert.assertThat(
-    //    actualCse.getCause(), CoreMatchers.instanceOf(CastorServiceException.class));
-    // assertEquals(FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG,
-    // actualCse.getCause().getMessage());
-  }
-
-  @Disabled
-  @Test
-  void givenSharingReservationFails_whenGet_thenThrowCastorServiceException() {
-    UUID chunkId = UUID.fromString("c8a0a467-16b0-4f03-b7d7-07cbe1b0e7e8");
-    long startIndex = 0;
-    TupleChunkFragmentEntity fragmentEntity =
-        TupleChunkFragmentEntity.of(chunkId, tupleType, startIndex, count);
-
-    // when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType)).thenReturn(count);
-    when(tupleChunkFragmentStorageServiceMock.retrieveSinglePartialFragment(tupleType, true))
-        .thenReturn(Optional.of(fragmentEntity));
-    lenient()
-        .doReturn(1)
-        .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
-
-    CastorServiceException actualCse =
-        assertThrows(CastorServiceException.class, () -> createReservationSupplier.get());
-
-    assertEquals(SHARING_RESERVATION_FAILED_EXCEPTION_MSG, actualCse.getMessage());
-    verify(tupleChunkFragmentStorageServiceMock, times(1)).update(fragmentEntity);
   }
 
   @Test
@@ -134,21 +96,11 @@ class CreateReservationSupplierTest {
     Reservation expectedReservation =
         new Reservation(reservationId, tupleType, singletonList(expectedReservationElement));
 
-    lenient()
-        .when(tupleChunkFragmentStorageServiceMock.getAvailableTuples(tupleType))
-        .thenReturn(count);
-    lenient()
-        .doReturn(Optional.of(fragmentEntity))
+    doReturn(Optional.of(fragmentEntity))
         .when(tupleChunkFragmentStorageServiceMock)
         .retrieveSinglePartialFragment(tupleType, true);
-    lenient()
-        .when(tupleChunkFragmentStorageServiceMock.splitAt(fragmentEntity, count))
+    when(tupleChunkFragmentStorageServiceMock.splitAt(fragmentEntity, count))
         .thenReturn(fragmentEntity);
-    lenient().when(castorInterVcpClientMock.shareReservation(expectedReservation)).thenReturn(true);
-    lenient()
-        .doReturn(1)
-        .when(tupleChunkFragmentStorageServiceMock)
-        .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
 
     assertEquals(expectedReservation, createReservationSupplier.get());
 

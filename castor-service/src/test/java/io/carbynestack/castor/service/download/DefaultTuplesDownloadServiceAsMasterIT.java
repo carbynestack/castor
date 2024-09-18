@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -36,15 +36,17 @@ import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.util.Lists;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -113,9 +115,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
     testEnvironment.clearAllData();
   }
 
-  @Disabled
   @Test
-  void givenSharingReservationFails_whenGetTuples_thenRollbackReservation() {
+  void givenSharingReservationFails_whenGetTuples_thenDoNotRollbackReservation() {
     TupleType requestedTupleType = MULTIPLICATION_TRIPLE_GFP;
     long requestedNoTuples = 12;
     UUID requestId = UUID.fromString("a345f933-bf70-4c7a-b6cd-312b55a6ff9c");
@@ -130,8 +131,20 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             fragmentLength,
             ActivationStatus.UNLOCKED,
             null,
-            true);
+            false);
+
     String expectedReservationId = requestId + "_" + requestedTupleType;
+
+    TupleChunkFragmentEntity resultingSplitFragment =
+        spy(
+            TupleChunkFragmentEntity.of(
+                chunkId,
+                requestedTupleType,
+                requestedNoTuples,
+                fragmentLength,
+                ActivationStatus.UNLOCKED,
+                null,
+                false));
     ReservationElement expectedReservationElement =
         new ReservationElement(chunkId, requestedNoTuples, fragmentStartIndex);
     Reservation expectedReservation =
@@ -139,7 +152,10 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
             expectedReservationId, requestedTupleType, singletonList(expectedReservationElement));
 
     tupleChunkFragmentRepository.save(existingFragment);
+    // needs to be set like this because 'id' is a generated sequential value
+    when(resultingSplitFragment.getId()).thenReturn(existingFragment.getId() + 1);
     doReturn(false).when(interVcpClientMock).shareReservation(expectedReservation);
+    existingFragment.setReservationId(expectedReservationId);
 
     CastorServiceException actualCSE =
         assertThrows(
@@ -150,12 +166,16 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
                     requestedTupleType.getField(),
                     requestedNoTuples,
                     requestId));
-
+    existingFragment.setEndIndex(requestedNoTuples);
     assertEquals(SHARING_RESERVATION_FAILED_EXCEPTION_MSG, actualCSE.getMessage());
 
-    assertEquals(singletonList(existingFragment), tupleChunkFragmentRepository.findAll());
-    assertEquals(0, consumptionCachingService.getConsumptionForTupleType(0, requestedTupleType));
-    assertNull(reservationCache.get(expectedReservationId));
+    assertTrue(
+        Arrays.asList(resultingSplitFragment, existingFragment)
+            .containsAll(
+                StreamSupport.stream(tupleChunkFragmentRepository.findAll().spliterator(), false)
+                    .collect(Collectors.toList())));
+    assertEquals(12, consumptionCachingService.getConsumptionForTupleType(0, requestedTupleType));
+    assertEquals(reservationCache.get(expectedReservationId).get(), expectedReservation);
   }
 
   @Test

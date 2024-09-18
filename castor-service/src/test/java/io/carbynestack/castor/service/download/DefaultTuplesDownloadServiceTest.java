@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -71,11 +71,9 @@ class DefaultTuplesDownloadServiceTest {
     when(reservationCachingServiceMock.getReservationWithRetry(
             resultingReservationId, tupleType, count))
         .thenReturn(reservationMock);
-    lenient()
-        .doReturn(1)
+    doReturn(1)
         .when(tupleChunkFragmentStorageServiceMock)
         .lockReservedFragmentsWithoutRetrieving(isA(UUID.class), anyLong(), isA(String.class));
-    // lenient().doReturn(1).when(tupleChunkFragmentStorageServiceMock).lock(chunkId, 0L);
     doThrow(expectedCause)
         .when(tupleStoreMock)
         .downloadTuplesAsBytes(

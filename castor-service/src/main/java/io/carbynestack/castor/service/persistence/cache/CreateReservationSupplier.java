@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 - for information on the respective copyright owner
+ * Copyright (c) 2024 - for information on the respective copyright owner
  * see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
  *
  *  SPDX-License-Identifier: Apache-2.0
@@ -7,7 +7,6 @@
 
 package io.carbynestack.castor.service.persistence.cache;
 
-import io.carbynestack.castor.client.download.CastorInterVcpClient;
 import io.carbynestack.castor.common.entities.Reservation;
 import io.carbynestack.castor.common.entities.ReservationElement;
 import io.carbynestack.castor.common.entities.TupleType;
@@ -27,15 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 public final class CreateReservationSupplier implements Supplier<Reservation> {
-  public static final String INSUFFICIENT_TUPLES_EXCEPTION_MSG =
-      "Insufficient Tuples of type %s available (%s out of %s).";
   public static final String SHARING_RESERVATION_FAILED_EXCEPTION_MSG =
       "Sharing reservation with slave services failed.";
-  public static final String FAILED_RESERVE_TUPLES_EXCEPTION_MSG = "Failed to reserve the tuples.";
   public static final String FAILED_FETCH_AVAILABLE_FRAGMENT_EXCEPTION_MSG =
       "Unable to locate available tuples.";
-  final CastorInterVcpClient castorInterVcpClient;
-  final ReservationCachingService reservationCache;
   final TupleChunkFragmentStorageService fragmentStorageService;
   final String reservationId;
   final TupleType tupleType;
@@ -59,6 +53,10 @@ public final class CreateReservationSupplier implements Supplier<Reservation> {
   }
 
   /**
+   * Composes elements of the reservation by first trying to get as many fragments with the 'initial
+   * fragment size' as possible and then with fragments that deviate from this. The fragments with
+   * 'round' size are stored after the fragments with 'non-round' fragments size'
+   *
    * @throws CastorServiceException if not enough tuples of the given type are available
    * @throws CastorServiceException if reserving the requested amount of tuples failed, although
    *     there are enough tuples available
