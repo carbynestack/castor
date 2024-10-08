@@ -55,7 +55,7 @@
         <maven-license-plugin.version>2.0.0</maven-license-plugin.version>
 
         <!-- internal dependency versions -->
-        <cs-spdz-integration.version>0.1-SNAPSHOT-1257545971-1-d751c28</cs-spdz-integration.version>
+        <cs-spdz-integration.version>0.2.2</cs-spdz-integration.version>
         <cs-java-client.version>0.2.0</cs-java-client.version>
 
         <!-- external dependency versions -->
