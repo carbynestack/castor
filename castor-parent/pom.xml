@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright (c) 2023 - for information on the respective copyright owner
+  ~ Copyright (c) 2023-2024 - for information on the respective copyright owner
   ~ see the NOTICE file and/or the repository https://github.com/carbynestack/castor.
   ~
   ~ SPDX-License-Identifier: Apache-2.0
@@ -55,8 +55,8 @@
         <maven-license-plugin.version>2.0.0</maven-license-plugin.version>
 
         <!-- internal dependency versions -->
-        <cs-spdz-integration.version>0.1-SNAPSHOT-1257545971-1-d751c28</cs-spdz-integration.version>
-        <cs-java-client.version>0.1-SNAPSHOT-4075044562-9-8ffab9c</cs-java-client.version>
+        <cs-spdz-integration.version>0.2.2</cs-spdz-integration.version>
+        <cs-java-client.version>0.2.0</cs-java-client.version>
 
         <!-- external dependency versions -->
         <assertj.version>3.24.2</assertj.version>
