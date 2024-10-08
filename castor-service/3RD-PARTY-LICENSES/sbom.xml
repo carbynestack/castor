@@ -238,7 +238,7 @@
          <name>Carbyne Stack Java HTTP Client</name>
          <groupId>io.carbynestack</groupId>
          <artifactId>java-http-client</artifactId>
-         <version>0.1-SNAPSHOT-4075044562-9-8ffab9c</version>
+         <version>0.2.0</version>
          <licenses>
             <license>
                <name>Apache-2.0</name>
@@ -250,7 +250,7 @@
          <name>Carbyne Stack MP-SPDZ Integration Utilities</name>
          <groupId>io.carbynestack</groupId>
          <artifactId>mp-spdz-integration</artifactId>
-         <version>0.1-SNAPSHOT-1257545971-1-d751c28</version>
+         <version>0.2.2</version>
          <licenses>
             <license>
                <name>Apache-2.0</name>
@@ -262,7 +262,7 @@
          <name>castor-common</name>
          <groupId>io.carbynestack</groupId>
          <artifactId>castor-common</artifactId>
-         <version>0.1-SNAPSHOT-4321261594-23-40a9faa</version>
+         <version>0.1.1</version>
          <licenses>
             <license>
                <name>Apache-2.0</name>
@@ -274,7 +274,7 @@
          <name>castor-java-client</name>
          <groupId>io.carbynestack</groupId>
          <artifactId>castor-java-client</artifactId>
-         <version>0.1-SNAPSHOT-4321261594-23-40a9faa</version>
+         <version>0.1.1</version>
          <licenses>
             <license>
                <name>Apache-2.0</name>

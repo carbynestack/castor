@@ -69,7 +69,7 @@
          <name>Carbyne Stack MP-SPDZ Integration Utilities</name>
          <groupId>io.carbynestack</groupId>
          <artifactId>mp-spdz-integration</artifactId>
-         <version>0.1-SNAPSHOT-1257545971-1-d751c28</version>
+         <version>0.2.2</version>
          <licenses>
             <license>
                <name>Apache-2.0</name>
