@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/carbynestack/castor/compare/chart-v0.2.0...chart-v0.3.0) (2024-10-09)
+
+
+### Features
+
+* **charts:** add redis reservationTimeout ([#63](https://github.com/carbynestack/castor/issues/63)) ([eead173](https://github.com/carbynestack/castor/commit/eead173d1c28d51dff3aa677f76da2cd74bc81c2))
+
 ## [0.2.0](https://github.com/carbynestack/castor/compare/chart-v0.1.1...chart-v0.2.0) (2023-08-08)
 
 
