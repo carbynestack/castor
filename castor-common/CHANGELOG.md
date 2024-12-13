@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/carbynestack/castor/compare/common-v0.1.1...common-v0.2.0) (2024-10-09)
+
+
+### Features
+
+* **castor-common/castor-java-client/castor-service/castor-upload-java-client:** upgrade parent ([#68](https://github.com/carbynestack/castor/issues/68)) ([c712935](https://github.com/carbynestack/castor/commit/c71293591f5ff69f12cd063b0c7c900d17b7a78a))
+
 ## [0.1.1](https://github.com/carbynestack/castor/compare/common-v0.1.0...common-v0.1.1) (2023-07-27)
 
 

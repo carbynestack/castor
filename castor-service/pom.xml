@@ -8,7 +8,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>castor-service</artifactId>
-    <version>0.1.1</version>
+    <version>0.2.0</version>
     <parent>
         <groupId>io.carbynestack</groupId>
         <artifactId>castor-parent</artifactId>
@@ -28,8 +28,8 @@
         </repository>
     </repositories>
     <properties>
-        <castor-common.version>0.1.1</castor-common.version>
-        <castor-java-client.version>0.1.1</castor-java-client.version>
+        <castor-common.version>0.2.0</castor-common.version>
+        <castor-java-client.version>0.2.0</castor-java-client.version>
         <!-- skip docker build by default -->
         <dockerfile.skip>true</dockerfile.skip>
         <docker.baseImage>ghcr.io/carbynestack/ubuntu-java-openjre:8-dev</docker.baseImage>
