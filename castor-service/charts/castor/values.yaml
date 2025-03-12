@@ -40,7 +40,7 @@ castor:
     pullSecrets: []
   springActiveProfiles: "k8s"
   isMaster: "true"
-  slaveUri: ""
+  slaveUris: []
   noSslValidation: "false"
   initialFragmentSize: 1000
   redis:
