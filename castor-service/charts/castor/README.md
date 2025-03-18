@@ -66,14 +66,14 @@ documentation for the
 [Zalando postgres operator](https://github.com/zalando-incubator/postgres-operator).
 
 | Parameter                                  | Description                                                                               | Default                                       |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------- | --------------------------------------------- |
+|--------------------------------------------|-------------------------------------------------------------------------------------------| --------------------------------------------- |
 | `castor.image.registry`                    | Castor Image registry                                                                     | `ghcr.io`                                     |
 | `castor.image.repository`                  | Castor Image name                                                                         | `carbynestack/castor`                         |
 | `castor.image.tag`                         | Castor Image tag                                                                          | `latest`                                      |
 | `castor.image.pullPolicy`                  | Castor Image pull policy                                                                  | `IfNotPresent`                                |
 | `castor.springActiveProfiles`              | Defines the Castor's Spring profiles to be loaded                                         | `k8s`                                         |
 | `castor.isMaster`                          | Defines if Castor is running as a master service                                          | `true`                                        |
-| `castor.slaveUri`                          | Defines the URI for the Castor slave service                                              | \`\`                                          |
+| `castor.slaveUris`                         | List of URIs for all Castor slave services                                                | \`\`                                          |
 | `castor.initialFragmentSize`               | Defines the initial size of the fragments a chunk is split into                           | `1000`                                        |
 | `castor.redis.host`                        | The host address to the redis key/value store                                             | `redis.default.svc.cluster.local`             |
 | `castor.redis.port`                        | The port of the redis key/value store                                                     | `6379`                                        |

@@ -34,8 +34,8 @@ spec:
               value: {{ .Values.castor.springActiveProfiles }}
             - name: IS_MASTER
               value: {{ .Values.castor.isMaster | quote }}
-            - name: SLAVE_URI
-              value: {{ .Values.castor.slaveUri | quote }}
+            - name: SLAVE_URIS
+              value: {{ join "," .Values.castor.slaveUris | quote }}
             - name: NO_SSL_VALIDATION
               value: {{ .Values.castor.noSslValidation | quote }}
             - name: INITIAL_FRAGMENT_SIZE
