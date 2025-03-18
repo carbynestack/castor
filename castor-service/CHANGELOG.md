@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/carbynestack/castor/compare/service-v0.2.0...service-v0.3.0) (2025-03-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **chart/service:** fix support for more than 2 parties ([#74](https://github.com/carbynestack/castor/issues/74))
+
+### Bug Fixes
+
+* **chart/service:** fix support for more than 2 parties ([#74](https://github.com/carbynestack/castor/issues/74)) ([5eb7ea9](https://github.com/carbynestack/castor/commit/5eb7ea9f2efcb076d55b576956ef7fe1f5f47ede))
+
 ## [0.2.0](https://github.com/carbynestack/castor/compare/service-v0.1.1...service-v0.2.0) (2024-10-09)
 
 
