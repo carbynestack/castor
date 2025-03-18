@@ -3,6 +3,6 @@
   "castor-common": "0.2.0",
   "castor-java-client": "0.2.0",
   "castor-upload-java-client": "0.2.0",
-  "castor-service": "0.2.0",
+  "castor-service": "0.3.0",
   "castor-service/charts/castor": "0.3.0"
 }
