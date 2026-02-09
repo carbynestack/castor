@@ -39,7 +39,12 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
  */
 @Slf4j
 public class DefaultCastorUploadClient implements CastorUploadClient {
-  public static final int MAXIMUM_NUMBER_OF_TUPLES = 100000;
+  /**
+   * Default maximum number of tuples per chunk upload.
+   * Based on 100 MB message buffer and largest tuple type (MultiplicationTriple GFP = 96 bytes).
+   * Calculation: ~94 MB usable (after overhead) / 96 bytes = ~980,000 tuples, rounded to 1,000,000.
+   */
+  public static final int DEFAULT_MAXIMUM_NUMBER_OF_TUPLES = 1000000;
   public static final int DEFAULT_SERVER_HEARTBEAT = 0;
   public static final int DEFAULT_CLIENT_HEARTBEAT = 10000;
   public static final String FAILED_TO_INSTANTIATE_HTTP_CLIENT_EXCEPTION_MSG =
@@ -58,6 +63,7 @@ public class DefaultCastorUploadClient implements CastorUploadClient {
   private final ResponseCollector responseCollector = new ResponseCollector();
   private final Option<BearerTokenProvider> bearerTokenProvider;
   private final CsHttpClient<String> csHttpClient;
+  private final int maximumNumberOfTuples;
   final CastorServiceUri castorServiceUri;
   final WebSocketClient webSocketClient;
 
@@ -70,6 +76,7 @@ public class DefaultCastorUploadClient implements CastorUploadClient {
   protected DefaultCastorUploadClient(Builder builder) {
     this.castorServiceUri = builder.getCastorServiceUri();
     this.bearerTokenProvider = Option.of(builder.getBearerTokenProvider());
+    this.maximumNumberOfTuples = builder.getMaximumNumberOfTuples();
     csHttpClient =
         Try.of(
                 () ->
@@ -94,6 +101,7 @@ public class DefaultCastorUploadClient implements CastorUploadClient {
     this.webSocketClient = webSocketClient;
     this.castorServiceUri = builder.getCastorServiceUri();
     this.bearerTokenProvider = Option.of(builder.getBearerTokenProvider());
+    this.maximumNumberOfTuples = builder.getMaximumNumberOfTuples();
   }
 
   @Override
@@ -104,11 +112,11 @@ public class DefaultCastorUploadClient implements CastorUploadClient {
   @Override
   public boolean uploadTupleChunk(TupleChunk tupleChunk, long timeout) {
     isTrue(
-        tupleChunk.getNumberOfTuples() <= MAXIMUM_NUMBER_OF_TUPLES,
+        tupleChunk.getNumberOfTuples() <= maximumNumberOfTuples,
         String.format(
             TOO_MANY_TUPLES_EXCEPTION_MSG,
             tupleChunk.getNumberOfTuples(),
-            MAXIMUM_NUMBER_OF_TUPLES));
+            maximumNumberOfTuples));
     responseCollector.registerUploadRequest(tupleChunk.getChunkId());
     webSocketClient.send(tupleChunk);
     try {
@@ -208,6 +216,7 @@ public class DefaultCastorUploadClient implements CastorUploadClient {
     private final CastorServiceUri castorServiceUri;
     private int serverHeartbeat = DEFAULT_SERVER_HEARTBEAT;
     private int clientHeartbeat = DEFAULT_CLIENT_HEARTBEAT;
+    private int maximumNumberOfTuples = DEFAULT_MAXIMUM_NUMBER_OF_TUPLES;
     private final List<File> trustedCertificates;
     private boolean noSslValidation = false;
     private BearerTokenProvider bearerTokenProvider;
@@ -284,6 +293,22 @@ public class DefaultCastorUploadClient implements CastorUploadClient {
      */
     public Builder withBearerTokenProvider(BearerTokenProvider bearerTokenProvider) {
       this.bearerTokenProvider = bearerTokenProvider;
+      return this;
+    }
+
+    /**
+     * Sets the maximum number of tuples allowed per chunk upload.
+     * Should be configured based on the server's WebSocket message buffer size.
+     *
+     * <p>Calculation guideline: For MultiplicationTriple GFP (largest tuple type at 96 bytes):
+     * maximumTuples = (messageBufferBytes * 0.9) / 96
+     *
+     * <p>Default is 1,000,000 tuples (for 100 MB message buffer).
+     *
+     * @param maximumNumberOfTuples Maximum number of tuples per chunk
+     */
+    public Builder withMaximumNumberOfTuples(int maximumNumberOfTuples) {
+      this.maximumNumberOfTuples = maximumNumberOfTuples;
       return this;
     }
 

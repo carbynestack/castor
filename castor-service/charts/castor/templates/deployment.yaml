@@ -38,6 +38,8 @@ spec:
               value: {{ join "," .Values.castor.slaveUris | quote }}
             - name: NO_SSL_VALIDATION
               value: {{ .Values.castor.noSslValidation | quote }}
+            - name: MESSAGE_BUFFER
+              value: {{ .Values.castor.messageBuffer | quote }}
             - name: INITIAL_FRAGMENT_SIZE
               value: {{ .Values.castor.initialFragmentSize | quote }}
             - name: REDIS_HOST

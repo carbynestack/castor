@@ -182,7 +182,7 @@ class DefaultCastorUploadClientTest {
   void givenToManyTuples_whenUploadTupleChunk_thenThrowIllegalArgumentException() {
     TupleChunk largeTupleChunk = mock(TupleChunk.class);
     when(largeTupleChunk.getNumberOfTuples())
-        .thenReturn(DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES + 1);
+        .thenReturn(DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES + 1);
     IllegalArgumentException actualIae =
         assertThrows(
             IllegalArgumentException.class,
@@ -190,8 +190,8 @@ class DefaultCastorUploadClientTest {
     assertEquals(
         String.format(
             DefaultCastorUploadClient.TOO_MANY_TUPLES_EXCEPTION_MSG,
-            DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES + 1,
-            DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES),
+            DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES + 1,
+            DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES),
         actualIae.getMessage());
   }
 
@@ -202,7 +202,7 @@ class DefaultCastorUploadClientTest {
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunk tupleChunk = mock(TupleChunk.class);
     when(tupleChunk.getNumberOfTuples())
-        .thenReturn(DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES);
+        .thenReturn(DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES);
     when(tupleChunk.getChunkId()).thenReturn(tupleChunkId);
     ThreadPoolTaskScheduler taskSchedulerMock = mock(ThreadPoolTaskScheduler.class);
     when(webSocketClientMock.getTaskScheduler()).thenReturn(taskSchedulerMock);
@@ -221,7 +221,7 @@ class DefaultCastorUploadClientTest {
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunk tupleChunk = mock(TupleChunk.class);
     when(tupleChunk.getNumberOfTuples())
-        .thenReturn(DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES);
+        .thenReturn(DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES);
     when(tupleChunk.getChunkId()).thenReturn(tupleChunkId);
     ThreadPoolTaskScheduler taskSchedulerMock = mock(ThreadPoolTaskScheduler.class);
     when(webSocketClientMock.getTaskScheduler()).thenReturn(taskSchedulerMock);
@@ -239,7 +239,7 @@ class DefaultCastorUploadClientTest {
     UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
     TupleChunk tupleChunk = mock(TupleChunk.class);
     when(tupleChunk.getNumberOfTuples())
-        .thenReturn(DefaultCastorUploadClient.MAXIMUM_NUMBER_OF_TUPLES);
+        .thenReturn(DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES);
     when(tupleChunk.getChunkId()).thenReturn(tupleChunkId);
     ThreadPoolTaskScheduler taskSchedulerMock = mock(ThreadPoolTaskScheduler.class);
     when(webSocketClientMock.getTaskScheduler()).thenReturn(taskSchedulerMock);

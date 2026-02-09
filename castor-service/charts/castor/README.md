@@ -74,6 +74,7 @@ documentation for the
 | `castor.springActiveProfiles`              | Defines the Castor's Spring profiles to be loaded                                         | `k8s`                                         |
 | `castor.isMaster`                          | Defines if Castor is running as a master service                                          | `true`                                        |
 | `castor.slaveUris`                         | List of URIs for all Castor slave services                                                | \`\`                                          |
+| `castor.messageBuffer`                     | WebSocket message buffer size in bytes (e.g., 104857600 for 100 MB)                       | `104857600`                                   |
 | `castor.initialFragmentSize`               | Defines the initial size of the fragments a chunk is split into                           | `1000`                                        |
 | `castor.redis.host`                        | The host address to the redis key/value store                                             | `redis.default.svc.cluster.local`             |
 | `castor.redis.port`                        | The port of the redis key/value store                                                     | `6379`                                        |
