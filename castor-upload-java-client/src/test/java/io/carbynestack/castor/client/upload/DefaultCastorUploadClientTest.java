@@ -62,6 +62,8 @@ class DefaultCastorUploadClientTest {
         mock(DefaultCastorUploadClient.Builder.class);
     when(uploadClientBuilderMock.getCastorServiceUri()).thenReturn(serviceUri);
     when(uploadClientBuilderMock.getBearerTokenProvider()).thenReturn(bearerTokenProviderMock);
+    when(uploadClientBuilderMock.getMaximumNumberOfTuples())
+        .thenReturn(DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES);
     try (MockedConstruction<ResponseCollector> responseCollectorMockedConstruction =
         mockConstruction(ResponseCollector.class)) {
       castorUploadClient =
@@ -111,6 +113,9 @@ class DefaultCastorUploadClientTest {
               assertEquals(expectedBearerTokenProvider, actualBuilder.getBearerTokenProvider());
               assertEquals(expectedTrustedCertificates, actualBuilder.getTrustedCertificates());
               assertTrue(actualBuilder.isNoSslValidation());
+              assertEquals(
+                  DefaultCastorUploadClient.DEFAULT_MAXIMUM_NUMBER_OF_TUPLES,
+                  actualBuilder.getMaximumNumberOfTuples());
             })) {
       builder.build();
       assertEquals(1, clientMockedConstruction.constructed().size());
@@ -303,6 +308,99 @@ class DefaultCastorUploadClientTest {
     verify(webSocketClientMock).connect();
     verify(webSocketClientMock, times(2)).isConnected();
     verifyNoMoreInteractions(webSocketClientMock);
+  }
+
+  @SneakyThrows
+  @Test
+  void givenCustomMaximumNumberOfTuples_whenBuildClient_thenUseCustomValue() {
+    int customMaxTuples = 500000;
+    CastorServiceUri expectedServiceUri =
+        new CastorServiceUri("https://castor.carbynestack.io:8080");
+
+    DefaultCastorUploadClient.Builder builder =
+        DefaultCastorUploadClient.builder(expectedServiceUri.getRestServiceUri().toString())
+            .withMaximumNumberOfTuples(customMaxTuples);
+
+    try (MockedConstruction<DefaultCastorUploadClient> clientMockedConstruction =
+        mockConstruction(
+            DefaultCastorUploadClient.class,
+            (context, settings) -> {
+              DefaultCastorUploadClient.Builder actualBuilder =
+                  (DefaultCastorUploadClient.Builder) settings.arguments().get(0);
+              assertEquals(customMaxTuples, actualBuilder.getMaximumNumberOfTuples());
+            })) {
+      builder.build();
+      assertEquals(1, clientMockedConstruction.constructed().size());
+    }
+  }
+
+  @SneakyThrows
+  @Test
+  void givenCustomMaximumTuples_whenUploadBelowLimit_thenSucceed() {
+    int customMaxTuples = 500000;
+    UUID tupleChunkId = UUID.fromString("80fbba1b-3da8-4b1e-8a2c-cebd65229fad");
+    TupleChunk tupleChunk = mock(TupleChunk.class);
+    when(tupleChunk.getNumberOfTuples()).thenReturn(customMaxTuples - 1);
+    when(tupleChunk.getChunkId()).thenReturn(tupleChunkId);
+    ThreadPoolTaskScheduler taskSchedulerMock = mock(ThreadPoolTaskScheduler.class);
+    when(webSocketClientMock.getTaskScheduler()).thenReturn(taskSchedulerMock);
+    when(responseCollectorMock.waitForRequest(
+            tupleChunkId, CastorUploadClient.DEFAULT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
+        .thenReturn(true);
+
+    // Create client with custom limit
+    DefaultCastorUploadClient.Builder uploadClientBuilderMock =
+        mock(DefaultCastorUploadClient.Builder.class);
+    when(uploadClientBuilderMock.getCastorServiceUri()).thenReturn(serviceUri);
+    when(uploadClientBuilderMock.getBearerTokenProvider()).thenReturn(bearerTokenProviderMock);
+    when(uploadClientBuilderMock.getMaximumNumberOfTuples()).thenReturn(customMaxTuples);
+
+    DefaultCastorUploadClient customClient;
+    try (MockedConstruction<ResponseCollector> responseCollectorMockedConstruction =
+        mockConstruction(ResponseCollector.class)) {
+      customClient =
+          new DefaultCastorUploadClient(
+              uploadClientBuilderMock, csHttpClientMock, webSocketClientMock);
+      responseCollectorMock = responseCollectorMockedConstruction.constructed().get(0);
+      when(responseCollectorMock.waitForRequest(
+              tupleChunkId, CastorUploadClient.DEFAULT_CONNECTION_TIMEOUT, TimeUnit.MILLISECONDS))
+          .thenReturn(true);
+    }
+
+    boolean result = customClient.uploadTupleChunk(tupleChunk);
+    assertTrue(result);
+  }
+
+  @Test
+  void givenCustomMaximumTuples_whenUploadExceedsLimit_thenThrowException() {
+    int customMaxTuples = 500000;
+    TupleChunk largeTupleChunk = mock(TupleChunk.class);
+    when(largeTupleChunk.getNumberOfTuples()).thenReturn(customMaxTuples + 1);
+
+    // Create client with custom limit
+    DefaultCastorUploadClient.Builder uploadClientBuilderMock =
+        mock(DefaultCastorUploadClient.Builder.class);
+    when(uploadClientBuilderMock.getCastorServiceUri()).thenReturn(serviceUri);
+    when(uploadClientBuilderMock.getBearerTokenProvider()).thenReturn(bearerTokenProviderMock);
+    when(uploadClientBuilderMock.getMaximumNumberOfTuples()).thenReturn(customMaxTuples);
+
+    DefaultCastorUploadClient customClient;
+    try (MockedConstruction<ResponseCollector> ignored =
+        mockConstruction(ResponseCollector.class)) {
+      customClient =
+          new DefaultCastorUploadClient(
+              uploadClientBuilderMock, csHttpClientMock, webSocketClientMock);
+    }
+
+    IllegalArgumentException actualIae =
+        assertThrows(
+            IllegalArgumentException.class, () -> customClient.uploadTupleChunk(largeTupleChunk));
+    assertEquals(
+        String.format(
+            DefaultCastorUploadClient.TOO_MANY_TUPLES_EXCEPTION_MSG,
+            customMaxTuples + 1,
+            customMaxTuples),
+        actualIae.getMessage());
   }
 
   @SneakyThrows
