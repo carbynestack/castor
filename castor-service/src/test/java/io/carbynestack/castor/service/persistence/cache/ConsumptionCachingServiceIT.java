@@ -18,7 +18,7 @@ import io.carbynestack.castor.common.entities.TupleType;
 import io.carbynestack.castor.service.CastorServiceApplication;
 import io.carbynestack.castor.service.config.CastorCacheProperties;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
+import io.carbynestack.castor.service.testconfig.ReusableSeaweedFsContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
 import java.util.Arrays;
@@ -48,8 +48,8 @@ public class ConsumptionCachingServiceIT {
       ReusableRedisContainer.getInstance();
 
   @Container
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  public static ReusableSeaweedFsContainer reusableSeaweedFsContainer =
+      ReusableSeaweedFsContainer.getInstance();
 
   @Container
   public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
