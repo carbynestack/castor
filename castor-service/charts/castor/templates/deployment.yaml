@@ -46,6 +46,18 @@ spec:
               value:  {{ .Values.castor.redis.port | quote }}
             - name: MINIO_ENDPOINT
               value: {{ .Values.castor.minio.endpoint }}
+{{- if .Values.castor.minio.credentialsSecretName }}
+            - name: S3_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.castor.minio.credentialsSecretName }}
+                  key: accesskey
+            - name: S3_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.castor.minio.credentialsSecretName }}
+                  key: secretkey
+{{- end }}
             - name: DB_HOST
               value: {{ .Values.castor.db.host }}
             - name: DB_USER

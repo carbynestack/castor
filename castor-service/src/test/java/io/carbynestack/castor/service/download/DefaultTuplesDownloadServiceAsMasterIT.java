@@ -27,7 +27,7 @@ import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragme
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentRepository;
 import io.carbynestack.castor.service.persistence.tuplestore.MinioTupleStore;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
+import io.carbynestack.castor.service.testconfig.ReusableSeaweedFsContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
 import io.carbynestack.castor.service.util.TupleChunkFragmentEntityListMatcher;
@@ -67,8 +67,8 @@ public class DefaultTuplesDownloadServiceAsMasterIT {
       ReusableRedisContainer.getInstance();
 
   @Container
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  public static ReusableSeaweedFsContainer reusableSeaweedFsContainer =
+      ReusableSeaweedFsContainer.getInstance();
 
   @Container
   public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =

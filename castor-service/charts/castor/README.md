@@ -27,7 +27,7 @@ deployment on a [Kubernetes](http://kubernetes.io) cluster using the
 - A Docker Hub account with read access permission for the organization
   `carbynestack` and a Kubernetes Secret with your registry credentials (see the
   section on [Registry Credentials](#registry-credentials)).
-- A Redis RDS, Postgres DBMS, and MinIO cluster to serve as the persistence
+- A Redis RDS, Postgres DBMS, and S3-compatible object store (e.g. SeaweedFS) to serve as the persistence
   layer for Castor.
 
 ## Installing the Chart
@@ -77,7 +77,8 @@ documentation for the
 | `castor.initialFragmentSize`               | Defines the initial size of the fragments a chunk is split into                           | `1000`                                        |
 | `castor.redis.host`                        | The host address to the redis key/value store                                             | `redis.default.svc.cluster.local`             |
 | `castor.redis.port`                        | The port of the redis key/value store                                                     | `6379`                                        |
-| `castor.minio.endpoint`                    | The minio object store endpoint                                                           | `http://minio.default.svc.cluster.local:9000` |
+| `castor.minio.endpoint` | The S3 endpoint of the object store (SeaweedFS) | `http://seaweedfs-s3.default.svc.cluster.local:8333` |
+| `castor.minio.credentialsSecretName` | Optional Secret with `accesskey`/`secretkey` for S3 auth | `""` |
 | `castor.db.host`                           | The postgres database host                                                                | `dbms-repl.default.svc.cluster.local`         |
 | `castor.redis.port`                        | The postgres database port                                                                | `5432`                                        |
 | `castor.db.userSecretName`                 | Name of an existing secret to be used for the database username                           | \`\`                                          |

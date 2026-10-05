@@ -76,7 +76,7 @@ To build a custom Castor docker image, run:
 In order to deploy Castor locally, the following additional services are
 required:
 
-- **Minio**: To persist the tuple shares (tuple chunks).
+- **SeaweedFS (S3-compatible object store)**: To persist the tuple shares (tuple chunks).
 - **PostgreSQL**: To store the metadata of a tuple chunk.
 - **Redis**: To cache tuple reservations as well as telemetry data.
 
@@ -98,7 +98,7 @@ REDIS_HOST=localhost
 REDIS_PORT=6379
 DB_USER=user
 DB_PASSWORD=secret
-MINIO_ENDPOINT=http://localhost:9000
+MINIO_ENDPOINT=http://localhost:8333
 EOF
 docker run --env-file castor.conf carbynestack/castor-service 
 ```

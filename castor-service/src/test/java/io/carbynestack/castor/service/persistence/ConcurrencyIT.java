@@ -19,7 +19,7 @@ import io.carbynestack.castor.service.persistence.cache.ReservationCachingServic
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentEntity;
 import io.carbynestack.castor.service.persistence.fragmentstore.TupleChunkFragmentStorageService;
 import io.carbynestack.castor.service.testconfig.PersistenceTestEnvironment;
-import io.carbynestack.castor.service.testconfig.ReusableMinioContainer;
+import io.carbynestack.castor.service.testconfig.ReusableSeaweedFsContainer;
 import io.carbynestack.castor.service.testconfig.ReusablePostgreSQLContainer;
 import io.carbynestack.castor.service.testconfig.ReusableRedisContainer;
 import io.vavr.control.Try;
@@ -44,8 +44,8 @@ public class ConcurrencyIT {
       ReusableRedisContainer.getInstance();
 
   @Container
-  public static ReusableMinioContainer reusableMinioContainer =
-      ReusableMinioContainer.getInstance();
+  public static ReusableSeaweedFsContainer reusableSeaweedFsContainer =
+      ReusableSeaweedFsContainer.getInstance();
 
   @Container
   public static ReusablePostgreSQLContainer reusablePostgreSQLContainer =
